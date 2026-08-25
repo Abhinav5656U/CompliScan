@@ -1,0 +1,152 @@
+import json
+import os
+import re
+
+RULES_FILE = os.path.join(os.path.dirname(__file__), "..", "rules", "rules_2026_amend_3.json")
+
+def load_rules():
+    with open(RULES_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def validate_compliance(pipeline_data, extracted_fields=None):
+    """
+    Evaluates extracted facts against versioned rules.
+    pipeline_data is the dict from process_image_pipeline.
+    """
+    if extracted_fields is None:
+        extracted_fields = {}
+
+    if not pipeline_data or not pipeline_data.get("extracted_data"):
+        return {
+            "overall_status": "non_compliant",
+            "checks": [
+                {
+                    "rule_name": "OCR Text Extraction",
+                    "status": "fail",
+                    "message": "No text could be extracted from the image.",
+                    "citation": "System",
+                    "severity": "critical",
+                }
+            ],
+        }
+
+    rules_def = load_rules()
+    checks = []
+    
+    extracted_data = pipeline_data.get("extracted_data", [])
+    full_text = pipeline_data.get("full_text", "")
+    pixels_per_mm = pipeline_data.get("calibrated_pixels_per_mm")
+
+    # Group texts by zone for easier checking
+    zone_texts = {}
+    for item in extracted_data:
+        zone = item.get("zone", "unknown")
+        if zone not in zone_texts:
+            zone_texts[zone] = []
+        zone_texts[zone].append(item)
+
+    for rule in rules_def["rules"]:
+        rule_type = rule["type"]
+        field_zone = rule["field"]
+        
+        # Determine which text blocks to check
+        items_to_check = []
+        if field_zone == "any":
+            items_to_check = extracted_data
+        elif field_zone in zone_texts:
+            items_to_check = zone_texts[field_zone]
+        else:
+            # If the zone wasn't found by heuristics, fallback to all text (graceful degradation)
+            items_to_check = extracted_data
+
+        combined_text_for_zone = " ".join([i["text"] for i in items_to_check])
+
+        if rule_type == "regex":
+            pattern = re.compile(rule["pattern"])
+            match = pattern.search(combined_text_for_zone)
+            
+            if match:
+                # Calculate avg confidence of items in this zone that might contain the match
+                # Rough approximation: take avg confidence of the zone
+                avg_conf = sum([i["confidence"] for i in items_to_check]) / len(items_to_check) if items_to_check else 0
+                
+                status = "pass"
+                if avg_conf < 0.60:
+                    status = "human_review_required"
+                    
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": status,
+                    "message": f"Found: {match.group(0).strip()}",
+                    "citation": rule["citation"],
+                    "severity": "info" if status == "pass" else "warning"
+                })
+                
+                # Populate extracted_fields for DB
+                if rule["id"] == "mrp_declaration":
+                    extracted_fields["mrp"] = match.group(0).strip()
+                elif rule["id"] == "net_quantity":
+                    extracted_fields["net_quantity"] = match.group(0).strip()
+                elif rule["id"] == "manufacturer":
+                    extracted_fields["manufacturer"] = match.group(0).strip()
+            else:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "fail" if rule["severity"] == "critical" else "likely_violation",
+                    "message": rule["error_msg"],
+                    "citation": rule["citation"],
+                    "severity": rule["severity"]
+                })
+
+        elif rule_type == "height_check":
+            if not pixels_per_mm:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "human_review_required",
+                    "message": "No reference card detected. Could not calibrate physical font size.",
+                    "citation": rule["citation"],
+                    "severity": "warning"
+                })
+                continue
+                
+            min_height = rule.get("min_height_mm", 0)
+            # Find max height in the relevant zone
+            max_item_height = 0
+            for item in items_to_check:
+                h = item.get("physical_height_mm", 0)
+                if h > max_item_height:
+                    max_item_height = h
+                    
+            if max_item_height >= min_height:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "pass",
+                    "message": f"Measured height {max_item_height:.2f}mm meets minimum {min_height}mm.",
+                    "citation": rule["citation"],
+                    "severity": "info"
+                })
+            else:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "likely_violation",
+                    "message": f"Largest text in zone measured {max_item_height:.2f}mm. Minimum required is {min_height}mm.",
+                    "citation": rule["citation"],
+                    "severity": rule["severity"]
+                })
+
+    # Overall status calculation
+    failed_critical = sum(1 for c in checks if c["status"] == "fail")
+    needs_review = sum(1 for c in checks if c["status"] in ["human_review_required", "likely_violation"])
+
+    if failed_critical == 0 and needs_review == 0:
+        overall_status = "compliant"
+    elif failed_critical == 0 and needs_review > 0:
+        overall_status = "review_required"
+    else:
+        overall_status = "non_compliant"
+
+    return {
+        "overall_status": overall_status,
+        "rule_version_applied": rules_def["version"],
+        "checks": checks,
+    }
