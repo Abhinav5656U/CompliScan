@@ -1,0 +1,76 @@
+{
+  "version": "2026_amend_3",
+  "effective_date": "2026-06-01",
+  "rules": [
+    {
+      "id": "mrp_declaration",
+      "name": "MRP (Maximum Retail Price)",
+      "citation": "Rule 6(1)(e)",
+      "field": "mrp_zone",
+      "type": "regex",
+      "pattern": "(?i)(MRP|M\\.R\\.P|Maximum Retail Price).*?(Rs\\.?|₹|INR).*?([\\d,]+\\.?\\d*)",
+      "error_msg": "MRP must be present in format 'Rs. X/-' or '₹X'.",
+      "severity": "critical"
+    },
+    {
+      "id": "tax_inclusion",
+      "name": "MRP Inclusive of All Taxes",
+      "citation": "Rule 6(1)(e) - Third Amendment Rules 2026",
+      "field": "mrp_zone",
+      "type": "regex",
+      "pattern": "(?i)(inclusive|includes?)\\s*(of\\s*)?all\\s*tax(es)?",
+      "error_msg": "Statement 'MRP inclusive of all taxes' must be clearly printed near MRP.",
+      "severity": "warning"
+    },
+    {
+      "id": "net_quantity",
+      "name": "Net Quantity",
+      "citation": "Rule 6(1)(c)",
+      "field": "net_qty_zone",
+      "type": "regex",
+      "pattern": "(?i)(\\d+\\.?\\d*)\\s*(g|kg|ml|l|ltr|litre|liters|gm|kgs)",
+      "error_msg": "Net quantity with standard unit (g, kg, ml, L) not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "manufacturer",
+      "name": "Manufacturer/Importer Details",
+      "citation": "Rule 6(1)(a)",
+      "field": "manufacturer_zone",
+      "type": "regex",
+      "pattern": "(?i)(Manufacturer|Manufactured by|Marketed by|Imported by|Importer)",
+      "error_msg": "Manufacturer or importer name and address not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "consumer_care",
+      "name": "Consumer Care Details",
+      "citation": "Rule 6(1)(g)",
+      "field": "consumer_care_zone",
+      "type": "regex",
+      "pattern": "(\\+?[\\d\\-\\s]{7,15}|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})",
+      "error_msg": "Consumer care phone number or email not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "mrp_numeral_height",
+      "name": "MRP Numeral Height",
+      "citation": "Rule 7(1) Table 1",
+      "field": "mrp_zone",
+      "type": "height_check",
+      "min_height_mm": 2.0,
+      "error_msg": "Numerals must be at least 2mm high for standard packaging.",
+      "severity": "warning"
+    },
+    {
+      "id": "bilingual_label",
+      "name": "Commodity Name in Hindi and English",
+      "citation": "Rule 9(1)",
+      "field": "any",
+      "type": "regex",
+      "pattern": "[\\u0900-\\u097F]+",
+      "error_msg": "Product must carry declarations in Hindi and English (or local language).",
+      "severity": "warning"
+    }
+  ]
+}
