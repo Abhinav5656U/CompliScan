@@ -54,6 +54,7 @@ class Scan(db.Model):
     product_name = db.Column(db.String(200), nullable=True)
     manufacturer = db.Column(db.String(200), nullable=True)
     gtin = db.Column(db.String(50), nullable=True)
+    state = db.Column(db.String(100), nullable=True)
     mismatch_result = db.Column(db.JSON, nullable=True)
     created_at = db.Column(
         db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
@@ -71,6 +72,7 @@ class Scan(db.Model):
             "product_name": self.product_name,
             "manufacturer": self.manufacturer,
             "gtin": self.gtin,
+            "state": self.state,
             "mismatch_result": self.mismatch_result,
             "created_at": self.created_at.isoformat(),
         }

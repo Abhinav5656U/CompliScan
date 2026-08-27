@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock, FiMapPin } from 'react-icons/fi';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -17,8 +17,9 @@ const Navbar = () => {
   };
 
   const navLinks = [
-    { to: '/', label: 'Scan', icon: FiSearch, show: isAuthenticated },
-    { to: '/dashboard', label: 'Dashboard', icon: FiGrid, show: isAuthenticated },
+    { to: '/upload', label: 'Scan', icon: FiSearch, show: isAuthenticated },
+    { to: '/dashboard', label: 'Dashboard', icon: FiGrid, show: isAuthenticated && ['admin', 'officer'].includes(user?.role) },
+    { to: '/map', label: 'Map', icon: FiMapPin, show: isAuthenticated && ['admin', 'officer'].includes(user?.role) },
     { to: '/history', label: 'History', icon: FiClock, show: isAuthenticated },
   ];
 

@@ -1,7 +1,11 @@
 import axios from 'axios';
+import { toast } from 'react-toastify';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: `${API_BASE_URL}/api`,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -25,6 +29,9 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
+    }
+    if (error.code === 'ECONNABORTED') {
+      toast.error('Request timed out. The server may be processing a large image — please try again.');
     }
     return Promise.reject(error);
   }

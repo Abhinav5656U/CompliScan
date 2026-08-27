@@ -86,7 +86,7 @@ def extract_text(image_path):
             np.ulong = np.uint64
             
         from paddleocr import PaddleOCR
-        ocr = PaddleOCR(use_textline_orientation=True, lang='en')
+        ocr = PaddleOCR(use_textline_orientation=True, lang='en,hi')
         result = ocr.ocr(temp_path)
         extracted = []
         

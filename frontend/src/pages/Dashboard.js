@@ -11,6 +11,13 @@ import {
 import api from '../utils/api';
 import { toast } from 'react-toastify';
 
+const EmptyChart = ({ message }) => (
+  <div className="flex flex-col items-center justify-center h-[300px] text-center">
+    <FiFileText className="h-10 w-10 text-gray-300 mb-3" />
+    <p className="text-gray-400 text-sm">{message}</p>
+  </div>
+);
+
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [scans, setScans] = useState([]);
@@ -20,14 +27,14 @@ const Dashboard = () => {
   const [filters, setFilters] = useState({
     status: '',
     manufacturer: '',
-    start_date: '',
-    end_date: '',
+    date_from: '',
+    date_to: '',
   });
 
   const fetchStats = useCallback(async () => {
     try {
       const response = await api.get('/dashboard/stats');
-      setStats(response.data);
+      setStats(response.data.stats);
     } catch (err) {
       toast.error('Failed to load dashboard stats');
     }
@@ -38,13 +45,13 @@ const Dashboard = () => {
       const params = new URLSearchParams({ page: page.toString() });
       if (filters.status) params.append('status', filters.status);
       if (filters.manufacturer) params.append('manufacturer', filters.manufacturer);
-      if (filters.start_date) params.append('date_from', filters.start_date);
-      if (filters.end_date) params.append('date_to', filters.end_date);
+      if (filters.date_from) params.append('date_from', filters.date_from);
+      if (filters.date_to) params.append('date_to', filters.date_to);
 
       const response = await api.get(`/dashboard/scans?${params.toString()}`);
       const data = response.data;
       setScans(data.scans || data.items || data.results || []);
-      setTotalPages(data.pagination?.total_pages || data.total_pages || data.pages || Math.ceil((data.total || 0) / 10) || 1);
+      setTotalPages(data.pagination?.total_pages ?? 1);
     } catch (err) {
       toast.error('Failed to load scans');
     }
@@ -69,63 +76,50 @@ const Dashboard = () => {
       case 'compliant': return 'bg-green-100 text-green-800';
       case 'non_compliant': case 'non-compliant': return 'bg-red-100 text-red-800';
       case 'partial': case 'partially_compliant': case 'partially-compliant': return 'bg-amber-100 text-amber-800';
-      case 'manual_review': case 'review_required': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const complianceTrendData = stats?.compliance_trend || stats?.trend || [
-    { month: 'Jan', compliant: 65, non_compliant: 20, partial: 15 },
-    { month: 'Feb', compliant: 70, non_compliant: 15, partial: 15 },
-    { month: 'Mar', compliant: 60, non_compliant: 25, partial: 15 },
-    { month: 'Apr', compliant: 75, non_compliant: 15, partial: 10 },
-    { month: 'May', compliant: 80, non_compliant: 10, partial: 10 },
-    { month: 'Jun', compliant: 85, non_compliant: 8, partial: 7 },
-  ];
+  const trendData = (stats?.scans_per_day || []).map(d => ({
+    date: d.date,
+    count: d.count,
+  }));
 
-  const violationsData = stats?.violations_by_type || stats?.violations || [
-    { type: 'Missing Labels', count: 24 },
-    { type: 'Wrong Dosage', count: 18 },
-    { type: 'Expiry Issues', count: 12 },
-    { type: 'Missing Warnings', count: 9 },
-    { type: 'Formatting', count: 6 },
-  ];
+  const violationsData = (stats?.top_violations || []).map(v => ({
+    rule: v.rule,
+    count: v.count,
+  }));
+
+  const hasNoScans = !stats || stats.total_scans === 0;
 
   const statCards = [
     {
       label: 'Total Scans',
-      value: stats?.total_scans ?? stats?.total ?? 0,
+      value: stats?.total_scans ?? 0,
       icon: FiFileText,
       color: 'bg-primary-50 text-primary-600',
       iconBg: 'bg-primary-100',
     },
     {
       label: 'Compliant',
-      value: stats?.compliant ?? stats?.compliant_count ?? 0,
+      value: stats?.compliant ?? 0,
       icon: FiCheckCircle,
       color: 'bg-green-50 text-green-600',
       iconBg: 'bg-green-100',
     },
     {
       label: 'Non-Compliant',
-      value: stats?.non_compliant ?? stats?.non_compliant_count ?? 0,
+      value: stats?.non_compliant ?? 0,
       icon: FiXCircle,
       color: 'bg-red-50 text-red-600',
       iconBg: 'bg-red-100',
     },
     {
       label: 'Partially Compliant',
-      value: stats?.partial ?? stats?.partially_compliant ?? stats?.partial_count ?? 0,
+      value: stats?.partially_compliant ?? 0,
       icon: FiAlertTriangle,
       color: 'bg-amber-50 text-amber-600',
       iconBg: 'bg-amber-100',
-    },
-    {
-      label: 'Manual Review',
-      value: stats?.manual_review ?? 0,
-      icon: FiEye,
-      color: 'bg-purple-50 text-purple-600',
-      iconBg: 'bg-purple-100',
     },
   ];
 
@@ -140,6 +134,30 @@ const Dashboard = () => {
     );
   }
 
+  if (hasNoScans) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-16 text-center">
+          <FiFileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">No scans yet</h2>
+          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            Upload your first product label to see compliance analytics and scan trends here.
+          </p>
+          <Link
+            to="/upload"
+            className="inline-flex items-center px-5 py-2.5 bg-primary-800 hover:bg-primary-900 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            Start a scan
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
@@ -147,7 +165,7 @@ const Dashboard = () => {
         <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -168,33 +186,38 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Compliance Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={complianceTrendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="compliant" stroke="#22c55e" strokeWidth={2} name="Compliant" />
-              <Line type="monotone" dataKey="non_compliant" stroke="#ef4444" strokeWidth={2} name="Non-Compliant" />
-              <Line type="monotone" dataKey="partial" stroke="#f59e0b" strokeWidth={2} name="Partial" />
-              <Line type="monotone" dataKey="manual_review" stroke="#a855f7" strokeWidth={2} name="Review" />
-            </LineChart>
-          </ResponsiveContainer>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Scans Over Time</h3>
+          {trendData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={trendData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="count" stroke="#1e40af" strokeWidth={2} name="Scans" dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyChart message="No scan data available yet" />
+          )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Violations by Type</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={violationsData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="type" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#1e40af" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Violations</h3>
+          {violationsData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={violationsData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="rule" tick={{ fontSize: 11 }} />
+                <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#1e40af" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <EmptyChart message="No violations recorded yet" />
+          )}
         </div>
       </div>
 
@@ -212,7 +235,6 @@ const Dashboard = () => {
                 <option value="compliant">Compliant</option>
                 <option value="non_compliant">Non-Compliant</option>
                 <option value="partial">Partially Compliant</option>
-                <option value="manual_review">Manual Review</option>
               </select>
               <input
                 type="text"
@@ -223,14 +245,14 @@ const Dashboard = () => {
               />
               <input
                 type="date"
-                value={filters.start_date}
-                onChange={(e) => handleFilterChange('start_date', e.target.value)}
+                value={filters.date_from}
+                onChange={(e) => handleFilterChange('date_from', e.target.value)}
                 className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
               <input
                 type="date"
-                value={filters.end_date}
-                onChange={(e) => handleFilterChange('end_date', e.target.value)}
+                value={filters.date_to}
+                onChange={(e) => handleFilterChange('date_to', e.target.value)}
                 className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
