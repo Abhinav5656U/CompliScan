@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  FiSearch, FiUpload, FiCheckCircle, FiFileText, FiShield, FiBarChart2,
+  FiSearch, FiUpload, FiCheckCircle, FiXCircle, FiFileText, FiShield, FiBarChart2,
   FiEye, FiZap, FiArrowRight, FiPlay, FiChevronRight, FiGlobe,
   FiGrid, FiCrosshair, FiAlertTriangle, FiBook, FiGithub, FiMail, FiClock
 } from 'react-icons/fi';

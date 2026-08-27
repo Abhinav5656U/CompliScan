@@ -13,8 +13,8 @@ def require_officer_or_admin():
     user = User.query.get(user_id)
     if not user:
         return None, (jsonify({"error": "User not found"}), 404)
-    if user.role not in ("admin", "officer", "inspector", "viewer"):
-        return None, (jsonify({"error": "Access denied. Officer, admin, inspector, or viewer role required."}), 403)
+    if user.role not in ("admin", "officer"):
+        return None, (jsonify({"error": "Access denied. Admin or officer role required."}), 403)
     return user, None
 
 
@@ -144,3 +144,88 @@ def get_all_scans():
 
     except Exception as e:
         return jsonify({"error": f"Failed to fetch scans: {str(e)}"}), 500
+
+
+@dashboard_bp.route("/map", methods=["GET"])
+@jwt_required()
+def get_map_data():
+    try:
+        user, error = require_officer_or_admin()
+        if error:
+            return error
+
+        state_rows = (
+            db.session.query(
+                Scan.state,
+                func.count(Scan.id).label("total"),
+                func.sum(db.case((Scan.overall_status == "compliant", 1), else_=0)).label("compliant"),
+                func.sum(db.case((Scan.overall_status == "non_compliant", 1), else_=0)).label("non_compliant"),
+            )
+            .filter(Scan.state.isnot(None), Scan.state != "")
+            .group_by(Scan.state)
+            .all()
+        )
+
+        states = []
+        for row in state_rows:
+            states.append({
+                "state": row.state,
+                "total": row.total,
+                "compliant": row.compliant or 0,
+                "non_compliant": row.non_compliant or 0,
+                "violation_rate": round((row.non_compliant or 0) / row.total * 100, 1),
+            })
+
+        return jsonify({"states": states}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch map data: {str(e)}"}), 500
+
+
+@dashboard_bp.route("/alerts", methods=["GET"])
+@jwt_required()
+def get_repeat_offenders():
+    try:
+        user, error = require_officer_or_admin()
+        if error:
+            return error
+
+        limit = request.args.get("limit", 20, type=int)
+        limit = min(limit, 100)
+
+        gtin_rows = (
+            db.session.query(
+                Scan.gtin,
+                Scan.product_name,
+                Scan.manufacturer,
+                func.count(Scan.id).label("total_scans"),
+                func.sum(db.case((Scan.overall_status == "non_compliant", 1), else_=0)).label("fail_count"),
+                func.max(Scan.created_at).label("last_seen"),
+            )
+            .filter(Scan.gtin.isnot(None), Scan.gtin != "")
+            .group_by(Scan.gtin, Scan.product_name, Scan.manufacturer)
+            .having(func.count(Scan.id) > 1)
+            .order_by(db.desc("fail_count"))
+            .limit(limit)
+            .all()
+        )
+
+        alerts = []
+        for row in gtin_rows:
+            total = row.total_scans
+            fails = row.fail_count or 0
+            risk_score = min(100, int((fails / total) * 100)) if total > 0 else 0
+            alerts.append({
+                "gtin": row.gtin,
+                "product_name": row.product_name or "Unknown",
+                "manufacturer": row.manufacturer or "Unknown",
+                "total_scans": total,
+                "fail_count": fails,
+                "risk_score": risk_score,
+                "last_seen": row.last_seen.isoformat() if row.last_seen else None,
+            })
+
+        return jsonify({"alerts": alerts}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch alerts: {str(e)}"}), 500
