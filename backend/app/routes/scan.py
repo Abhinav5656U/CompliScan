@@ -7,6 +7,7 @@ from app import db
 from app.models import User, Scan
 from app.services.ocr_service import process_image_pipeline
 from app.services.validation_service import validate_compliance
+from app.services.field_extraction import extract_fields
 from app.services.mismatch_service import cross_check
 from app.services.report_service import generate_pdf_report
 
@@ -51,7 +52,7 @@ def upload_scan():
         file.save(filepath)
 
         pipeline_data = process_image_pipeline(filepath)
-        extracted_fields = {}
+        extracted_fields = extract_fields(pipeline_data)
         compliance_result = validate_compliance(pipeline_data, extracted_fields)
         ocr_text = pipeline_data.get("full_text", "")
         
@@ -139,6 +140,36 @@ def get_report(scan_id):
 
     except Exception as e:
         return jsonify({"error": f"Report generation failed: {str(e)}"}), 500
+
+
+@scan_bp.route("/<int:scan_id>/image", methods=["GET"])
+@jwt_required()
+def get_scan_image(scan_id):
+    """Serves the stored label image with the same access rules as get_scan."""
+    try:
+        user_id = int(get_jwt_identity())
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        scan = Scan.query.get(scan_id)
+        if not scan:
+            return jsonify({"error": "Scan not found"}), 404
+
+        if user.role not in ("admin", "officer") and scan.user_id != user_id:
+            return jsonify({"error": "Access denied"}), 403
+
+        image_path = scan.image_path
+        if not image_path or not os.path.exists(image_path):
+            return jsonify({"error": "Image not found"}), 404
+
+        return send_file(
+            image_path,
+            mimetype="image/jpeg",
+        )
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch image: {str(e)}"}), 500
 
 
 @scan_bp.route("/gtin/<string:gtin>/risk", methods=["GET"])

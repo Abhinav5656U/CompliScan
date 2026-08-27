@@ -78,9 +78,29 @@
       "citation": "Rule 6(1)(d)",
       "field": "any",
       "type": "regex",
-      "pattern": "(?i)(Country\\s*of\\s*Origin|Made\\s*in|Manufactured\\s*in|Product\\s*of)[\\s:]*([A-Za-z\\s]+)",
+      "pattern": "(?i)(Country\\s*of\\s*Origin|Made\\s*in|Manufactured\\s*in|Product\\s*of)[\\s:]+([A-Z][A-Za-z\\s]{1,30}?)(?=[,:;.]|\\s+(?:Mfg|Manufactured|Best|Exp|MRP|Net|Consumer|Helpline|Pack|For))",
       "error_msg": "Country of origin declaration not found on label.",
       "severity": "critical"
+    },
+    {
+      "id": "net_qty_font_size",
+      "name": "Net Quantity Font Legibility",
+      "citation": "Rule 7(1) & First Schedule",
+      "field": "net_qty_zone",
+      "type": "font_size_check",
+      "min_height_mm": 1.5,
+      "error_msg": "Net quantity must be printed in a legible type height of at least 1.5mm.",
+      "severity": "warning"
+    },
+    {
+      "id": "mrp_font_size",
+      "name": "MRP Font Legibility",
+      "citation": "Rule 7(1)(a) & First Schedule",
+      "field": "mrp_zone",
+      "type": "font_size_check",
+      "min_height_mm": 2.0,
+      "error_msg": "MRP must be printed in a legible type height of at least 2mm.",
+      "severity": "warning"
     }
   ]
 }

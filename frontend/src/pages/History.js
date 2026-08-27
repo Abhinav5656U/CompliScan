@@ -49,154 +49,156 @@ const History = () => {
 
   const getStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
-      case 'compliant': return 'bg-green-100 text-green-800';
-      case 'non_compliant': case 'non-compliant': return 'bg-red-100 text-red-800';
-      case 'partial': case 'partially_compliant': case 'partially-compliant': return 'bg-amber-100 text-amber-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'compliant': return 'border-2 border-seal-500 text-seal-600';
+      case 'non_compliant': case 'non-compliant': return 'border-2 border-stamp-500 text-stamp-600';
+      case 'partial': case 'partially_compliant': case 'partially-compliant': return 'border-2 border-seal-500/60 text-seal-600';
+      default: return 'border-2 border-ink/30 text-ink-500';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-parchment-200 ledger-paper flex items-center justify-center">
         <div className="flex flex-col items-center space-y-3">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-800"></div>
-          <p className="text-gray-500 text-sm">Loading history...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-seal-600"></div>
+          <p className="text-ink-500 text-sm">Loading register...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Scan History</h1>
-        <p className="text-gray-600 mt-1">Your previously uploaded scans</p>
-      </div>
+    <div className="min-h-screen bg-parchment-200 ledger-paper text-ink">
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="mb-8 border-b border-ink/10 pb-4">
+          <h1 className="text-3xl font-heading font-semibold text-ink tracking-tight">Scan History</h1>
+          <p className="text-ink-500 mt-1 text-sm">Your previously uploaded scans</p>
+        </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        {scans.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {scans.map((scan) => (
-                  <tr key={scan.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-2 text-sm text-gray-600">
-                        <FiClock className="h-4 w-4 text-gray-400" />
-                        <span>{new Date(scan.created_at || scan.timestamp).toLocaleString()}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {scan.product_name || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(scan.overall_status || scan.status)}`}>
-                        {(scan.overall_status || scan.status || 'unknown').replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-3">
-                        <Link
-                          to={`/scan/${scan.id}`}
-                          className="inline-flex items-center space-x-1 text-sm text-primary-800 hover:text-primary-600 font-medium transition-colors"
-                        >
-                          <FiEye className="h-4 w-4" />
-                          <span>View</span>
-                        </Link>
-                        <button
-                          onClick={() => setDeleteModal({ open: true, scan })}
-                          aria-label={`Delete scan ${scan.product_name || scan.id}`}
-                          className="inline-flex items-center space-x-1 text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
-                        >
-                          <FiTrash2 className="h-4 w-4" />
-                          <span>Delete</span>
-                        </button>
-                      </div>
-                    </td>
+        <div className="bg-parchment-100 border border-ink/10 shadow-ledger overflow-hidden">
+          {scans.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-parchment-200 border-b border-ink/10">
+                  <tr>
+                    <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-ink-400 uppercase tracking-[0.15em]">Date</th>
+                    <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-ink-400 uppercase tracking-[0.15em]">Product</th>
+                    <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-ink-400 uppercase tracking-[0.15em]">Status</th>
+                    <th className="text-left px-6 py-3 text-xs font-heading font-semibold text-ink-400 uppercase tracking-[0.15em]">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="p-12 text-center">
-            <FiFileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500 mb-4">No scan history yet</p>
-            <Link
-              to="/upload"
-              className="inline-flex items-center space-x-2 px-4 py-2 bg-primary-800 hover:bg-primary-900 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              <span>Start a scan</span>
-            </Link>
-          </div>
-        )}
+                </thead>
+                <tbody className="divide-y divide-ink/10">
+                  {scans.map((scan) => (
+                    <tr key={scan.id} className="bg-parchment-100 border border-ink/10 shadow-ledger ledger-rule-row hover:bg-parchment-200 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-2 text-sm text-ink-600">
+                          <FiClock className="h-4 w-4 text-ink-400" />
+                          <span className="font-body">{new Date(scan.created_at || scan.timestamp).toLocaleString()}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm font-medium font-heading text-ink">
+                        {scan.product_name || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`ledger-stamp rubber-stamp opacity-90 text-xs ${getStatusBadge(scan.overall_status || scan.status)}`}>
+                          {(scan.overall_status || scan.status || 'unknown').replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-3">
+                          <Link
+                            to={`/scan/${scan.id}`}
+                            className="inline-flex items-center space-x-1 text-sm font-heading font-medium text-primary-800 hover:text-seal-600 transition-colors"
+                          >
+                            <FiEye className="h-4 w-4" />
+                            <span>View</span>
+                          </Link>
+                          <button
+                            onClick={() => setDeleteModal({ open: true, scan })}
+                            aria-label={`Delete scan ${scan.product_name || scan.id}`}
+                            className="inline-flex items-center space-x-1 text-sm font-heading font-medium text-stamp-600 hover:text-stamp-700 transition-colors"
+                          >
+                            <FiTrash2 className="h-4 w-4" />
+                            <span>Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="p-12 m-4 text-center border-2 border-dashed border-seal-400">
+              <FiFileText className="h-12 w-12 text-ink-300 mx-auto mb-3" />
+              <p className="text-ink-300 mb-4">No scan history yet</p>
+              <Link
+                to="/upload"
+                className="inline-flex items-center space-x-2 px-4 py-2 bg-primary-800 hover:bg-primary-900 text-parchment-50 rounded shadow-stamp text-sm font-medium transition-colors"
+              >
+                <span>Start a scan</span>
+              </Link>
+            </div>
+          )}
 
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200">
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page <= 1}
-              className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <FiChevronLeft className="h-4 w-4" />
-              <span>Previous</span>
-            </button>
-            <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
-            <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page >= totalPages}
-              className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              <span>Next</span>
-              <FiChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        )}
-      </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-ink/10">
+              <button
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-ink-500 hover:text-primary-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <FiChevronLeft className="h-4 w-4" />
+                <span>Previous</span>
+              </button>
+              <span className="text-sm text-ink-500">Page {page} of {totalPages}</span>
+              <button
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-ink-500 hover:text-primary-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <span>Next</span>
+                <FiChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
 
       {deleteModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Delete Scan</h3>
-              <button
-                onClick={() => setDeleteModal({ open: false, scan: null })}
-                aria-label="Close delete confirmation"
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <FiX className="h-5 w-5" />
-              </button>
-            </div>
-            <p className="text-sm text-gray-600 mb-6">
-              Are you sure you want to delete this scan? This action cannot be undone.
-            </p>
-            <div className="flex items-center justify-end space-x-3">
-              <button
-                onClick={() => setDeleteModal({ open: false, scan: null })}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {deleting ? 'Deleting...' : 'Delete'}
-              </button>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-parchment-100 border border-ink/10 shadow-ledger w-full max-w-md mx-4 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-heading font-semibold text-ink">Delete Scan</h3>
+                <button
+                  onClick={() => setDeleteModal({ open: false, scan: null })}
+                  aria-label="Close delete confirmation"
+                  className="text-ink-400 hover:text-ink-600 transition-colors"
+                >
+                  <FiX className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-sm text-ink-600 mb-6">
+                Are you sure you want to delete this scan? This action cannot be undone.
+              </p>
+              <div className="flex items-center justify-end space-x-3">
+                <button
+                  onClick={() => setDeleteModal({ open: false, scan: null })}
+                  className="px-4 py-2 text-sm font-medium text-ink bg-parchment-200 hover:bg-parchment-300 rounded shadow-ledger transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="px-4 py-2 text-sm font-medium text-parchment-50 bg-stamp-600 hover:bg-stamp-700 rounded shadow-stamp transition-colors disabled:opacity-50"
+                >
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
