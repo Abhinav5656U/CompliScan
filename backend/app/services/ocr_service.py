@@ -24,9 +24,9 @@ def preprocess_image_for_ocr(image_path):
     cv2.imwrite(temp_path, denoised)
     return temp_path
 
-def extract_structured_data_gemini_vision(image_path):
+def extract_structured_data_gemini_vision(image_paths):
     """
-    Primary Multimodal extraction. Feeds the image directly to Gemini Flash.
+    Primary Multimodal extraction. Feeds all images directly to Gemini Flash.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -52,10 +52,10 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
 """
     try:
         import PIL.Image
-        img = PIL.Image.open(image_path)
+        imgs = [PIL.Image.open(p) for p in image_paths]
         try:
             model = genai.GenerativeModel("gemini-2.5-flash")
-            response = model.generate_content([prompt, img])
+            response = model.generate_content([prompt] + imgs)
         except Exception as e:
             raise e
                 
@@ -201,9 +201,9 @@ def detect_credit_card_reference(image_path):
             
     return None
 
-def process_image_pipeline(image_path):
+def process_image_pipeline(image_paths):
     # Try Gemini Vision First
-    llm_data = extract_structured_data_gemini_vision(image_path)
+    llm_data = extract_structured_data_gemini_vision(image_paths)
     
     if llm_data and "raw_text_detected" in llm_data:
         print("Successfully extracted using Gemini Vision!")
@@ -221,14 +221,17 @@ def process_image_pipeline(image_path):
         }
         
     print("Falling back to PaddleOCR pipeline...")
-    img = cv2.imread(image_path)
+    img = cv2.imread(image_paths[0])
     height, width = (0, 0)
     if img is not None:
         height, width, _ = img.shape
         
-    raw_data = extract_text(image_path)
-    zoned_data = assign_heuristic_zones(raw_data, height)
-    pixels_per_mm = detect_credit_card_reference(image_path)
+    all_raw_data = []
+    for path in image_paths:
+        all_raw_data.extend(extract_text(path))
+        
+    zoned_data = assign_heuristic_zones(all_raw_data, height)
+    pixels_per_mm = detect_credit_card_reference(image_paths[0])
     
     if pixels_per_mm:
         for item in zoned_data:
