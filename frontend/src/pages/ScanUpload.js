@@ -83,28 +83,40 @@ const BarcodeScanner = ({ onScan, onClose }) => {
 };
 
 const ScanUpload = () => {
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [previews, setPreviews] = useState([]);
   const [listingUrl, setListingUrl] = useState('');
   const [gtin, setGtin] = useState('');
   const [state, setState] = useState('');
   const [uploading, setUploading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
-  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleFile = (selectedFile) => {
-    if (!selectedFile) return;
-    if (!selectedFile.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
+  const handleFiles = (selectedFiles) => {
+    if (!selectedFiles || selectedFiles.length === 0) return;
+    
+    const newFiles = Array.from(selectedFiles).filter(f => f.type.startsWith('image/'));
+    if (newFiles.length === 0) {
+      toast.error('Please select image files only');
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFile(selectedFile);
-      setPreview(reader.result);
-    };
-    reader.readAsDataURL(selectedFile);
+    
+    setFiles(prev => [...prev, ...newFiles]);
+    
+    newFiles.forEach(f => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviews(prev => [...prev, reader.result]);
+      };
+      reader.readAsDataURL(f);
+    });
+  };
+
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleBarcodeScan = (decodedText) => {
@@ -114,15 +126,17 @@ const ScanUpload = () => {
   };
 
   const handleUpload = async () => {
-    if (!file) {
-      toast.error('Please select a label image');
+    if (files.length === 0) {
+      toast.error('Please select at least one label image');
       return;
     }
 
     setUploading(true);
     try {
       const formData = new FormData();
-      formData.append('image', file);
+      files.forEach(f => {
+        formData.append('images', f);
+      });
       if (listingUrl) formData.append('listing_url', listingUrl);
       if (gtin) formData.append('gtin', gtin);
       if (state) formData.append('state', state);
@@ -162,34 +176,55 @@ const ScanUpload = () => {
         <p className="text-gray-600 mb-6">Capture the product label clearly, including MRP, manufacturer details, and quantity.</p>
 
         <div className="space-y-6">
-          {!preview ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-primary-400 hover:bg-gray-50 transition-colors"
+              onClick={() => cameraInputRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-gray-50 transition-colors"
             >
-              <FiUpload className="h-10 w-10 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-900">Click to capture or upload</p>
-              <p className="text-sm text-gray-500 mt-1">PNG, JPG, TIFF, BMP, or WebP</p>
+              <FiCamera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-md font-medium text-gray-900">Take Photo</p>
               <input
-                ref={fileInputRef}
+                ref={cameraInputRef}
                 type="file"
                 accept="image/*"
                 capture="environment"
-                onChange={(e) => handleFile(e.target.files[0])}
+                onChange={(e) => handleFiles(e.target.files)}
                 className="hidden"
               />
             </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="relative">
-                <img src={preview} alt="Label preview" className="w-full max-h-96 object-contain rounded-xl border border-gray-200" />
-                <button
-                  onClick={() => { setFile(null); setPreview(null); }}
-                  aria-label="Remove image"
-                  className="absolute top-3 right-3 bg-white hover:bg-red-50 rounded-full p-2 shadow-md text-red-500"
-                >
-                  <FiX size={20} />
-                </button>
+            <div
+              onClick={() => galleryInputRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-gray-50 transition-colors"
+            >
+              <FiUpload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-md font-medium text-gray-900">Upload Files</p>
+              <input
+                ref={galleryInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => handleFiles(e.target.files)}
+                className="hidden"
+              />
+            </div>
+          </div>
+
+          {previews.length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-3">Selected Images ({previews.length})</h3>
+              <div className="flex space-x-4 overflow-x-auto pb-4 snap-x">
+                {previews.map((preview, index) => (
+                  <div key={index} className="relative flex-none snap-start">
+                    <img src={preview} alt={`Preview ${index}`} className="w-32 h-32 object-cover rounded-xl border border-gray-200" />
+                    <button
+                      onClick={() => removeFile(index)}
+                      aria-label="Remove image"
+                      className="absolute top-1 right-1 bg-white hover:bg-red-50 rounded-full p-1.5 shadow-md text-red-500"
+                    >
+                      <FiX size={14} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -253,7 +288,7 @@ const ScanUpload = () => {
 
           <button
             onClick={handleUpload}
-            disabled={uploading || !file}
+            disabled={uploading || files.length === 0}
             className="w-full flex justify-center items-center py-4 bg-primary-800 hover:bg-primary-900 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
           >
             {uploading ? 'Analyzing and Verifying...' : 'Submit for AI Verification'}
