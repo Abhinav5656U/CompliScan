@@ -129,7 +129,7 @@ def get_report(scan_id):
             return jsonify({"error": "Failed to generate report"}), 500
 
         return send_file(
-            report_path,
+            os.path.abspath(report_path),
             mimetype="application/pdf",
             as_attachment=True,
             download_name=f"compliscan_report_{scan_id}.pdf",

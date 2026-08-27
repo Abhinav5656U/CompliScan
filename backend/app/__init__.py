@@ -23,7 +23,9 @@ def create_app(config_name=None):
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
-    app.config["UPLOAD_FOLDER"] = os.getenv("UPLOAD_FOLDER", "./uploads")
+    
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "uploads")
     app.config["MAX_CONTENT_LENGTH"] = int(
         os.getenv("MAX_CONTENT_LENGTH", 16 * 1024 * 1024)
     )

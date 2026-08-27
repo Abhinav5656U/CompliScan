@@ -38,13 +38,13 @@ const Dashboard = () => {
       const params = new URLSearchParams({ page: page.toString() });
       if (filters.status) params.append('status', filters.status);
       if (filters.manufacturer) params.append('manufacturer', filters.manufacturer);
-      if (filters.start_date) params.append('start_date', filters.start_date);
-      if (filters.end_date) params.append('end_date', filters.end_date);
+      if (filters.start_date) params.append('date_from', filters.start_date);
+      if (filters.end_date) params.append('date_to', filters.end_date);
 
       const response = await api.get(`/dashboard/scans?${params.toString()}`);
       const data = response.data;
       setScans(data.scans || data.items || data.results || []);
-      setTotalPages(data.total_pages || data.pages || Math.ceil((data.total || 0) / 10) || 1);
+      setTotalPages(data.pagination?.total_pages || data.total_pages || data.pages || Math.ceil((data.total || 0) / 10) || 1);
     } catch (err) {
       toast.error('Failed to load scans');
     }
@@ -69,6 +69,7 @@ const Dashboard = () => {
       case 'compliant': return 'bg-green-100 text-green-800';
       case 'non_compliant': case 'non-compliant': return 'bg-red-100 text-red-800';
       case 'partial': case 'partially_compliant': case 'partially-compliant': return 'bg-amber-100 text-amber-800';
+      case 'manual_review': case 'review_required': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -119,6 +120,13 @@ const Dashboard = () => {
       color: 'bg-amber-50 text-amber-600',
       iconBg: 'bg-amber-100',
     },
+    {
+      label: 'Manual Review',
+      value: stats?.manual_review ?? 0,
+      icon: FiEye,
+      color: 'bg-purple-50 text-purple-600',
+      iconBg: 'bg-purple-100',
+    },
   ];
 
   if (loading) {
@@ -139,7 +147,7 @@ const Dashboard = () => {
         <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
@@ -164,13 +172,14 @@ const Dashboard = () => {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={complianceTrendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
               <Legend />
               <Line type="monotone" dataKey="compliant" stroke="#22c55e" strokeWidth={2} name="Compliant" />
               <Line type="monotone" dataKey="non_compliant" stroke="#ef4444" strokeWidth={2} name="Non-Compliant" />
               <Line type="monotone" dataKey="partial" stroke="#f59e0b" strokeWidth={2} name="Partial" />
+              <Line type="monotone" dataKey="manual_review" stroke="#a855f7" strokeWidth={2} name="Review" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -203,6 +212,7 @@ const Dashboard = () => {
                 <option value="compliant">Compliant</option>
                 <option value="non_compliant">Non-Compliant</option>
                 <option value="partial">Partially Compliant</option>
+                <option value="manual_review">Manual Review</option>
               </select>
               <input
                 type="text"

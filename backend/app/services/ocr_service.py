@@ -1,76 +1,185 @@
 import re
 import cv2
 import numpy as np
-
-_easyocr_reader = None
+import os
+import json
+import google.generativeai as genai
 
 def _get_reader():
-    global _easyocr_reader
-    if _easyocr_reader is None:
-        import easyocr
-        import torch
-        torch.set_num_threads(1)
-        _easyocr_reader = easyocr.Reader(["en"], gpu=False, quantize=False)
-    return _easyocr_reader
+    pass
 
+def preprocess_image_for_ocr(image_path):
+    img = cv2.imread(image_path)
+    if img is None:
+        return image_path
+        
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    enhanced = clahe.apply(gray)
+    denoised = cv2.fastNlMeansDenoising(enhanced, None, h=10, searchWindowSize=21, templateWindowSize=7)
+    
+    import tempfile
+    fd, temp_path = tempfile.mkstemp(suffix=".jpg")
+    os.close(fd)
+    cv2.imwrite(temp_path, denoised)
+    return temp_path
+
+def extract_structured_data_gemini_vision(image_path):
+    """
+    Primary Multimodal extraction. Feeds the image directly to Gemini Flash.
+    """
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        print("WARNING: GEMINI_API_KEY not found. Skipping Gemini Vision.")
+        return None
+        
+    genai.configure(api_key=api_key)
+    
+    prompt = """
+You are a compliance extraction AI. Given this product packaging image, extract the required compliance fields.
+If a field is not found, leave it as null.
+Also, accurately transcribe ALL text you see on the packaging into the 'raw_text_detected' field so we can run compliance regex checks on it.
+Provide a 'confidence_score' from 0 to 100 representing how confident you are in the extracted values.
+
+Return ONLY valid JSON matching this schema, without any markdown formatting:
+{
+  "raw_text_detected": "string containing all visible text",
+  "mrp": "string or null",
+  "manufacturer": "string or null",
+  "net_quantity": "string or null",
+  "confidence_score": integer
+}
+"""
+    try:
+        import PIL.Image
+        img = PIL.Image.open(image_path)
+        try:
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content([prompt, img])
+        except Exception as e:
+            if "404" in str(e):
+                model = genai.GenerativeModel("gemini-pro-vision")
+                response = model.generate_content([prompt, img])
+            else:
+                raise e
+                
+        text = response.text.strip()
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        return json.loads(text.strip())
+    except Exception as e:
+        print(f"Gemini Vision Error: {e}")
+        return None
 
 def extract_text(image_path):
-    """
-    Unified OCR interface. Currently uses EasyOCR, but can be swapped to PaddleOCR easily.
-    Returns: list of dicts with text, bbox, confidence, and zone
-    """
+    temp_path = None
     try:
-        reader = _get_reader()
-        results = reader.readtext(image_path)
+        temp_path = preprocess_image_for_ocr(image_path)
+        
+        if not hasattr(np, 'long'):
+            np.long = np.int64
+        if not hasattr(np, 'ulong'):
+            np.ulong = np.uint64
+            
+        from paddleocr import PaddleOCR
+        ocr = PaddleOCR(use_textline_orientation=True, lang='en')
+        result = ocr.ocr(temp_path)
         extracted = []
-        for bbox, text, prob in results:
-            if not text:
-                continue
-            # Convert numpy types to python native for JSON serialization
-            clean_bbox = [[float(c) for c in pt] for pt in bbox]
-            extracted.append({
-                "text": text,
-                "bbox": clean_bbox,
-                "confidence": float(prob),
-                "zone": "unknown"
-            })
+        
+        if result and result[0]:
+            for line in result[0]:
+                bbox = line[0]
+                text_info = line[1]
+                word_text = text_info[0]
+                prob = text_info[1]
+                
+                extracted.append({
+                    "text": word_text,
+                    "bbox": bbox,
+                    "confidence": float(prob),
+                    "zone": "unknown"
+                })
         return extracted
     except Exception as e:
-        print(f"OCR Error: {e}")
+        print(f"PaddleOCR Error: {e}")
         return []
+    finally:
+        if temp_path and temp_path != image_path:
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+
+def extract_structured_data_llm(ocr_text):
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return {"confidence_score": 0}
+        
+    genai.configure(api_key=api_key)
+    
+    prompt = f"""
+You are a compliance extraction AI. Given the following raw OCR text from a product packaging, extract the required compliance fields.
+If a field is not found, leave it as null.
+Provide a 'confidence_score' from 0 to 100.
+
+Raw OCR Text:
+{ocr_text}
+
+Return ONLY valid JSON matching this schema, without any markdown formatting:
+{{
+  "mrp": "string or null",
+  "manufacturer": "string or null",
+  "net_quantity": "string or null",
+  "confidence_score": integer
+}}
+"""
+    try:
+        try:
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+        except Exception as e:
+            if "404" in str(e):
+                model = genai.GenerativeModel("gemini-pro")
+                response = model.generate_content(prompt)
+            else:
+                raise e
+                
+        text = response.text.strip()
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+        return json.loads(text.strip())
+    except Exception as e:
+        print(f"Gemini LLM Error: {e}")
+        return {"confidence_score": 0}
 
 def assign_heuristic_zones(extracted_data, image_height):
-    """
-    Assigns 'zone' to extracted text blocks based on heuristics.
-    """
     for item in extracted_data:
         text = item["text"].lower()
         y_coords = [p[1] for p in item["bbox"]]
         center_y = sum(y_coords) / len(y_coords)
 
-        # MRP Zone heuristic
         if "mrp" in text or "₹" in text or "rs" in text or "price" in text:
             item["zone"] = "mrp_zone"
-        # Consumer Care heuristic (usually bottom third)
         elif "care" in text or "helpline" in text or "email" in text or "contact" in text:
             item["zone"] = "consumer_care_zone"
         elif center_y > image_height * 0.7:
              if item["zone"] == "unknown":
                  item["zone"] = "bottom_panel"
-        # Manufacturer
         elif "mfg" in text or "manufactured" in text or "marketed" in text:
             item["zone"] = "manufacturer_zone"
-        # Net Quantity
         elif "net" in text or "qty" in text or "weight" in text:
             item["zone"] = "net_qty_zone"
-
     return extracted_data
 
 def detect_credit_card_reference(image_path):
-    """
-    Detects a standard credit card (ISO 7810 ID-1: 85.6x53.98mm, aspect ratio ~1.586)
-    Returns: pixels_per_mm or None
-    """
     img = cv2.imread(image_path)
     if img is None:
         return None
@@ -92,7 +201,6 @@ def detect_credit_card_reference(image_path):
         ratio = max(w, h) / min(w, h)
         
         if abs(ratio - target_ratio) <= tolerance:
-            # The shorter side is 53.98mm, longer is 85.6mm
             if w > h:
                 pixels_per_mm = w / 85.6
             else:
@@ -102,9 +210,25 @@ def detect_credit_card_reference(image_path):
     return None
 
 def process_image_pipeline(image_path):
-    """
-    Main pipeline to run OCR, apply heuristics, and find calibration.
-    """
+    # Try Gemini Vision First
+    llm_data = extract_structured_data_gemini_vision(image_path)
+    
+    if llm_data and "raw_text_detected" in llm_data:
+        print("Successfully extracted using Gemini Vision!")
+        zoned_data = [{
+            "text": llm_data["raw_text_detected"],
+            "bbox": [[0,0],[100,0],[100,100],[0,100]],
+            "confidence": 1.0,
+            "zone": "any"
+        }]
+        return {
+            "calibrated_pixels_per_mm": None,
+            "extracted_data": zoned_data,
+            "full_text": llm_data["raw_text_detected"],
+            "llm_extracted_data": llm_data
+        }
+        
+    print("Falling back to PaddleOCR pipeline...")
     img = cv2.imread(image_path)
     height, width = (0, 0)
     if img is not None:
@@ -114,18 +238,38 @@ def process_image_pipeline(image_path):
     zoned_data = assign_heuristic_zones(raw_data, height)
     pixels_per_mm = detect_credit_card_reference(image_path)
     
-    # Calculate physical heights if calibration found
     if pixels_per_mm:
         for item in zoned_data:
             y_coords = [p[1] for p in item["bbox"]]
             pixel_height = max(y_coords) - min(y_coords)
             item["physical_height_mm"] = float(pixel_height / pixels_per_mm)
             
-    # Combine text for backward compatibility during transition
-    full_text = " ".join([item["text"] for item in zoned_data])
+    sorted_data = sorted(zoned_data, key=lambda item: sum(p[1] for p in item["bbox"])/4.0)
+    lines = []
+    current_line = []
+    last_y = -1
+    
+    for item in sorted_data:
+        y_center = sum(p[1] for p in item["bbox"])/4.0
+        if last_y != -1 and abs(y_center - last_y) < 15:
+            current_line.append(item)
+        else:
+            if current_line:
+                current_line.sort(key=lambda i: sum(p[0] for p in i["bbox"])/4.0)
+                lines.append(" ".join(i["text"] for i in current_line))
+            current_line = [item]
+            last_y = y_center
+            
+    if current_line:
+        current_line.sort(key=lambda i: sum(p[0] for p in i["bbox"])/4.0)
+        lines.append(" ".join(i["text"] for i in current_line))
+        
+    full_text = "\n".join(lines)
+    llm_extracted_data = extract_structured_data_llm(full_text)
     
     return {
         "calibrated_pixels_per_mm": float(pixels_per_mm) if pixels_per_mm else None,
         "extracted_data": zoned_data,
-        "full_text": full_text
+        "full_text": full_text,
+        "llm_extracted_data": llm_extracted_data
     }

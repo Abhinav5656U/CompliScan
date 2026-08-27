@@ -30,6 +30,7 @@ def get_stats():
         compliant = Scan.query.filter_by(overall_status="compliant").count()
         non_compliant = Scan.query.filter_by(overall_status="non_compliant").count()
         partially_compliant = Scan.query.filter_by(overall_status="partially_compliant").count()
+        manual_review = Scan.query.filter_by(overall_status="manual_review").count()
 
         seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
         recent_scans = (
@@ -39,17 +40,23 @@ def get_stats():
             .all()
         )
 
-        scans_per_day = []
+        compliance_trend = []
         for i in range(6, -1, -1):
             day = datetime.now(timezone.utc).date() - timedelta(days=i)
             day_start = datetime.combine(day, datetime.min.time()).replace(tzinfo=timezone.utc)
             day_end = day_start + timedelta(days=1)
-            count = Scan.query.filter(
-                Scan.created_at >= day_start, Scan.created_at < day_end
-            ).count()
-            scans_per_day.append({
-                "date": day.isoformat(),
-                "count": count,
+            
+            compliant_c = Scan.query.filter(Scan.created_at >= day_start, Scan.created_at < day_end, Scan.overall_status == 'compliant').count()
+            non_c = Scan.query.filter(Scan.created_at >= day_start, Scan.created_at < day_end, Scan.overall_status == 'non_compliant').count()
+            partial_c = Scan.query.filter(Scan.created_at >= day_start, Scan.created_at < day_end, Scan.overall_status == 'partially_compliant').count()
+            review_c = Scan.query.filter(Scan.created_at >= day_start, Scan.created_at < day_end, Scan.overall_status == 'manual_review').count()
+            
+            compliance_trend.append({
+                "date": day.strftime("%b %d"),
+                "compliant": compliant_c,
+                "non_compliant": non_c,
+                "partial": partial_c,
+                "manual_review": review_c
             })
 
         violation_rows = (
@@ -72,19 +79,18 @@ def get_stats():
             violation_counts.items(), key=lambda x: x[1], reverse=True
         )[:10]
         top_violations_list = [
-            {"rule": rule, "count": count} for rule, count in top_violations
+            {"type": rule, "count": count} for rule, count in top_violations
         ]
 
         return jsonify({
-            "stats": {
-                "total_scans": total_scans,
-                "compliant": compliant,
-                "non_compliant": non_compliant,
-                "partially_compliant": partially_compliant,
-                "recent_scans": [s.to_dict() for s in recent_scans],
-                "scans_per_day": scans_per_day,
-                "top_violations": top_violations_list,
-            }
+            "total_scans": total_scans,
+            "compliant": compliant,
+            "non_compliant": non_compliant,
+            "partial": partially_compliant,
+            "manual_review": manual_review,
+            "recent_scans": [s.to_dict() for s in recent_scans],
+            "compliance_trend": compliance_trend,
+            "violations_by_type": top_violations_list,
         }), 200
 
     except Exception as e:
