@@ -1,109 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { FiAlertTriangle, FiShield, FiSearch, FiMapPin, FiTrendingUp, FiClock } from 'react-icons/fi';
+import { FiAlertTriangle, FiShield, FiSearch, FiMapPin } from 'react-icons/fi';
 import api from '../utils/api';
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
+import indiaGeo from '../data/india.topo.json';
 
-const INDIA_STATES = {
-  'Jammu & Kashmir': { x: 295, y: 52 },
-  'Himachal Pradesh': { x: 275, y: 82 },
-  'Punjab': { x: 250, y: 90 },
-  'Uttarakhand': { x: 305, y: 90 },
-  'Haryana': { x: 275, y: 118 },
-  'Delhi': { x: 295, y: 128 },
-  'Chandigarh': { x: 265, y: 100 },
-  'Rajasthan': { x: 210, y: 180 },
-  'Uttar Pradesh': { x: 330, y: 165 },
-  'Bihar': { x: 395, y: 175 },
-  'Jharkhand': { x: 410, y: 210 },
-  'Chhattisgarh': { x: 380, y: 250 },
-  'Madhya Pradesh': { x: 300, y: 230 },
-  'Gujarat': { x: 155, y: 240 },
-  'Maharashtra': { x: 230, y: 310 },
-  'Goa': { x: 200, y: 360 },
-  'Karnataka': { x: 235, y: 390 },
-  'Telangana': { x: 310, y: 360 },
-  'Andhra Pradesh': { x: 340, y: 395 },
-  'Odisha': { x: 410, y: 285 },
-  'West Bengal': { x: 435, y: 240 },
-  'Sikkim': { x: 440, y: 200 },
-  'Assam': { x: 490, y: 205 },
-  'Arunachal Pradesh': { x: 520, y: 180 },
-  'Nagaland': { x: 540, y: 205 },
-  'Manipur': { x: 540, y: 230 },
-  'Mizoram': { x: 525, y: 260 },
-  'Tripura': { x: 500, y: 265 },
-  'Meghalaya': { x: 495, y: 235 },
-  'Kerala': { x: 255, y: 460 },
-  'Tamil Nadu': { x: 310, y: 450 },
-  'Puducherry': { x: 320, y: 425 },
+const normalizeName = (name) => {
+  if (!name) return "";
+  const n = name.toLowerCase().replace(/&/g, 'and').replace(/[^a-z]/g, '');
+  if (n.includes('delhi')) return 'delhi';
+  if (n.includes('arunanchal') || n.includes('arunachal')) return 'arunachalpradesh';
+  if (n.includes('kashmir')) return 'jammuandkashmir';
+  if (n.includes('odisha') || n.includes('orissa')) return 'odisha';
+  return n;
 };
 
 const getRiskColor = (rate) => {
-  if (rate >= 50) return { fill: '#dc2626', bg: 'bg-red-500', text: 'text-red-700', label: 'Critical' };
-  if (rate >= 25) return { fill: '#ea580c', bg: 'bg-orange-500', text: 'text-orange-700', label: 'High' };
-  if (rate >= 10) return { fill: '#ca8a04', bg: 'bg-yellow-500', text: 'text-yellow-700', label: 'Moderate' };
-  return { fill: '#16a34a', bg: 'bg-green-500', text: 'text-green-700', label: 'Low' };
+  if (rate >= 50) return { fill: '#dc2626', hover: '#b91c1c', bg: 'bg-red-500', text: 'text-red-700', label: 'Critical' };
+  if (rate >= 25) return { fill: '#ea580c', hover: '#c2410c', bg: 'bg-orange-500', text: 'text-orange-700', label: 'High' };
+  if (rate >= 10) return { fill: '#ca8a04', hover: '#a16207', bg: 'bg-yellow-500', text: 'text-yellow-700', label: 'Moderate' };
+  return { fill: '#16a34a', hover: '#15803d', bg: 'bg-green-500', text: 'text-green-700', label: 'Low' };
 };
 
-const getRadius = (total) => {
-  const min = 5, max = 18;
-  const norm = Math.min(total / 20, 1);
-  return min + norm * (max - min);
-};
-
-const StateBubble = ({ state, data, onHover }) => {
-  const pos = INDIA_STATES[state];
-  if (!pos) return null;
-  const risk = getRiskColor(data.violation_rate);
-  const r = getRadius(data.total);
-
+const MapTooltip = ({ info, pos }) => {
+  if (!info || !pos) return null;
+  const risk = info.data ? getRiskColor(info.data.violation_rate) : null;
+  
   return (
-    <g
-      onMouseEnter={() => onHover({ state, ...data })}
-      onMouseLeave={() => onHover(null)}
-      className="cursor-pointer"
+    <div 
+      className="fixed bg-white rounded-xl shadow-2xl border border-gray-200 p-4 w-64 z-50 pointer-events-none transform -translate-x-1/2 -translate-y-full mt-[-15px]"
+      style={{ left: pos.x, top: pos.y }}
     >
-      <circle cx={pos.x} cy={pos.y} r={r + 3} fill={risk.fill} opacity={0.18} />
-      <circle cx={pos.x} cy={pos.y} r={r} fill={risk.fill} opacity={0.85} stroke="#fff" strokeWidth={1.2} />
-      {r >= 10 && (
-        <text x={pos.x} y={pos.y + 1} textAnchor="middle" dominantBaseline="central" fill="#fff" fontSize={9} fontWeight={700}>
-          {data.total}
-        </text>
+      <div className="flex items-center space-x-2 border-b border-gray-100 pb-3 mb-3">
+        <FiMapPin className="h-4 w-4 text-primary-600" />
+        <h3 className="font-bold text-gray-900">{info.name}</h3>
+      </div>
+      
+      {info.data ? (
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">Total Scans</span>
+            <span className="text-sm font-bold text-gray-900">{info.data.total}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">Non-Compliant</span>
+            <span className="text-sm font-bold text-red-600">{info.data.non_compliant}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">Risk Level</span>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full text-white ${risk.bg}`}>
+              {info.data.violation_rate}% {risk.label}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-2 text-gray-500 text-sm italic">
+          No scan data available
+        </div>
       )}
-    </g>
-  );
-};
-
-const MapTooltip = ({ info }) => {
-  if (!info) return null;
-  const risk = getRiskColor(info.violation_rate);
-  return (
-    <div className="absolute top-4 right-4 bg-white rounded-xl shadow-xl border border-gray-200 p-4 w-64 z-10 pointer-events-none">
-      <div className="flex items-center space-x-2 mb-2">
-        <FiMapPin className={`h-4 w-4 ${risk.text}`} />
-        <span className="font-bold text-gray-900 text-sm">{info.state}</span>
-      </div>
-      <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-gray-500">Total Scans</p>
-          <p className="font-bold text-gray-900 text-lg">{info.total}</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-gray-500">Compliant</p>
-          <p className="font-bold text-green-600 text-lg">{info.compliant}</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-gray-500">Non-Compliant</p>
-          <p className="font-bold text-red-600 text-lg">{info.non_compliant}</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-2">
-          <p className="text-gray-500">Violation Rate</p>
-          <p className={`font-bold text-lg ${risk.text}`}>{info.violation_rate}%</p>
-        </div>
-      </div>
-      <div className="mt-2 flex items-center space-x-1.5">
-        <span className={`w-2.5 h-2.5 rounded-full ${risk.bg}`} />
-        <span className="text-xs font-medium text-gray-600">{risk.label} Risk</span>
-      </div>
     </div>
   );
 };
@@ -111,15 +64,15 @@ const MapTooltip = ({ info }) => {
 const AlertRow = ({ alert, index }) => {
   const risk = getRiskColor(alert.risk_score);
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
-      <td className="px-4 py-3">
+    <tr className="hover:bg-gray-50/50 transition-colors duration-150">
+      <td className="px-4 py-4">
         <div className="flex items-center space-x-3">
-          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-bold flex items-center justify-center">
-            {index + 1}
-          </span>
+          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+            <span className="text-red-700 font-bold text-sm">#{index + 1}</span>
+          </div>
           <div>
-            <p className="font-medium text-gray-900 text-sm">{alert.product_name}</p>
-            <p className="text-xs text-gray-500 font-mono">GTIN: {alert.gtin}</p>
+            <p className="text-sm font-bold text-gray-900">{alert.product_name}</p>
+            <p className="text-xs text-gray-500 font-mono mt-0.5">{alert.gtin}</p>
           </div>
         </div>
       </td>
@@ -145,7 +98,8 @@ const AlertRow = ({ alert, index }) => {
 const IndiaMap = () => {
   const [mapData, setMapData] = useState([]);
   const [alerts, setAlerts] = useState([]);
-  const [hoveredState, setHoveredState] = useState(null);
+  const [tooltipContent, setTooltipContent] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -168,7 +122,9 @@ const IndiaMap = () => {
   }, []);
 
   const stateDataMap = {};
-  mapData.forEach((s) => { stateDataMap[s.state] = s; });
+  mapData.forEach((s) => { 
+    stateDataMap[normalizeName(s.state)] = s; 
+  });
 
   const totalScans = mapData.reduce((sum, s) => sum + s.total, 0);
   const totalNonCompliant = mapData.reduce((sum, s) => sum + s.non_compliant, 0);
@@ -196,70 +152,122 @@ const IndiaMap = () => {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 font-heading">National Scan Intelligence</h1>
-        <p className="text-gray-600 mt-1">Geographic distribution of product scans and repeat-offender alerts.</p>
+        <p className="text-gray-600 mt-1">Geographic choropleth distribution of product scans and repeat-offender alerts.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center space-x-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md transition-shadow">
           <div className="bg-primary-100 rounded-xl p-3"><FiSearch className="h-6 w-6 text-primary-800" /></div>
           <div><p className="text-2xl font-bold text-gray-900">{totalScans}</p><p className="text-sm text-gray-500">Total Scans</p></div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center space-x-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md transition-shadow">
           <div className="bg-red-100 rounded-xl p-3"><FiAlertTriangle className="h-6 w-6 text-red-600" /></div>
           <div><p className="text-2xl font-bold text-gray-900">{totalNonCompliant}</p><p className="text-sm text-gray-500">Non-Compliant</p></div>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center space-x-4">
+        <div className="bg-white rounded-xl border border-gray-200 p-5 flex items-center space-x-4 shadow-sm hover:shadow-md transition-shadow">
           <div className="bg-green-100 rounded-xl p-3"><FiMapPin className="h-6 w-6 text-green-600" /></div>
           <div><p className="text-2xl font-bold text-gray-900">{statesCovered}</p><p className="text-sm text-gray-500">States Covered</p></div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 relative">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 relative shadow-sm">
         <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center space-x-2">
           <FiMapPin className="h-5 w-5 text-primary-800" />
           <span>Scan Density by State</span>
         </h2>
 
-        <MapTooltip info={hoveredState} />
+        <MapTooltip info={tooltipContent} pos={tooltipPos} />
 
-        {mapData.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <FiMapPin className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p>No state-level scan data yet. Upload scans with a state field to populate this map.</p>
-          </div>
-        ) : (
-          <div className="flex justify-center overflow-x-auto">
-            <svg viewBox="80 20 500 480" className="w-full max-w-2xl" style={{ minHeight: 360 }}>
-              <rect x="80" y="20" width="500" height="480" fill="#f8fafc" rx="12" />
-              {Object.entries(INDIA_STATES).map(([state]) => {
-                const data = stateDataMap[state];
-                if (!data) return null;
-                return <StateBubble key={state} state={state} data={data} onHover={setHoveredState} />;
-              })}
-            </svg>
-          </div>
-        )}
+        <div className="flex justify-center bg-[#f8fafc] rounded-xl border border-gray-100 p-4 relative" style={{ overflow: "hidden" }}>
+            <ComposableMap 
+              projection="geoMercator"
+              projectionConfig={{
+                scale: 1000,
+                center: [82.8, 22.5]
+              }}
+              width={800}
+              height={600}
+              style={{ width: "100%", height: "auto", maxHeight: "600px" }}
+            >
+              <Geographies geography={indiaGeo}>
+                {({ geographies }) =>
+                  geographies.map((geo) => {
+                    const stateName = geo.properties.name || "Unknown";
+                    const data = stateDataMap[normalizeName(stateName)];
+                    
+                    let fillStyle = "#e2e8f0";
+                    let hoverFillStyle = "#cbd5e1";
+                    
+                    if (data) {
+                      const colors = getRiskColor(data.violation_rate);
+                      fillStyle = colors.fill;
+                      hoverFillStyle = colors.hover;
+                    }
+                    
+                    return (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        onMouseEnter={(e) => {
+                          setTooltipContent({
+                            name: stateName,
+                            data: data,
+                          });
+                          setTooltipPos({ x: e.clientX, y: e.clientY });
+                        }}
+                        onMouseMove={(e) => {
+                          setTooltipPos({ x: e.clientX, y: e.clientY });
+                        }}
+                        onMouseLeave={() => {
+                          setTooltipContent(null);
+                        }}
+                        style={{
+                          default: {
+                            fill: fillStyle,
+                            stroke: "#ffffff",
+                            strokeWidth: 0.75,
+                            outline: "none"
+                          },
+                          hover: {
+                            fill: hoverFillStyle,
+                            stroke: "#ffffff",
+                            strokeWidth: 1.5,
+                            outline: "none",
+                            cursor: "pointer"
+                          },
+                          pressed: {
+                            fill: hoverFillStyle,
+                            outline: "none"
+                          }
+                        }}
+                      />
+                    );
+                  })
+                }
+              </Geographies>
+            </ComposableMap>
+        </div>
 
-        <div className="flex flex-wrap justify-center gap-4 mt-4 text-xs text-gray-600">
+        <div className="flex flex-wrap justify-center gap-6 mt-6 text-sm text-gray-700 font-medium">
+          <div className="flex items-center space-x-2">
+            <span className="w-4 h-4 rounded-md shadow-sm bg-[#e2e8f0] border border-gray-300" />
+            <span>No Data</span>
+          </div>
           {[
-            { color: 'bg-green-500', label: 'Low (<10%)' },
-            { color: 'bg-yellow-500', label: 'Moderate (10-25%)' },
-            { color: 'bg-orange-500', label: 'High (25-50%)' },
-            { color: 'bg-red-500', label: 'Critical (50%+)' },
+            { color: 'bg-green-500', label: 'Low Risk (<10%)' },
+            { color: 'bg-yellow-500', label: 'Moderate Risk (10-25%)' },
+            { color: 'bg-orange-500', label: 'High Risk (25-50%)' },
+            { color: 'bg-red-500', label: 'Critical Risk (50%+)' },
           ].map((item) => (
-            <div key={item.label} className="flex items-center space-x-1.5">
-              <span className={`w-3 h-3 rounded-full ${item.color}`} />
+            <div key={item.label} className="flex items-center space-x-2">
+              <span className={`w-4 h-4 rounded-md shadow-sm ${item.color}`} />
               <span>{item.label}</span>
             </div>
           ))}
-          <div className="flex items-center space-x-1.5">
-            <span className="w-3 h-3 rounded-full bg-gray-300" />
-            <span>Bubble size = scan count</span>
-          </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
         <div className="p-6 border-b border-gray-100">
           <h2 className="text-lg font-bold text-gray-900 flex items-center space-x-2">
             <FiAlertTriangle className="h-5 w-5 text-red-500" />
@@ -271,7 +279,7 @@ const IndiaMap = () => {
         {alerts.length === 0 ? (
           <div className="p-12 text-center text-gray-400">
             <FiShield className="h-12 w-12 mx-auto mb-3 opacity-40" />
-            <p className="font-medium">No repeat offenders detected</p>
+            <p className="font-medium text-gray-500">No repeat offenders detected</p>
             <p className="text-sm mt-1">Products scanned multiple times will appear here.</p>
           </div>
         ) : (
@@ -279,12 +287,12 @@ const IndiaMap = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Product / GTIN</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Manufacturer</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Scans</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Fails</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase">Risk</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Last Seen</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Product / GTIN</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Manufacturer</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Scans</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Fails</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Risk</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Seen</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">

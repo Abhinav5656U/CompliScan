@@ -54,14 +54,10 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
         import PIL.Image
         img = PIL.Image.open(image_path)
         try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             response = model.generate_content([prompt, img])
         except Exception as e:
-            if "404" in str(e):
-                model = genai.GenerativeModel("gemini-pro-vision")
-                response = model.generate_content([prompt, img])
-            else:
-                raise e
+            raise e
                 
         text = response.text.strip()
         if text.startswith("```json"):
@@ -86,7 +82,7 @@ def extract_text(image_path):
             np.ulong = np.uint64
             
         from paddleocr import PaddleOCR
-        ocr = PaddleOCR(use_textline_orientation=True, lang='en,hi')
+        ocr = PaddleOCR(use_textline_orientation=True, lang='devanagari')
         result = ocr.ocr(temp_path)
         extracted = []
         
@@ -139,14 +135,10 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
 """
     try:
         try:
-            model = genai.GenerativeModel("gemini-1.5-flash")
+            model = genai.GenerativeModel("gemini-2.5-flash")
             response = model.generate_content(prompt)
         except Exception as e:
-            if "404" in str(e):
-                model = genai.GenerativeModel("gemini-pro")
-                response = model.generate_content(prompt)
-            else:
-                raise e
+            raise e
                 
         text = response.text.strip()
         if text.startswith("```json"):
