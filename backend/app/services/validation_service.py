@@ -89,6 +89,10 @@ def validate_compliance(pipeline_data, extracted_fields=None):
                     extracted_fields["net_quantity"] = match.group(0).strip()
                 elif rule["id"] == "manufacturer":
                     extracted_fields["manufacturer"] = match.group(0).strip()
+                elif rule["id"] == "country_of_origin":
+                    extracted_fields["country_of_origin"] = match.group(2).strip() if match.lastindex and match.lastindex >= 2 else match.group(0).strip()
+                elif rule["id"] == "consumer_care":
+                    extracted_fields["consumer_care"] = match.group(0).strip()
             else:
                 checks.append({
                     "rule_name": rule["name"],

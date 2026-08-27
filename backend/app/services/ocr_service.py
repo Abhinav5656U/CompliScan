@@ -10,7 +10,7 @@ def _get_reader():
         import easyocr
         import torch
         torch.set_num_threads(1)
-        _easyocr_reader = easyocr.Reader(["en"], gpu=False, quantize=False)
+        _easyocr_reader = easyocr.Reader(["en", "hi"], gpu=False, quantize=False)
     return _easyocr_reader
 
 

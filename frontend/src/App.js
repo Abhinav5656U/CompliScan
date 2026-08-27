@@ -13,6 +13,7 @@ import ScanUpload from './pages/ScanUpload';
 import ScanResult from './pages/ScanResult';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
+import IndiaMap from './pages/IndiaMap';
 
 const App = () => {
   return (
@@ -50,6 +51,15 @@ const App = () => {
                 <ProtectedRoute>
                   <Navbar />
                   <main><Dashboard /></main>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/map"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <main><IndiaMap /></main>
                 </ProtectedRoute>
               }
             />
