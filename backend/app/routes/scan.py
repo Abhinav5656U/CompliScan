@@ -34,6 +34,7 @@ def upload_scan():
         file = request.files["image"]
         listing_url = request.form.get("listing_url")
         gtin = request.form.get("gtin")
+        state = request.form.get("state")
         if file.filename == "":
             return jsonify({"error": "No file selected"}), 400
 
@@ -67,6 +68,7 @@ def upload_scan():
             compliance_result=compliance_result,
             mismatch_result=mismatch_result,
             gtin=gtin,
+            state=state,
             overall_status=compliance_result.get("overall_status", "unknown"),
             product_name=product_name,
             manufacturer=manufacturer,
