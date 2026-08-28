@@ -26,21 +26,21 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const getRoleBadgeColor = (role) => {
-    if (role === 'admin') return 'bg-purple-100 text-purple-800';
-    if (role === 'officer') return 'bg-blue-100 text-blue-800';
-    return 'bg-gray-100 text-gray-800';
+    if (role === 'admin') return 'bg-seal-100 text-seal-500';
+    if (role === 'officer') return 'bg-primary-100 text-primary-800';
+    return 'bg-ink-100 text-ink';
   };
 
   return (
-    <nav className="bg-primary-800 shadow-lg no-print">
+    <nav className="bg-primary-800 border-b-2 border-seal-500 shadow-ledger no-print">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="bg-white rounded-lg p-1.5">
-                <FiSearch className="h-5 w-5 text-primary-800" />
+              <div className="border-2 border-seal-500 rounded-md p-1">
+                <FiSearch className="h-5 w-5 text-seal-500" />
               </div>
-              <span className="text-white text-xl font-bold tracking-tight">CompliScan</span>
+              <span className="text-white text-xl font-heading font-bold tracking-tight">CompliScan</span>
             </Link>
           </div>
 
@@ -52,10 +52,10 @@ const Navbar = () => {
                   <Link
                     key={link.to}
                     to={link.to}
-                    className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                    className={`flex items-center space-x-1.5 px-4 py-2 border-b-2 rounded-t-lg text-sm font-medium transition-colors duration-200 ${
                       isActive(link.to)
-                        ? 'bg-primary-700 text-white'
-                        : 'text-primary-200 hover:bg-primary-700 hover:text-white'
+                        ? 'bg-primary-900 text-white border-seal-400'
+                        : 'text-primary-200 border-transparent hover:bg-primary-700 hover:text-white'
                     }`}
                   >
                     <Icon className="h-4 w-4" />
@@ -87,17 +87,17 @@ const Navbar = () => {
                 {dropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 z-20 border border-gray-100">
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-semibold text-gray-900">{user?.full_name || user?.username}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{user?.email}</p>
+                    <div className="absolute right-0 mt-2 w-56 bg-parchment-100 rounded-xl shadow-ledger py-2 z-20 border border-seal-200 border-t-2 border-t-seal-500">
+                      <div className="px-4 py-3 border-b border-parchment-200">
+                        <p className="text-sm font-semibold text-ink">{user?.full_name || user?.username}</p>
+                        <p className="text-xs text-ink-400 mt-0.5">{user?.email}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${getRoleBadgeColor(user?.role)}`}>
                           {user?.role}
                         </span>
                       </div>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                        className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-stamp-600 hover:bg-stamp-50 transition-colors duration-200"
                       >
                         <FiLogOut className="h-4 w-4" />
                         <span>Sign out</span>
@@ -130,7 +130,7 @@ const Navbar = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-base font-medium ${
                     isActive(link.to)
-                      ? 'bg-primary-700 text-white'
+                      ? 'bg-primary-900 text-white border-l-2 border-seal-400'
                       : 'text-primary-200 hover:bg-primary-700 hover:text-white'
                   }`}
                 >

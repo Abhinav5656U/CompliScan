@@ -138,6 +138,49 @@ def validate_compliance(pipeline_data, extracted_fields=None):
                     "severity": rule["severity"]
                 })
 
+        elif rule_type == "font_size_check":
+            # Legibility rule: every text block carrying a required declaration
+            # must be physically large enough to read, per Legal Metrology
+            # minimum type-height requirements. Uses physical_height_mm that the
+            # calibration step already computed from the reference card.
+            if not pixels_per_mm:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "human_review_required",
+                    "message": "No reference card detected. Could not calibrate physical font size.",
+                    "citation": rule["citation"],
+                    "severity": "warning"
+                })
+                continue
+
+            min_height = rule.get("min_height_mm", 0)
+            # The declaration passes if at least one readable block meets the
+            # minimum; failure only when no block reaches the required height.
+            largest = max(
+                (item.get("physical_height_mm", 0) for item in items_to_check),
+                default=0,
+            )
+
+            if largest >= min_height:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "pass",
+                    "message": f"Largest declared text measured {largest:.2f}mm; meets {min_height}mm minimum.",
+                    "citation": rule["citation"],
+                    "severity": "info"
+                })
+            else:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "likely_violation",
+                    "message": (
+                        f"Declared text too small ({largest:.2f}mm). "
+                        f"Minimum legible height is {min_height}mm."
+                    ),
+                    "citation": rule["citation"],
+                    "severity": rule["severity"]
+                })
+
     # Overall status calculation
     failed_critical = sum(1 for c in checks if c["status"] == "fail")
     needs_review = sum(1 for c in checks if c["status"] in ["human_review_required", "likely_violation"])

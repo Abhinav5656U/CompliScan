@@ -19,12 +19,12 @@ const ZONE_LABELS = {
 };
 
 const ZONE_BASE_COLORS = {
-  mrp_zone: '#22c55e',
-  manufacturer_zone: '#3b82f6',
-  consumer_care_zone: '#a855f7',
-  net_qty_zone: '#f97316',
-  bottom_panel: '#6b7280',
-  unknown: '#9ca3af',
+  mrp_zone: '#B08D57',
+  manufacturer_zone: '#B08D57',
+  consumer_care_zone: '#B08D57',
+  net_qty_zone: '#B08D57',
+  bottom_panel: '#1F3A2E',
+  unknown: '#6f6f62',
 };
 
 function getZoneStatus(zone, checks) {
@@ -50,8 +50,8 @@ function zoneColor(zone, checks) {
   const base = ZONE_BASE_COLORS[zone] || ZONE_BASE_COLORS.unknown;
   const status = getZoneStatus(zone, checks);
   const alpha = 0.30;
-  if (status === 'fail') return { bg: `rgba(239,68,68,${alpha})`, border: '#ef4444' };
-  if (status === 'pass') return { bg: `rgba(34,197,94,${alpha})`, border: '#22c55e' };
+  if (status === 'fail') return { bg: `rgba(166,50,30,${alpha})`, border: '#A6321E' };
+  if (status === 'pass') return { bg: `rgba(176,141,87,${alpha})`, border: '#B08D57' };
   return { bg: hexToRgba(base, alpha), border: base };
 }
 
@@ -124,28 +124,28 @@ const BboxOverlay = ({ extractedData, imgNaturalWidth, imgNaturalHeight, display
 };
 
 const StatusChip = ({ status }) => {
-  let bg, text, border, label, Icon;
+  let cls, label, Icon;
   switch (status) {
     case 'pass':
-      bg = 'bg-green-50'; text = 'text-green-800'; border = 'border-green-200';
+      cls = 'text-seal-700 border-seal-600';
       label = 'PASS'; Icon = FiCheckCircle;
       break;
     case 'fail':
-      bg = 'bg-red-50'; text = 'text-red-800'; border = 'border-red-200';
+      cls = 'text-stamp-600 border-stamp-600';
       label = 'FAIL'; Icon = FiXCircle;
       break;
     case 'human_review_required':
     case 'likely_violation':
-      bg = 'bg-amber-50'; text = 'text-amber-800'; border = 'border-amber-200';
+      cls = status === 'likely_violation' ? 'text-stamp-600 border-stamp-600' : 'text-seal-700 border-seal-600/60';
       label = status === 'likely_violation' ? 'VIOLATION' : 'REVIEW';
       Icon = FiAlertTriangle;
       break;
     default:
-      bg = 'bg-gray-50'; text = 'text-gray-700'; border = 'border-gray-200';
+      cls = 'text-ink-400 border-ink/30';
       label = 'N/A'; Icon = FiAlertTriangle;
   }
   return (
-    <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${bg} ${text} ${border}`}>
+    <span className={`rubber-stamp inline-flex items-center space-x-1 px-2.5 py-1 text-xs font-bold ${cls}`}>
       <Icon className="h-3.5 w-3.5" />
       <span>{label}</span>
     </span>
@@ -156,22 +156,22 @@ const RiskBadge = ({ riskData }) => {
   if (!riskData) return null;
   const score = riskData.risk_score ?? 0;
   const tier = riskData.risk_tier || 'LOW';
-  let color, bg, border;
-  if (score > 60) { color = 'text-red-700'; bg = 'bg-red-50'; border = 'border-red-200'; }
-  else if (score > 30) { color = 'text-amber-700'; bg = 'bg-amber-50'; border = 'border-amber-200'; }
-  else { color = 'text-green-700'; bg = 'bg-green-50'; border = 'border-green-200'; }
+  let color, borderCls;
+  if (score > 60) { color = 'text-stamp-600'; borderCls = 'border-stamp-600/40'; }
+  else if (score > 30) { color = 'text-seal-700'; borderCls = 'border-seal-600/60'; }
+  else { color = 'text-seal-600'; borderCls = 'border-seal-600/40'; }
 
   return (
-    <div className={`flex items-center justify-between p-4 rounded-xl border ${bg} ${border}`}>
+    <div className={`flex items-center justify-between p-4 border ${borderCls} bg-parchment-100 shadow-ledger`}>
       <div className="flex items-center space-x-3">
         <FiShield className={`h-5 w-5 ${color}`} />
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">GTIN Risk Score</p>
-          <p className="text-sm text-gray-700 mt-0.5">{riskData.total_scans} prior scan{riskData.total_scans !== 1 ? 's' : ''}</p>
+          <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">RISK: {tier}</p>
+          <p className="text-sm text-ink-500 mt-0.5">{riskData.total_scans} prior scan{riskData.total_scans !== 1 ? 's' : ''}</p>
         </div>
       </div>
       <div className="text-right">
-        <p className={`text-2xl font-black ${color}`}>{score}<span className="text-sm font-normal text-gray-400">/100</span></p>
+        <p className={`text-2xl font-black ${color}`}>{score}<span className="text-sm font-normal text-ink-400">/100</span></p>
         <p className={`text-xs font-bold ${color}`}>{tier}</p>
       </div>
     </div>
@@ -188,35 +188,35 @@ const MismatchCard = ({ mismatch }) => {
   };
 
   return (
-    <div className={`rounded-xl border overflow-hidden ${isMatch ? 'border-green-200' : 'border-red-200'}`}>
-      <div className={`px-5 py-3 flex items-center justify-between ${isMatch ? 'bg-green-50' : 'bg-red-50'}`}>
+    <div className={`border shadow-ledger bg-parchment-100 overflow-hidden ${isMatch ? 'border-seal-600/50' : 'border-stamp-600/50'}`}>
+      <div className={`px-5 py-3 flex items-center justify-between border-b ${isMatch ? 'border-seal-600/40 bg-seal-100/40' : 'border-stamp-600/40 bg-stamp-50/40'}`}>
         <div className="flex items-center space-x-2">
-          <FiExternalLink className={`h-4 w-4 ${isMatch ? 'text-green-600' : 'text-red-600'}`} />
-          <h4 className={`text-sm font-bold ${isMatch ? 'text-green-800' : 'text-red-800'}`}>E-Commerce Listing Cross-Check</h4>
+          <FiExternalLink className={`h-4 w-4 ${isMatch ? 'text-seal-600' : 'text-stamp-600'}`} />
+          <h4 className={`text-sm font-bold ${isMatch ? 'text-seal-700' : 'text-stamp-600'}`}>E-Commerce Listing Cross-Check</h4>
         </div>
         <StatusChip status={isMatch ? 'pass' : 'fail'} />
       </div>
-      <div className="bg-white p-5">
+      <div className="bg-parchment-100 p-5">
         <div className="grid grid-cols-3 gap-4 text-sm">
-          <div className="font-semibold text-gray-500 text-xs uppercase tracking-wider">Field</div>
-          <div className="font-semibold text-gray-500 text-xs uppercase tracking-wider">Physical Label</div>
-          <div className="font-semibold text-gray-500 text-xs uppercase tracking-wider">Online Listing</div>
+          <div className="font-semibold text-ink-500 text-xs uppercase tracking-wider">Field</div>
+          <div className="font-semibold text-ink-500 text-xs uppercase tracking-wider">Physical Label</div>
+          <div className="font-semibold text-ink-500 text-xs uppercase tracking-wider">Online Listing</div>
 
-          <div className="text-gray-700 font-medium">MRP</div>
-          <div className="text-gray-900">{mismatch.listing_data?.mrp || '\u2014'}</div>
-          <div className="text-gray-900">{mismatch.listing_data?.mrp || '\u2014'}</div>
+          <div className="text-ink font-medium">MRP</div>
+          <div className={`text-ink font-medium ${isMatch || !(mismatch.mismatches || []).includes('MRP') ? '' : 'text-stamp-600'}`}>{mismatch.listing_data?.mrp || '\u2014'}</div>
+          <div className={`text-ink font-medium ${isMatch || !(mismatch.mismatches || []).includes('MRP') ? '' : 'text-stamp-600 underline decoration-stamp-600/40'}`}>{mismatch.listing_data?.mrp || '\u2014'}</div>
 
-          <div className="text-gray-700 font-medium">Country</div>
-          <div className="text-gray-900">{mismatch.listing_data?.country_of_origin || '\u2014'}</div>
-          <div className="text-gray-900">{mismatch.listing_data?.country_of_origin || '\u2014'}</div>
+          <div className="text-ink font-medium">Country</div>
+          <div className="text-ink font-medium">{mismatch.listing_data?.country_of_origin || '\u2014'}</div>
+          <div className="text-ink font-medium">{mismatch.listing_data?.country_of_origin || '\u2014'}</div>
         </div>
 
         {!isMatch && mismatch.mismatches && mismatch.mismatches.length > 0 && (
-          <div className="mt-4 p-3 rounded-lg bg-red-50 border border-red-100">
-            <p className="text-xs font-bold text-red-700 mb-1.5">Discrepancies Found</p>
-            <ul className="space-y-1">
+          <div className="mt-4 border border-stamp-600/40 bg-stamp-50/30">
+            <p className="text-xs font-bold text-stamp-600 mb-1.5 px-3 pt-2.5">Discrepancies Found</p>
+            <ul className="space-y-1 px-3 pb-3">
               {mismatch.mismatches.map((m, i) => (
-                <li key={i} className="text-sm text-red-700 flex items-start space-x-1.5">
+                <li key={i} className="text-sm text-stamp-600 flex items-start space-x-1.5">
                   <FiXCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                   <span>{m}</span>
                 </li>
@@ -287,10 +287,10 @@ const ScanResult = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-parchment-200 ledger-paper">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-200 border-t-primary-800" />
-          <p className="text-gray-500 text-sm font-medium">Loading inspection report...</p>
+          <p className="text-ink-500 text-sm font-medium">Loading inspection report...</p>
         </div>
       </div>
     );
@@ -312,57 +312,81 @@ const ScanResult = () => {
 
   const verdictConfig = {
     compliant: {
-      bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900',
-      icon: FiCheckCircle, iconColor: 'text-green-600',
+      icon: FiCheckCircle, iconColor: 'text-seal-600',
       label: 'Compliant',
+      stampLabel: '\u2713 COMPLIANT',
+      stampCls: 'text-seal-700 border-seal-600',
       subtitle: 'All checks passed',
-      accent: 'bg-green-600',
     },
     non_compliant: {
-      bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900',
-      icon: FiXCircle, iconColor: 'text-red-600',
+      icon: FiXCircle, iconColor: 'text-stamp-600',
       label: 'Non-Compliant',
+      stampLabel: '\u2715 NON-COMPLIANT',
+      stampCls: 'text-stamp-600 border-stamp-600',
       subtitle: 'Critical violations detected',
-      accent: 'bg-red-600',
     },
     review_required: {
-      bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-900',
-      icon: FiAlertTriangle, iconColor: 'text-amber-600',
+      icon: FiAlertTriangle, iconColor: 'text-seal-600',
       label: 'Human Review Required',
+      stampLabel: '\u25CB REVIEW REQUIRED',
+      stampCls: 'text-seal-700 border-seal-600/60',
       subtitle: 'Needs officer verification',
-      accent: 'bg-amber-600',
     },
   };
   const verdict = verdictConfig[overallStatus] || verdictConfig.compliant;
   const VerdictIcon = verdict.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Verdict Banner */}
-      <div className={`${verdict.bg} border-b ${verdict.border}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-parchment-200 ledger-paper">
+      {/* Official Header Band */}
+      <div className="bg-primary-800 border-b-2 border-seal-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => navigate(-1)}
                 aria-label="Go back"
-                className="p-2 rounded-lg hover:bg-white/60 transition-colors text-gray-600 hover:text-gray-900"
+                className="p-2 hover:bg-primary-700/60 transition-colors text-parchment-100/80 hover:text-parchment-100"
               >
                 <FiArrowLeft className="h-5 w-5" />
               </button>
-              <div className={`h-14 w-14 rounded-2xl ${verdict.accent} flex items-center justify-center shadow-sm`}>
-                <VerdictIcon className="h-7 w-7 text-white" />
-              </div>
               <div>
-                <h1 className={`text-2xl sm:text-3xl font-black ${verdict.text} tracking-tight`}>{verdict.label}</h1>
-                <p className={`text-sm ${verdict.text} opacity-70 mt-0.5`}>{verdict.subtitle}</p>
+                <div className="flex items-center space-x-2">
+                  <FiShield className="h-5 w-5 text-seal-500" />
+                  <h1 className="text-lg sm:text-xl font-heading font-bold text-parchment-100 tracking-tight">CompliScan &middot; Inspection Register</h1>
+                </div>
+                <p className="ledger-stamp text-[11px] sm:text-xs text-seal-400 mt-0.5 tracking-wider">LEGAL METROLOGY (PACKAGED COMMODITIES) RULES, 2011</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="text-right">
+              <p className="ledger-stamp text-xs text-parchment-100/80">SCAN REF: {scan.id ? String(scan.id).padStart(6, '0') : '\u2014'}</p>
+              <p className="ledger-stamp text-xs text-seal-400 mt-0.5">Rule Version: {ruleVersion}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Rubber-Stamp Verdict Banner */}
+      <div className="border-b border-ink/10 bg-parchment-100/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4">
+                <VerdictIcon className={`h-7 w-7 ${verdict.iconColor}`} />
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-heading font-bold text-ink tracking-tight">Verdict: <span className="font-body font-semibold">{verdict.label}</span></h2>
+                  <p className="text-sm text-ink-500 mt-0.5">{verdict.subtitle}</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <span className={`rubber-stamp text-2xl sm:text-3xl font-bold rotate-[-4deg] ${verdict.stampCls}`}>
+                {verdict.stampLabel}
+              </span>
               <button
                 onClick={downloadReport}
                 disabled={downloading}
-                className="hidden sm:inline-flex items-center space-x-2 px-5 py-2.5 bg-primary-800 hover:bg-primary-900 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 shadow-sm"
+                className="hidden sm:inline-flex items-center space-x-2 px-5 py-2.5 bg-primary-800 hover:bg-primary-900 text-parchment-50 text-sm font-semibold rounded shadow-stamp transition-colors disabled:opacity-50"
               >
                 <FiDownload className="h-4 w-4" />
                 <span>{downloading ? 'Generating...' : 'Download PDF Report'}</span>
@@ -371,26 +395,23 @@ const ScanResult = () => {
           </div>
 
           {/* Check Summary Pills */}
-          <div className="flex items-center space-x-3 mt-4 ml-16">
-            <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-semibold text-gray-600">
-              <FiFileText className="h-3.5 w-3.5 text-gray-400" />
+          <div className="flex flex-wrap items-center gap-2 mt-4">
+            <span className="inline-flex items-center space-x-1.5 px-3 py-1 border border-ink/20 bg-parchment-100 text-xs font-semibold text-ink-600 shadow-ledger">
+              <FiFileText className="h-3.5 w-3.5 text-ink-300" />
               <span>Scan #{scan.id}</span>
             </span>
-            <span className="px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-semibold text-gray-600">
-              Rule Engine: {ruleVersion}
-            </span>
             {passedCount > 0 && (
-              <span className="px-3 py-1 rounded-full bg-green-100 border border-green-200 text-xs font-bold text-green-700">
+              <span className="rubber-stamp px-3 py-1 text-xs font-bold text-seal-700 border-seal-600">
                 {passedCount} passed
               </span>
             )}
             {failedCount > 0 && (
-              <span className="px-3 py-1 rounded-full bg-red-100 border border-red-200 text-xs font-bold text-red-700">
+              <span className="rubber-stamp px-3 py-1 text-xs font-bold text-stamp-600 border-stamp-600">
                 {failedCount} failed
               </span>
             )}
             {reviewCount > 0 && (
-              <span className="px-3 py-1 rounded-full bg-amber-100 border border-amber-200 text-xs font-bold text-amber-700">
+              <span className="rubber-stamp px-3 py-1 text-xs font-bold text-seal-700 border-seal-600/60">
                 {reviewCount} review
               </span>
             )}
@@ -404,7 +425,7 @@ const ScanResult = () => {
         <button
           onClick={downloadReport}
           disabled={downloading}
-          className="sm:hidden w-full flex items-center justify-center space-x-2 px-5 py-3 bg-primary-800 hover:bg-primary-900 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-50 shadow-sm mb-6"
+          className="sm:hidden w-full flex items-center justify-center space-x-2 px-5 py-3 bg-primary-800 hover:bg-primary-900 text-parchment-50 text-sm font-semibold rounded shadow-stamp transition-colors disabled:opacity-50 mb-6"
         >
           <FiDownload className="h-4 w-4" />
           <span>{downloading ? 'Generating...' : 'Download PDF Report'}</span>
@@ -414,16 +435,16 @@ const ScanResult = () => {
           {/* Left Column — 2/5 width */}
           <div className="lg:col-span-2 space-y-6">
             {/* Product Image Card */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <div className="bg-parchment-100 border border-ink/10 shadow-ledger overflow-hidden">
+              <div className="px-5 py-3 border-b border-ink/10 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <FiPackage className="h-4 w-4 text-gray-400" />
-                  <h3 className="text-sm font-bold text-gray-900">Product Label</h3>
+                  <FiPackage className="h-4 w-4 text-ink-400" />
+                  <h3 className="text-sm font-bold text-ink">Product Label</h3>
                 </div>
                 {hasBboxData && (
                   <button
                     onClick={() => setShowBboxes(!showBboxes)}
-                    className="flex items-center space-x-1.5 text-xs font-semibold text-gray-500 hover:text-primary-800 transition-colors px-2 py-1 rounded-lg hover:bg-gray-50"
+                    className="flex items-center space-x-1.5 text-xs font-semibold text-ink-500 hover:text-primary-800 transition-colors px-2 py-1 hover:bg-parchment-200"
                   >
                     {showBboxes ? <FiEyeOff className="h-3.5 w-3.5" /> : <FiEye className="h-3.5 w-3.5" />}
                     <span>{showBboxes ? 'Hide regions' : 'Show regions'}</span>
@@ -431,7 +452,7 @@ const ScanResult = () => {
                 )}
               </div>
               <div className="p-4">
-                <div className="relative bg-gray-50 rounded-lg overflow-hidden">
+                <div className="relative bg-parchment-200 ledger-paper border border-ink/10 overflow-hidden">
                   {showBboxes && hasBboxData && imageUrl && (
                     <BboxOverlay
                       extractedData={extractedData}
@@ -453,8 +474,8 @@ const ScanResult = () => {
                 {hasBboxData && showBboxes && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {Object.entries(ZONE_BASE_COLORS).filter(([k]) => k !== 'unknown').map(([zone, color]) => (
-                      <span key={zone} className="inline-flex items-center space-x-1.5 text-xs text-gray-500">
-                        <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: color }} />
+                      <span key={zone} className="inline-flex items-center space-x-1.5 text-xs text-ink-500">
+                        <span className="w-2.5 h-2.5 border border-ink/20" style={{ backgroundColor: color }} />
                         <span>{ZONE_LABELS[zone]}</span>
                       </span>
                     ))}
@@ -464,29 +485,29 @@ const ScanResult = () => {
             </div>
 
             {/* Product Info Card */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-3">
+            <div className="bg-parchment-100 border border-ink/10 shadow-ledger p-5 space-y-3">
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Product</p>
-                <p className="text-base font-bold text-gray-900 mt-0.5">{scan.product_name || 'Unknown Product'}</p>
+                <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">Product</p>
+                <p className="text-base font-bold text-ink mt-0.5">{scan.product_name || 'Unknown Product'}</p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Manufacturer</p>
-                <p className="text-sm text-gray-700 mt-0.5">{scan.manufacturer || 'Not detected'}</p>
+                <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">Manufacturer</p>
+                <p className="ledger-stamp text-sm text-ink mt-0.5">{scan.manufacturer || 'Not detected'}</p>
               </div>
               {scan.gtin && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">GTIN</p>
-                  <p className="text-sm text-gray-700 font-mono mt-0.5">{scan.gtin}</p>
+                  <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider">GTIN</p>
+                  <p className="ledger-stamp text-sm text-ink mt-0.5">{scan.gtin}</p>
                 </div>
               )}
               {scan.extracted_fields && Object.keys(scan.extracted_fields).length > 0 && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Extracted Fields</p>
+                <div className="pt-2 border-t border-ink/10">
+                  <p className="text-xs font-semibold text-ink-500 uppercase tracking-wider mb-2">Extracted Fields</p>
                   <div className="space-y-1.5">
                     {Object.entries(scan.extracted_fields).map(([key, value]) => (
                       <div key={key} className="flex justify-between text-sm">
-                        <span className="text-gray-500 capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-gray-900 font-medium">{value || '\u2014'}</span>
+                        <span className="text-ink-500 capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-ink font-medium">{value || '\u2014'}</span>
                       </div>
                     ))}
                   </div>
@@ -501,14 +522,14 @@ const ScanResult = () => {
           {/* Right Column — 3/5 width */}
           <div className="lg:col-span-3 space-y-6">
             {/* Rule Engine Checks Table */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <div className="bg-parchment-100 border border-ink/10 shadow-ledger overflow-hidden">
+              <div className="px-6 py-4 border-b border-ink/10 bg-parchment-200/50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-bold text-gray-900">Deterministic Rule Engine Checks</h3>
-                    <p className="text-xs text-gray-500 mt-0.5">{checks.length} rules evaluated &bull; {ruleVersion}</p>
+                    <h3 className="text-base font-heading font-bold text-ink">Deterministic Rule Engine Checks</h3>
+                    <p className="text-xs text-ink-500 mt-0.5">{checks.length} rules evaluated &bull; {ruleVersion}</p>
                   </div>
-                  <span className="text-xs font-mono bg-gray-100 text-gray-500 px-2.5 py-1 rounded-lg">{ruleVersion}</span>
+                  <span className="ledger-stamp text-xs bg-parchment-100 border border-ink/20 text-ink-500 px-2.5 py-1">{ruleVersion}</span>
                 </div>
               </div>
 
@@ -516,24 +537,24 @@ const ScanResult = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b border-gray-100">
-                        <th className="text-left px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Legal Rule & Citation</th>
-                        <th className="text-left px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                        <th className="text-left px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Extracted Evidence</th>
+                      <tr className="border-b border-ink/10 bg-parchment-200/40">
+                        <th className="text-left px-6 py-3 text-xs font-bold text-ink-500 uppercase tracking-wider">Legal Rule &amp; Citation</th>
+                        <th className="text-left px-6 py-3 text-xs font-bold text-ink-500 uppercase tracking-wider">Status</th>
+                        <th className="text-left px-6 py-3 text-xs font-bold text-ink-500 uppercase tracking-wider">Extracted Evidence</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-ink/10">
                       {checks.map((check, index) => (
-                        <tr key={index} className="hover:bg-gray-50/50 transition-colors">
+                        <tr key={index} className="ledger-rule-row hover:bg-parchment-200/60 transition-colors">
                           <td className="px-6 py-4">
-                            <p className="text-sm font-bold text-gray-900">{check.rule_name}</p>
-                            <p className="text-xs text-primary-600 mt-1 font-mono">{check.citation}</p>
+                            <p className="text-sm font-bold text-ink">{check.rule_name}</p>
+                            <p className="ledger-stamp text-xs text-ink-400 mt-1">{check.citation}</p>
                           </td>
                           <td className="px-6 py-4">
                             <StatusChip status={check.status} />
                           </td>
                           <td className="px-6 py-4">
-                            <p className="text-sm text-gray-600 leading-relaxed">{check.message}</p>
+                            <p className="text-sm text-ink-600 leading-relaxed">{check.message}</p>
                           </td>
                         </tr>
                       ))}
@@ -542,8 +563,8 @@ const ScanResult = () => {
                 </div>
               ) : (
                 <div className="p-12 text-center">
-                  <FiFileText className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-500 text-sm">No rule checks available for this scan.</p>
+                  <FiFileText className="h-10 w-10 text-ink-300 mx-auto mb-3" />
+                  <p className="text-ink-500 text-sm">No rule checks available for this scan.</p>
                 </div>
               )}
             </div>

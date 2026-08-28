@@ -62,20 +62,20 @@ const BarcodeScanner = ({ onScan, onClose }) => {
   }, [onScan, onClose]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="font-bold text-gray-900 flex items-center space-x-2">
-            <FiCamera className="h-5 w-5 text-primary-800" />
+    <div className="fixed inset-0 bg-ink/70 z-50 flex items-center justify-center p-4">
+      <div className="bg-parchment-100 border border-ink/10 shadow-ledger max-w-lg w-full overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b border-ink/10 bg-parchment-50">
+          <h3 className="font-heading text-ink flex items-center space-x-2">
+            <FiCamera className="h-5 w-5 text-seal-500" />
             <span>Scan Barcode / QR Code</span>
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1" aria-label="Close scanner">
+          <button onClick={onClose} className="text-ink-400 hover:text-stamp-500 p-1" aria-label="Close scanner">
             <FiX className="h-5 w-5" />
           </button>
         </div>
         <div className="p-4">
-          <div id="barcode-reader" className="w-full rounded-xl overflow-hidden" />
-          <p className="text-xs text-gray-500 text-center mt-3">Point your camera at a barcode or QR code on the product label.</p>
+          <div id="barcode-reader" className="w-full rounded overflow-hidden" />
+          <p className="text-xs text-ink-500 text-center mt-3">Point your camera at a barcode or QR code on the product label.</p>
         </div>
       </div>
     </div>
@@ -144,7 +144,7 @@ const ScanUpload = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 bg-parchment-200 ledger-paper min-h-screen">
       {showScanner && (
         <BarcodeScanner
           onScan={handleBarcodeScan}
@@ -153,23 +153,23 @@ const ScanUpload = () => {
       )}
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Product Scan</h1>
-        <p className="text-gray-600 mt-1">Upload a product label image for AI compliance verification.</p>
+        <h1 className="text-3xl font-heading text-ink">Product Scan</h1>
+        <p className="text-ink-500 mt-1">Upload a product label image for AI compliance verification.</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-        <h2 className="text-xl font-bold mb-2">Upload Label Image</h2>
-        <p className="text-gray-600 mb-6">Capture the product label clearly, including MRP, manufacturer details, and quantity.</p>
+      <div className="bg-parchment-100 border border-ink/10 shadow-ledger border-t-2 border-t-seal-500 p-8 rounded">
+        <h2 className="text-xl font-heading text-ink mb-2">Upload Label Image</h2>
+        <p className="text-ink-500 mb-6">Capture the product label clearly, including MRP, manufacturer details, and quantity.</p>
 
         <div className="space-y-6">
           {!preview ? (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center cursor-pointer hover:border-primary-400 hover:bg-gray-50 transition-colors"
+              className="border-2 border-dashed border-ink/25 rounded bg-parchment-50 p-12 text-center cursor-pointer hover:border-primary-800 hover:bg-parchment-100 transition-colors"
             >
-              <FiUpload className="h-10 w-10 text-gray-400 mx-auto mb-4" />
-              <p className="text-lg font-medium text-gray-900">Click to capture or upload</p>
-              <p className="text-sm text-gray-500 mt-1">PNG, JPG, TIFF, BMP, or WebP</p>
+              <FiUpload className="h-10 w-10 text-seal-500 mx-auto mb-4" />
+              <p className="text-lg font-heading text-ink">Click to capture or upload</p>
+              <p className="text-sm text-ink-500 mt-1">PNG, JPG, TIFF, BMP, or WebP</p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -182,11 +182,13 @@ const ScanUpload = () => {
           ) : (
             <div className="space-y-4">
               <div className="relative">
-                <img src={preview} alt="Label preview" className="w-full max-h-96 object-contain rounded-xl border border-gray-200" />
+                <img src={preview} alt="Label preview" className="w-full max-h-96 object-contain rounded border border-ink/10" />
+                <div className="absolute -top-px -left-px w-8 h-8 border-t-2 border-l-2 border-seal-500 pointer-events-none" aria-hidden="true" />
+                <div className="absolute -bottom-px -right-px w-8 h-8 border-b-2 border-r-2 border-seal-500 pointer-events-none" aria-hidden="true" />
                 <button
                   onClick={() => { setFile(null); setPreview(null); }}
                   aria-label="Remove image"
-                  className="absolute top-3 right-3 bg-white hover:bg-red-50 rounded-full p-2 shadow-md text-red-500"
+                  className="absolute top-3 right-3 bg-parchment-50 hover:bg-stamp-50 rounded-full p-2 shadow-ledger text-stamp-500"
                 >
                   <FiX size={20} />
                 </button>
@@ -195,36 +197,36 @@ const ScanUpload = () => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">E-Commerce Listing URL (Optional)</label>
+            <label className="block text-xs uppercase tracking-wider text-ink-500 mb-2">E-Commerce Listing URL (Optional)</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiLink className="text-gray-400" />
+                <FiLink className="text-ink-400" />
               </div>
               <input
                 type="url"
                 value={listingUrl}
                 onChange={(e) => setListingUrl(e.target.value)}
                 placeholder="https://amazon.in/dp/..."
-                className="pl-10 w-full rounded-lg border-gray-300 border p-3 focus:ring-primary-500 focus:border-primary-500"
+                className="pl-10 w-full bg-parchment-50 border-ink/20 text-ink p-3 rounded focus:border-primary-800 focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">GTIN / Barcode</label>
+              <label className="block text-xs uppercase tracking-wider text-ink-500 mb-2">GTIN / Barcode</label>
               <div className="flex space-x-2">
                 <input
                   type="text"
                   value={gtin}
                   onChange={(e) => setGtin(e.target.value)}
                   placeholder="e.g. 8901234567890"
-                  className="flex-1 rounded-lg border-gray-300 border p-3 focus:ring-primary-500 focus:border-primary-500"
+                  className="flex-1 bg-parchment-50 border-ink/20 text-ink p-3 rounded focus:border-primary-800 focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowScanner(true)}
-                  className="px-4 py-3 bg-primary-100 text-primary-800 rounded-lg hover:bg-primary-200 transition-colors flex items-center space-x-1.5 flex-shrink-0"
+                  className="px-4 py-3 border border-primary-800 text-primary-800 hover:bg-primary-100 rounded transition-colors flex items-center space-x-1.5 flex-shrink-0"
                   title="Scan barcode with camera"
                 >
                   <FiCamera className="h-4 w-4" />
@@ -234,14 +236,14 @@ const ScanUpload = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <FiMapPin className="inline h-3.5 w-3.5 mr-1" />
+              <label className="block text-xs uppercase tracking-wider text-ink-500 mb-2">
+                <FiMapPin className="inline h-3.5 w-3.5 mr-1 text-ink-400" />
                 State / UT (Optional)
               </label>
               <select
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                className="w-full rounded-lg border-gray-300 border p-3 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                className="w-full bg-parchment-50 border-ink/20 text-ink p-3 rounded focus:border-primary-800 focus:outline-none"
               >
                 <option value="">Select state...</option>
                 {INDIA_STATES.map((s) => (
@@ -254,7 +256,7 @@ const ScanUpload = () => {
           <button
             onClick={handleUpload}
             disabled={uploading || !file}
-            className="w-full flex justify-center items-center py-4 bg-primary-800 hover:bg-primary-900 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+            className="w-full flex justify-center items-center py-4 bg-primary-800 hover:bg-primary-900 text-parchment-50 font-bold rounded shadow-stamp transition-colors disabled:opacity-50"
           >
             {uploading ? 'Analyzing and Verifying...' : 'Submit for AI Verification'}
           </button>
