@@ -104,10 +104,27 @@ def generate_pdf_report(scan):
             ["Scan ID", str(scan.id)],
             ["Product Name", str(scan.product_name or "N/A")],
             ["Manufacturer", str(scan.manufacturer or "N/A")],
+        ]
+        
+        if scan.extracted_fields:
+            if scan.extracted_fields.get("address"):
+                scan_data.append(["Address", str(scan.extracted_fields.get("address"))])
+            if scan.extracted_fields.get("manufacturing_date"):
+                scan_data.append(["Mfg Date", str(scan.extracted_fields.get("manufacturing_date"))])
+            if scan.extracted_fields.get("batch_number"):
+                scan_data.append(["Batch No", str(scan.extracted_fields.get("batch_number"))])
+            if scan.extracted_fields.get("unit_sale_price"):
+                scan_data.append(["Unit Price", str(scan.extracted_fields.get("unit_sale_price"))])
+            if scan.extracted_fields.get("net_quantity"):
+                scan_data.append(["Net Qty", str(scan.extracted_fields.get("net_quantity"))])
+            if scan.extracted_fields.get("mrp"):
+                scan_data.append(["MRP", str(scan.extracted_fields.get("mrp"))])
+
+        scan_data.extend([
             ["Overall Status", str(scan.overall_status or "N/A").upper()],
             ["Date Scanned", scan.created_at.strftime("%d %B %Y, %H:%M:%S UTC") if scan.created_at else "N/A"],
             ["Image Path", str(scan.image_path or "N/A")],
-        ]
+        ])
 
         scan_table = Table(scan_data, colWidths=[2 * inch, 4.5 * inch])
         scan_table.setStyle(TableStyle([
