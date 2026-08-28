@@ -20,7 +20,7 @@ const History = () => {
       const response = await api.get(`/history?page=${page}`);
       const data = response.data;
       setScans(data.scans || data.items || data.results || []);
-      setTotalPages(data.total_pages || data.pages || Math.ceil((data.total || 0) / 10) || 1);
+      setTotalPages(data.pagination?.total_pages ?? 1);
     } catch (err) {
       toast.error('Failed to load history');
     } finally {
@@ -114,6 +114,7 @@ const History = () => {
                         </Link>
                         <button
                           onClick={() => setDeleteModal({ open: true, scan })}
+                          aria-label={`Delete scan ${scan.product_name || scan.id}`}
                           className="inline-flex items-center space-x-1 text-sm text-red-600 hover:text-red-700 font-medium transition-colors"
                         >
                           <FiTrash2 className="h-4 w-4" />
@@ -131,7 +132,7 @@ const History = () => {
             <FiFileText className="h-12 w-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 mb-4">No scan history yet</p>
             <Link
-              to="/"
+              to="/upload"
               className="inline-flex items-center space-x-2 px-4 py-2 bg-primary-800 hover:bg-primary-900 text-white rounded-lg text-sm font-medium transition-colors"
             >
               <span>Start a scan</span>
@@ -169,6 +170,7 @@ const History = () => {
               <h3 className="text-lg font-semibold text-gray-900">Delete Scan</h3>
               <button
                 onClick={() => setDeleteModal({ open: false, scan: null })}
+                aria-label="Close delete confirmation"
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 <FiX className="h-5 w-5" />

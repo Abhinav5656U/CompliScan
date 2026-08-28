@@ -36,7 +36,7 @@ const Register = () => {
       toast.success('Account created! Please sign in.');
       navigate('/login');
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Registration failed. Please try again.';
+      const msg = err.response?.data?.error || 'Registration failed. Please try again.';
       setError(msg);
     } finally {
       setLoading(false);
@@ -144,11 +144,12 @@ const Register = () => {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="block w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                  className="block w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-gray-50"
+                  disabled
                 >
                   <option value="viewer">Viewer</option>
-                  <option value="officer">Officer</option>
                 </select>
+                <p className="text-xs text-gray-400 mt-1">New accounts are assigned Viewer role</p>
               </div>
 
               <div>

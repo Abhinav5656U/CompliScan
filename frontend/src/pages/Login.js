@@ -20,9 +20,9 @@ const Login = () => {
     try {
       await login(email, password);
       toast.success('Welcome back!');
-      navigate('/');
+      navigate('/upload');
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Invalid email or password';
+      const msg = err.response?.data?.error || 'Invalid email or password';
       setError(msg);
     } finally {
       setLoading(false);

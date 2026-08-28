@@ -89,6 +89,10 @@ def validate_compliance(pipeline_data, extracted_fields=None):
                     extracted_fields["net_quantity"] = match.group(0).strip()
                 elif rule["id"] == "manufacturer":
                     extracted_fields["manufacturer"] = match.group(0).strip()
+                elif rule["id"] == "country_of_origin":
+                    extracted_fields["country_of_origin"] = match.group(2).strip() if match.lastindex and match.lastindex >= 2 else match.group(0).strip()
+                elif rule["id"] == "consumer_care":
+                    extracted_fields["consumer_care"] = match.group(0).strip()
             else:
                 checks.append({
                     "rule_name": rule["name"],
@@ -144,6 +148,14 @@ def validate_compliance(pipeline_data, extracted_fields=None):
         overall_status = "review_required"
     else:
         overall_status = "non_compliant"
+    llm_data = pipeline_data.get("llm_extracted_data", {})
+    if llm_data:
+        if llm_data.get("mrp"): extracted_fields["mrp"] = llm_data.get("mrp")
+        if llm_data.get("net_quantity"): extracted_fields["net_quantity"] = llm_data.get("net_quantity")
+        if llm_data.get("manufacturer"): extracted_fields["manufacturer"] = llm_data.get("manufacturer")
+        
+        if llm_data.get("confidence_score", 100) < 80:
+            overall_status = "manual_review"
 
     return {
         "overall_status": overall_status,

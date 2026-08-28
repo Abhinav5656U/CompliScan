@@ -71,6 +71,16 @@
       "pattern": "[\\u0900-\\u097F]+",
       "error_msg": "Product must carry declarations in Hindi and English (or local language).",
       "severity": "warning"
+    },
+    {
+      "id": "country_of_origin",
+      "name": "Country of Origin Declaration",
+      "citation": "Rule 6(1)(d)",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?i)(Country\\s*of\\s*Origin|Made\\s*in|Manufactured\\s*in|Product\\s*of)[\\s:]*([A-Za-z\\s]+)",
+      "error_msg": "Country of origin declaration not found on label.",
+      "severity": "critical"
     }
   ]
 }

@@ -34,6 +34,7 @@ def upload_scan():
         file = request.files["image"]
         listing_url = request.form.get("listing_url")
         gtin = request.form.get("gtin")
+        state = request.form.get("state")
         if file.filename == "":
             return jsonify({"error": "No file selected"}), 400
 
@@ -67,6 +68,7 @@ def upload_scan():
             compliance_result=compliance_result,
             mismatch_result=mismatch_result,
             gtin=gtin,
+            state=state,
             overall_status=compliance_result.get("overall_status", "unknown"),
             product_name=product_name,
             manufacturer=manufacturer,
@@ -129,7 +131,7 @@ def get_report(scan_id):
             return jsonify({"error": "Failed to generate report"}), 500
 
         return send_file(
-            report_path,
+            os.path.abspath(report_path),
             mimetype="application/pdf",
             as_attachment=True,
             download_name=f"compliscan_report_{scan_id}.pdf",
