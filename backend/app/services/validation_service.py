@@ -166,6 +166,36 @@ def validate_compliance(pipeline_data, extracted_fields=None):
                     "severity": "warning"
                 })
 
+    # --- NEW: Bilingual/Script Compliance & Mistranslation Detector (USP 2) ---
+    if full_text:
+        from app.services.translation_check_service import check_translation_consistency
+        translation_result = check_translation_consistency(full_text)
+        
+        if translation_result["status"] == "mismatch":
+            checks.append({
+                "rule_name": "Bilingual Mistranslation Detector",
+                "status": "fail",
+                "message": "Mistranslations detected between English and Hindi: " + "; ".join(translation_result["mismatches"]),
+                "citation": "Rule 8 (Cross-check)",
+                "severity": "critical"
+            })
+        elif translation_result["status"] == "match":
+            checks.append({
+                "rule_name": "Bilingual Mistranslation Detector",
+                "status": "pass",
+                "message": "Hindi and English declarations match semantically.",
+                "citation": "Rule 8 (Cross-check)",
+                "severity": "info"
+            })
+        elif translation_result["status"] == "skipped" or translation_result["status"] == "error":
+             checks.append({
+                "rule_name": "Bilingual Mistranslation Detector",
+                "status": "human_review_required",
+                "message": "Translation cross-check could not be completed.",
+                "citation": "Rule 8 (Cross-check)",
+                "severity": "warning"
+            })
+
     # Overall status calculation
     failed_critical = sum(1 for c in checks if c["status"] == "fail")
     needs_review = sum(1 for c in checks if c["status"] in ["human_review_required", "likely_violation"])
@@ -176,6 +206,7 @@ def validate_compliance(pipeline_data, extracted_fields=None):
         overall_status = "review_required"
     else:
         overall_status = "non_compliant"
+        
     llm_data = pipeline_data.get("llm_extracted_data", {})
     if llm_data:
         if llm_data.get("product_name"): extracted_fields["product_name"] = llm_data.get("product_name")

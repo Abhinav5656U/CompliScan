@@ -82,6 +82,18 @@ def upload_scan():
             print(f"Stitching failed: {e}")
             stitched_path = image_paths[0]
 
+        import hashlib
+        try:
+            with open(stitched_path, "rb") as f:
+                image_hash = hashlib.sha256(f.read()).hexdigest()
+        except Exception as e:
+            print(f"Hashing failed: {e}")
+            image_hash = None
+
+        from app.services.cloudinary_service import upload_to_cloudinary
+        cloud_url = upload_to_cloudinary(stitched_path)
+        final_image_path = cloud_url if cloud_url else stitched_path
+
         pipeline_data = process_image_pipeline(image_paths)
         extracted_fields = {}
         compliance_result = validate_compliance(pipeline_data, extracted_fields)
@@ -94,7 +106,7 @@ def upload_scan():
 
         scan = Scan(
             user_id=user_id,
-            image_path=stitched_path,
+            image_path=final_image_path,
             ocr_text=ocr_text,
             extracted_fields=extracted_fields,
             compliance_result=compliance_result,
@@ -104,6 +116,7 @@ def upload_scan():
             overall_status=compliance_result.get("overall_status", "unknown"),
             product_name=product_name,
             manufacturer=manufacturer,
+            image_hash=image_hash,
         )
         db.session.add(scan)
         db.session.commit()
