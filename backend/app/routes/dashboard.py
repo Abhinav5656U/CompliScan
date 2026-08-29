@@ -104,6 +104,7 @@ def get_all_scans():
         per_page = min(per_page, 100)
 
         status = request.args.get("status")
+        source = request.args.get("source")
         date_from = request.args.get("date_from")
         date_to = request.args.get("date_to")
         manufacturer = request.args.get("manufacturer")
@@ -112,6 +113,8 @@ def get_all_scans():
 
         if status:
             query = query.filter_by(overall_status=status)
+        if source:
+            query = query.filter_by(source=source)
         if date_from:
             try:
                 df = datetime.fromisoformat(date_from).replace(tzinfo=timezone.utc)
@@ -229,3 +232,30 @@ def get_repeat_offenders():
 
     except Exception as e:
         return jsonify({"error": f"Failed to fetch alerts: {str(e)}"}), 500
+
+
+@dashboard_bp.route("/leads", methods=["GET"])
+@jwt_required()
+def get_citizen_leads():
+    try:
+        user, error = require_officer_or_admin()
+        if error:
+            return error
+
+        limit = request.args.get("limit", 50, type=int)
+
+        leads = (
+            Scan.query
+            .filter_by(source="citizen")
+            .filter(Scan.overall_status.in_(["non_compliant", "partially_compliant"]))
+            .order_by(Scan.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        return jsonify({
+            "leads": [lead.to_dict() for lead in leads]
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch leads: {str(e)}"}), 500

@@ -253,16 +253,16 @@ const LandingPage = () => {
                   to="/upload"
                   className="inline-flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-900/30"
                 >
-                  <span>Try Live Demo</span>
+                  <span>Inspector Demo</span>
                   <FiArrowRight className="h-4 w-4" />
                 </Link>
-                <button
-                  className="inline-flex items-center space-x-2 px-6 py-3 text-white/80 hover:text-white font-semibold rounded-xl border border-white/20 hover:border-white/40 hover:bg-white/5 transition-all"
-                  onClick={() => {}}
+                <Link
+                  to="/report"
+                  className="inline-flex items-center space-x-2 px-6 py-3 bg-amber-500 hover:bg-amber-400 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-amber-500/30"
                 >
-                  <FiPlay className="h-4 w-4" />
-                  <span>Watch Walkthrough</span>
-                </button>
+                  <FiAlertTriangle className="h-4 w-4" />
+                  <span>Report Violation (Citizen)</span>
+                </Link>
               </div>
             </div>
 

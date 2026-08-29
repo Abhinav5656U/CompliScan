@@ -82,6 +82,7 @@ const History = () => {
                 <tr>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Date</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
+                  <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Source</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
                   <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -97,6 +98,14 @@ const History = () => {
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       {scan.product_name || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      <div className="flex flex-col">
+                        <span className="capitalize font-medium">{scan.source || 'official'}</span>
+                        {scan.latitude && scan.longitude && (
+                           <span className="text-xs text-gray-400">{scan.latitude.toFixed(4)}, {scan.longitude.toFixed(4)}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(scan.overall_status || scan.status)}`}>

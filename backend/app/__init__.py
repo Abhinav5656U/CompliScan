@@ -55,5 +55,19 @@ def create_app(config_name=None):
 
     with app.app_context():
         db.create_all()
+        
+        # Ensure anonymous citizen user exists
+        from app.models import User
+        anon = User.query.filter_by(username="anonymous_citizen").first()
+        if not anon:
+            anon = User(
+                username="anonymous_citizen",
+                email="anonymous@compliscan.local",
+                role="citizen",
+                full_name="Anonymous Citizen"
+            )
+            anon.set_password("anonymous_password_123")
+            db.session.add(anon)
+            db.session.commit()
 
     return app
