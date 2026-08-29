@@ -2,6 +2,7 @@ import json
 import os
 import re
 
+from app.services.llm_judge_service import evaluate_rule
 RULES_FILE = os.path.join(os.path.dirname(__file__), "..", "rules", "rules_2026_amend_3.json")
 
 def load_rules():
@@ -137,6 +138,63 @@ def validate_compliance(pipeline_data, extracted_fields=None):
                     "citation": rule["citation"],
                     "severity": rule["severity"]
                 })
+        
+        elif rule_type == "llm_evaluation":
+            eval_result = evaluate_rule(rule["prompt"], combined_text_for_zone)
+            if eval_result == "pass":
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "pass",
+                    "message": "Groq LLM semantically verified compliance.",
+                    "citation": rule["citation"],
+                    "severity": "info"
+                })
+            elif eval_result == "fail":
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "fail" if rule["severity"] == "critical" else "likely_violation",
+                    "message": rule.get("error_msg", "Failed semantic evaluation."),
+                    "citation": rule["citation"],
+                    "severity": rule["severity"]
+                })
+            else:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "human_review_required",
+                    "message": "Groq LLM could not definitively pass or fail the rule.",
+                    "citation": rule["citation"],
+                    "severity": "warning"
+                })
+
+    # --- NEW: Bilingual/Script Compliance & Mistranslation Detector (USP 2) ---
+    if full_text:
+        from app.services.translation_check_service import check_translation_consistency
+        translation_result = check_translation_consistency(full_text)
+        
+        if translation_result["status"] == "mismatch":
+            checks.append({
+                "rule_name": "Bilingual Mistranslation Detector",
+                "status": "fail",
+                "message": "Mistranslations detected between English and Hindi: " + "; ".join(translation_result["mismatches"]),
+                "citation": "Rule 8 (Cross-check)",
+                "severity": "critical"
+            })
+        elif translation_result["status"] == "match":
+            checks.append({
+                "rule_name": "Bilingual Mistranslation Detector",
+                "status": "pass",
+                "message": "Hindi and English declarations match semantically.",
+                "citation": "Rule 8 (Cross-check)",
+                "severity": "info"
+            })
+        elif translation_result["status"] == "skipped" or translation_result["status"] == "error":
+             checks.append({
+                "rule_name": "Bilingual Mistranslation Detector",
+                "status": "human_review_required",
+                "message": "Translation cross-check could not be completed.",
+                "citation": "Rule 8 (Cross-check)",
+                "severity": "warning"
+            })
 
     # Overall status calculation
     failed_critical = sum(1 for c in checks if c["status"] == "fail")
@@ -148,11 +206,17 @@ def validate_compliance(pipeline_data, extracted_fields=None):
         overall_status = "review_required"
     else:
         overall_status = "non_compliant"
+        
     llm_data = pipeline_data.get("llm_extracted_data", {})
     if llm_data:
+        if llm_data.get("product_name"): extracted_fields["product_name"] = llm_data.get("product_name")
         if llm_data.get("mrp"): extracted_fields["mrp"] = llm_data.get("mrp")
         if llm_data.get("net_quantity"): extracted_fields["net_quantity"] = llm_data.get("net_quantity")
         if llm_data.get("manufacturer"): extracted_fields["manufacturer"] = llm_data.get("manufacturer")
+        if llm_data.get("manufacturing_date"): extracted_fields["manufacturing_date"] = llm_data.get("manufacturing_date")
+        if llm_data.get("unit_sale_price"): extracted_fields["unit_sale_price"] = llm_data.get("unit_sale_price")
+        if llm_data.get("batch_number"): extracted_fields["batch_number"] = llm_data.get("batch_number")
+        if llm_data.get("address"): extracted_fields["address"] = llm_data.get("address")
         
         if llm_data.get("confidence_score", 100) < 80:
             overall_status = "manual_review"

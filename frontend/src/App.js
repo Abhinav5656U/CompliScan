@@ -14,6 +14,7 @@ import ScanResult from './pages/ScanResult';
 import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import IndiaMap from './pages/IndiaMap';
+import CitizenReport from './pages/CitizenReport';
 
 const App = () => {
   return (
@@ -25,6 +26,12 @@ const App = () => {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/report" element={
+              <>
+                <Navbar />
+                <main><CitizenReport /></main>
+              </>
+            } />
 
             {/* Protected app routes */}
             <Route

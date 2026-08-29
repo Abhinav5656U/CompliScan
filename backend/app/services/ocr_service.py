@@ -24,9 +24,9 @@ def preprocess_image_for_ocr(image_path):
     cv2.imwrite(temp_path, denoised)
     return temp_path
 
-def extract_structured_data_gemini_vision(image_path):
+def extract_structured_data_gemini_vision(image_paths):
     """
-    Primary Multimodal extraction. Feeds the image directly to Gemini Flash.
+    Primary Multimodal extraction. Feeds all images directly to Gemini Flash.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -44,18 +44,23 @@ Provide a 'confidence_score' from 0 to 100 representing how confident you are in
 Return ONLY valid JSON matching this schema, without any markdown formatting:
 {
   "raw_text_detected": "string containing all visible text",
+  "product_name": "string or null",
   "mrp": "string or null",
+  "unit_sale_price": "string or null",
   "manufacturer": "string or null",
+  "address": "string or null",
   "net_quantity": "string or null",
+  "manufacturing_date": "string or null",
+  "batch_number": "string or null",
   "confidence_score": integer
 }
 """
     try:
         import PIL.Image
-        img = PIL.Image.open(image_path)
+        imgs = [PIL.Image.open(p) for p in image_paths]
         try:
             model = genai.GenerativeModel("gemini-2.5-flash")
-            response = model.generate_content([prompt, img])
+            response = model.generate_content([prompt] + imgs)
         except Exception as e:
             raise e
                 
@@ -127,9 +132,14 @@ Raw OCR Text:
 
 Return ONLY valid JSON matching this schema, without any markdown formatting:
 {{
+  "product_name": "string or null",
   "mrp": "string or null",
+  "unit_sale_price": "string or null",
   "manufacturer": "string or null",
+  "address": "string or null",
   "net_quantity": "string or null",
+  "manufacturing_date": "string or null",
+  "batch_number": "string or null",
   "confidence_score": integer
 }}
 """
@@ -153,6 +163,7 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
         return {"confidence_score": 0}
 
 def assign_heuristic_zones(extracted_data, image_height):
+    # Pass 1: Text-based heuristics
     for item in extracted_data:
         text = item["text"].lower()
         y_coords = [p[1] for p in item["bbox"]]
@@ -162,13 +173,42 @@ def assign_heuristic_zones(extracted_data, image_height):
             item["zone"] = "mrp_zone"
         elif "care" in text or "helpline" in text or "email" in text or "contact" in text:
             item["zone"] = "consumer_care_zone"
-        elif center_y > image_height * 0.7:
-             if item["zone"] == "unknown":
-                 item["zone"] = "bottom_panel"
         elif "mfg" in text or "manufactured" in text or "marketed" in text:
             item["zone"] = "manufacturer_zone"
         elif "net" in text or "qty" in text or "weight" in text:
             item["zone"] = "net_qty_zone"
+        elif center_y > image_height * 0.7:
+             if item.get("zone", "unknown") == "unknown":
+                 item["zone"] = "bottom_panel"
+
+    # Pass 2: Spatial proximity assignment
+    for unknown_item in [item for item in extracted_data if item.get("zone", "unknown") == "unknown"]:
+        unk_y_coords = [p[1] for p in unknown_item["bbox"]]
+        unk_x_coords = [p[0] for p in unknown_item["bbox"]]
+        unk_center_y = sum(unk_y_coords) / len(unk_y_coords)
+        unk_center_x = sum(unk_x_coords) / len(unk_x_coords)
+        
+        best_dist = float('inf')
+        best_zone = "unknown"
+        
+        # Find the closest known zone
+        for known_item in [item for item in extracted_data if item.get("zone", "unknown") not in ("unknown", "bottom_panel")]:
+            k_y_coords = [p[1] for p in known_item["bbox"]]
+            k_x_coords = [p[0] for p in known_item["bbox"]]
+            k_center_y = sum(k_y_coords) / len(k_y_coords)
+            k_center_x = sum(k_x_coords) / len(k_x_coords)
+            
+            # Simple Euclidean distance
+            dist = ((unk_center_x - k_center_x) ** 2 + (unk_center_y - k_center_y) ** 2) ** 0.5
+            
+            # If distance is small enough (e.g., less than 15% of image height), merge it
+            if dist < best_dist and dist < (image_height * 0.15):
+                best_dist = dist
+                best_zone = known_item["zone"]
+                
+        if best_zone != "unknown":
+            unknown_item["zone"] = best_zone
+
     return extracted_data
 
 def detect_credit_card_reference(image_path):
@@ -201,9 +241,9 @@ def detect_credit_card_reference(image_path):
             
     return None
 
-def process_image_pipeline(image_path):
+def process_image_pipeline(image_paths):
     # Try Gemini Vision First
-    llm_data = extract_structured_data_gemini_vision(image_path)
+    llm_data = extract_structured_data_gemini_vision(image_paths)
     
     if llm_data and "raw_text_detected" in llm_data:
         print("Successfully extracted using Gemini Vision!")
@@ -221,14 +261,17 @@ def process_image_pipeline(image_path):
         }
         
     print("Falling back to PaddleOCR pipeline...")
-    img = cv2.imread(image_path)
+    img = cv2.imread(image_paths[0])
     height, width = (0, 0)
     if img is not None:
         height, width, _ = img.shape
         
-    raw_data = extract_text(image_path)
-    zoned_data = assign_heuristic_zones(raw_data, height)
-    pixels_per_mm = detect_credit_card_reference(image_path)
+    all_raw_data = []
+    for path in image_paths:
+        all_raw_data.extend(extract_text(path))
+        
+    zoned_data = assign_heuristic_zones(all_raw_data, height)
+    pixels_per_mm = detect_credit_card_reference(image_paths[0])
     
     if pixels_per_mm:
         for item in zoned_data:

@@ -21,6 +21,7 @@ const EmptyChart = ({ message }) => (
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [scans, setScans] = useState([]);
+  const [leads, setLeads] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -57,14 +58,23 @@ const Dashboard = () => {
     }
   }, [page, filters]);
 
+  const fetchLeads = useCallback(async () => {
+    try {
+      const response = await api.get('/dashboard/leads?limit=10');
+      setLeads(response.data.leads || []);
+    } catch (err) {
+      toast.error('Failed to load crowdsourced leads');
+    }
+  }, []);
+
   useEffect(() => {
     const loadAll = async () => {
       setLoading(true);
-      await Promise.all([fetchStats(), fetchScans()]);
+      await Promise.all([fetchStats(), fetchScans(), fetchLeads()]);
       setLoading(false);
     };
     loadAll();
-  }, [fetchStats, fetchScans]);
+  }, [fetchStats, fetchScans, fetchLeads]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -328,6 +338,70 @@ const Dashboard = () => {
               <span>Next</span>
               <FiChevronRight className="h-4 w-4" />
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Crowdsourced Leads Section */}
+      <div className="mt-8 bg-white rounded-2xl shadow-sm border border-amber-200 overflow-hidden">
+        <div className="p-6 border-b border-gray-200 bg-amber-50/50">
+          <div className="flex items-center space-x-2">
+            <FiAlertTriangle className="h-5 w-5 text-amber-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Risk Queue: Crowdsourced Leads</h3>
+          </div>
+          <p className="text-sm text-gray-600 mt-1">High-risk, non-compliant products reported by citizens in the field.</p>
+        </div>
+        
+        {leads && leads.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                  <th className="px-6 py-4">Report Date</th>
+                  <th className="px-6 py-4">Product details</th>
+                  <th className="px-6 py-4">Location</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                {leads.map((lead) => (
+                  <tr key={lead.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
+                      {new Date(lead.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900">{lead.product_name || 'Unknown'}</div>
+                      <div className="text-gray-500 text-xs mt-0.5">{lead.manufacturer || 'Unknown'}</div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {lead.latitude && lead.longitude 
+                        ? `${lead.latitude.toFixed(4)}, ${lead.longitude.toFixed(4)}` 
+                        : (lead.state || 'Unknown')}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${getStatusBadge(lead.overall_status)}`}>
+                        {lead.overall_status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link
+                        to={`/scan/${lead.id}`}
+                        className="inline-flex items-center space-x-1 text-sm text-primary-800 hover:text-primary-600 font-medium"
+                      >
+                        <FiEye className="h-4 w-4" />
+                        <span>Inspect</span>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="p-8 text-center">
+            <FiCheckCircle className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500">No high-risk citizen leads right now.</p>
           </div>
         )}
       </div>

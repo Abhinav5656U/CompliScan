@@ -14,13 +14,13 @@
     },
     {
       "id": "tax_inclusion",
-      "name": "MRP Inclusive of All Taxes",
+      "name": "MRP Inclusive of All Taxes (Semantic Check)",
       "citation": "Rule 6(1)(e) - Third Amendment Rules 2026",
       "field": "mrp_zone",
-      "type": "regex",
-      "pattern": "(?i)(inclusive|includes?)\\s*(of\\s*)?all\\s*tax(es)?",
-      "error_msg": "Statement 'MRP inclusive of all taxes' must be clearly printed near MRP.",
-      "severity": "warning"
+      "type": "llm_evaluation",
+      "prompt": "Look at the text and determine if it explicitly states or implies that the price is inclusive of all taxes. Be tolerant of typos like 'inv. of all taxes', 'inc. taxes', or '(incl.)'. If the concept of tax inclusion is present, respond PASS. If it is completely missing, respond FAIL.",
+      "error_msg": "Tax inclusion statement not found semantically.",
+      "severity": "critical"
     },
     {
       "id": "net_quantity",
@@ -81,6 +81,56 @@
       "pattern": "(?i)(Country\\s*of\\s*Origin|Made\\s*in|Manufactured\\s*in|Product\\s*of)[\\s:]*([A-Za-z\\s]+)",
       "error_msg": "Country of origin declaration not found on label.",
       "severity": "critical"
+    },
+    {
+      "id": "manufacturing_date",
+      "name": "Manufacturing/Packing Date",
+      "citation": "Rule 6(1)(d)",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?i)(MFD|PKD|Packed|Manufactured|Date\\s*of\\s*Packaging|Mfg\\.?\\s*Date)[\\s:]*([0-9]{1,2}[/\\-.][0-9]{1,2}[/\\-.][0-9]{2,4}|[A-Za-z]{3}\\s*[0-9]{4}|[0-9]{2,4})",
+      "error_msg": "Manufacturing or packing date not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "unit_sale_price",
+      "name": "Unit Sale Price",
+      "citation": "Rule 6(1)(e)",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?i)(Rs\\.?|₹|INR)\\s*[0-9,.]+\\s*/\\s*(g|kg|ml|l|ltr|litre|liters|gm|kgs|pc|unit)",
+      "error_msg": "Unit sale price declaration not found.",
+      "severity": "warning"
+    },
+    {
+      "id": "batch_number",
+      "name": "Batch/Lot Number",
+      "citation": "Rule 6(1)(f)",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?i)(Batch|Lot|B\\.?\\s*No\\.?|L\\.?\\s*No\\.?)[\\s:]*([A-Za-z0-9\\-]+)",
+      "error_msg": "Batch or Lot number not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "address",
+      "name": "Complete Address",
+      "citation": "Rule 6(1)(a)",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?i)([0-9]{6}|PIN\\s*-\\s*[0-9]{6}|Code\\s*-\\s*[0-9]{6})",
+      "error_msg": "Manufacturer/Packer address with PIN code not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "misleading_claims",
+      "name": "Misleading Marketing Claims",
+      "citation": "Section 18",
+      "field": "any",
+      "type": "llm_evaluation",
+      "prompt": "Analyze the text for contradictory or misleading marketing claims. For example, if it claims to be '100% Fresh' or '100% Natural' but lists 'Artificial Flavors', 'Preservatives', or 'Reconstituted' elsewhere. If there are NO misleading contradictions, respond PASS. If you detect a clear misleading contradiction, respond FAIL.",
+      "error_msg": "Misleading or contradictory claims detected on packaging.",
+      "severity": "warning"
     }
   ]
 }

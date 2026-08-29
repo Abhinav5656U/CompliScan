@@ -55,16 +55,25 @@ class Scan(db.Model):
     manufacturer = db.Column(db.String(200), nullable=True)
     gtin = db.Column(db.String(50), nullable=True)
     state = db.Column(db.String(100), nullable=True)
+    source = db.Column(db.String(50), nullable=False, default="official")
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
     mismatch_result = db.Column(db.JSON, nullable=True)
+    image_hash = db.Column(db.String(64), nullable=True)
     created_at = db.Column(
         db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
 
     def to_dict(self):
+        img_url = None
+        if self.image_path and self.image_path.startswith("http"):
+            img_url = self.image_path
+
         return {
             "id": self.id,
             "user_id": self.user_id,
             "image_path": self.image_path,
+            "image_url": img_url,
             "ocr_text": self.ocr_text,
             "extracted_fields": self.extracted_fields,
             "compliance_result": self.compliance_result,
@@ -73,6 +82,10 @@ class Scan(db.Model):
             "manufacturer": self.manufacturer,
             "gtin": self.gtin,
             "state": self.state,
+            "source": self.source,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
             "mismatch_result": self.mismatch_result,
+            "image_hash": self.image_hash,
             "created_at": self.created_at.isoformat(),
         }
