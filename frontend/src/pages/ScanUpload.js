@@ -17,7 +17,6 @@ const INDIA_STATES = [
 
 const BarcodeScanner = ({ onScan, onClose }) => {
   const scannerRef = useRef(null);
-  const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
     let html5QrCode = null;
