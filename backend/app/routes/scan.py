@@ -179,7 +179,7 @@ def get_report(scan_id):
             os.path.abspath(report_path),
             mimetype="application/pdf",
             as_attachment=True,
-            download_name=f"compliscan_report_{scan_id}.pdf",
+            download_name=f"meterolens_report_{scan_id}.pdf",
         )
 
     except Exception as e:

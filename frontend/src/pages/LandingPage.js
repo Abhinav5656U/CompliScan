@@ -188,7 +188,7 @@ const LandingPage = () => {
             <div className="bg-primary-800 rounded-lg p-1.5">
               <FiSearch className="h-5 w-5 text-white" />
             </div>
-            <span className="font-heading text-xl font-bold text-gray-900 tracking-tight">CompliScan</span>
+            <span className="font-heading text-xl font-bold text-gray-900 tracking-tight">MeteroLens</span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-8">
@@ -245,7 +245,7 @@ const LandingPage = () => {
               </h1>
 
               <p className="mt-6 text-base sm:text-lg text-white/60 leading-relaxed max-w-xl">
-                Upload a product label photo. CompliScan uses OCR and rule-based verification to instantly check MRP, net quantity, manufacturer details, and 8 more mandatory declarations — with legal citations for every check.
+                Upload a product label photo. MeteroLens uses OCR and rule-based verification to instantly check MRP, net quantity, manufacturer details, and 8 more mandatory declarations — with legal citations for every check.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
@@ -382,7 +382,7 @@ const LandingPage = () => {
                 <div className="bg-primary-700 rounded-lg p-1.5">
                   <FiSearch className="h-5 w-5 text-white" />
                 </div>
-                <span className="font-heading text-xl font-bold tracking-tight">CompliScan</span>
+                <span className="font-heading text-xl font-bold tracking-tight">MeteroLens</span>
               </div>
               <p className="text-sm text-gray-400 leading-relaxed max-w-sm">
                 AI-powered compliance scanning for Legal Metrology enforcement. Built for Smart India Hackathon 2026.
@@ -393,7 +393,7 @@ const LandingPage = () => {
               <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Links</h4>
               <ul className="space-y-2.5">
                 <li>
-                  <a href="https://github.com/Abhinav5656U/CompliScan" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
+                  <a href="https://github.com/Abhinav5656U/MeteroLens" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
                     <FiGithub className="h-3.5 w-3.5" />
                     <span>GitHub</span>
                   </a>
@@ -405,7 +405,7 @@ const LandingPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="mailto:team@compliscan.in" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
+                  <a href="mailto:team@meterolens.in" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
                     <FiMail className="h-3.5 w-3.5" />
                     <span>Contact</span>
                   </a>
@@ -416,13 +416,13 @@ const LandingPage = () => {
             <div>
               <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Team</h4>
               <p className="text-sm text-gray-400 leading-relaxed">
-                CompliScan was built by a 6-member interdisciplinary team for Smart India Hackathon 2026, Problem Statement PS26034.
+                MeteroLens was built by a 6-member interdisciplinary team for Smart India Hackathon 2026, Problem Statement PS26034.
               </p>
             </div>
           </div>
 
           <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
-            <p className="text-xs text-gray-500">&copy; {new Date().getFullYear()} CompliScan. All rights reserved.</p>
+            <p className="text-xs text-gray-500">&copy; {new Date().getFullYear()} MeteroLens. All rights reserved.</p>
             <p className="text-xs text-gray-600">Smart India Hackathon 2026 &middot; PS26034</p>
           </div>
         </div>

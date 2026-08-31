@@ -273,7 +273,7 @@ const ScanResult = () => {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `compliscan-report-${id}.pdf`);
+      link.setAttribute('download', `meterolens-report-${id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();

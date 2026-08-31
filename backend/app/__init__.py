@@ -18,7 +18,7 @@ def create_app(config_name=None):
         app.config["TESTING"] = True
     else:
         app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-            "DATABASE_URL", "postgresql://postgres:password@localhost:5432/compliscan"
+            "DATABASE_URL", "postgresql://postgres:password@localhost:5432/meterolens"
         )
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
@@ -62,7 +62,7 @@ def create_app(config_name=None):
         if not anon:
             anon = User(
                 username="anonymous_citizen",
-                email="anonymous@compliscan.local",
+                email="anonymous@meterolens.local",
                 role="citizen",
                 full_name="Anonymous Citizen"
             )

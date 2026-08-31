@@ -1,4 +1,4 @@
-CompliScan Feature Updates
+MeteroLens Feature Updates
 
 1. AI OCR Integration: Integrated EasyOCR to extract text directly from uploaded product packaging images.
 2. Compliance Rule Engine: Built a validation system to parse OCR text against FSSAI packaging rules (checks for MRP, Manufacturer details, Net Weight, and Best Before dates).

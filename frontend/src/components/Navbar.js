@@ -40,7 +40,7 @@ const Navbar = () => {
               <div className="bg-white rounded-lg p-1.5">
                 <FiSearch className="h-5 w-5 text-primary-800" />
               </div>
-              <span className="text-white text-xl font-bold tracking-tight">CompliScan</span>
+              <span className="text-white text-xl font-bold tracking-tight">MeteroLens</span>
             </Link>
           </div>
 

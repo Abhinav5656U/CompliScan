@@ -1,4 +1,4 @@
-# CompliScan - Legal Metrology Compliance Checker
+# MeteroLens - Legal Metrology Compliance Checker
 
 AI-powered system to check compliance of packaged commodities under Legal Metrology (Packaged Commodities) Rules, 2011.
 
@@ -37,7 +37,7 @@ Software System to check compliance of Packaged Commodities by scanning products
 
 ## Project Structure
 ```
-CompliScan/
+MeteroLens/
 ├── backend/
 │   ├── app/
 │   │   ├── __init__.py          # App factory
@@ -81,8 +81,8 @@ CompliScan/
 ### Option 1: Docker (Recommended)
 ```bash
 # Clone and configure
-git clone https://github.com/Abhinav5656U/CompliScan.git
-cd CompliScan
+git clone https://github.com/Abhinav5656U/MeteroLens.git
+cd MeteroLens
 cp .env.example .env
 
 # Edit .env with your settings, then:
@@ -103,7 +103,7 @@ venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 
 # Create PostgreSQL database
-createdb compliscan
+createdb meterolens
 
 # Configure
 cp ../.env.example ../.env
@@ -126,7 +126,7 @@ Frontend runs at http://localhost:3000
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","email":"admin@compliscan.in","password":"admin123","role":"admin","full_name":"System Admin"}'
+  -d '{"username":"admin","email":"admin@meterolens.in","password":"admin123","role":"admin","full_name":"System Admin"}'
 ```
 
 ## API Endpoints
