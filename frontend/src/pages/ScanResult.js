@@ -31,7 +31,6 @@ function getZoneStatus(zone, checks) {
   const zoneLower = zone?.toLowerCase() || '';
   for (const check of checks) {
     const name = (check.rule_name || '').toLowerCase();
-    const citation = (check.citation || '').toLowerCase();
     if (
       (zoneLower === 'mrp_zone' && (name.includes('mrp') || name.includes('price'))) ||
       (zoneLower === 'net_qty_zone' && (name.includes('quantity') || name.includes('weight') || name.includes('net'))) ||
@@ -182,10 +181,6 @@ const MismatchCard = ({ mismatch }) => {
   if (!mismatch || mismatch.status === 'skipped' || mismatch.status === 'error') return null;
 
   const isMatch = mismatch.status === 'match';
-  const physical = {
-    MRP: mismatch.listing_data?.mrp || '\u2014',
-    Country: mismatch.listing_data?.country_of_origin || '\u2014',
-  };
 
   return (
     <div className={`rounded-xl border overflow-hidden ${isMatch ? 'border-green-200' : 'border-red-200'}`}>

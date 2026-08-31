@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
-  FiSearch, FiUpload, FiCheckCircle, FiXCircle, FiFileText, FiShield, FiBarChart2,
-  FiEye, FiZap, FiArrowRight, FiPlay, FiChevronRight, FiGlobe,
-  FiGrid, FiCrosshair, FiAlertTriangle, FiBook, FiGithub, FiMail, FiClock
+  FiSearch, FiUpload, FiXCircle, FiFileText, FiShield, FiBarChart2,
+  FiZap, FiArrowRight, FiGlobe,
+  FiCrosshair, FiAlertTriangle, FiBook, FiGithub, FiMail
 } from 'react-icons/fi';
 
 const NAV_LINKS = [
@@ -162,7 +162,6 @@ const HeroMockup = () => (
 );
 
 const LandingPage = () => {
-  const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -399,7 +398,7 @@ const LandingPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
+                  <a href="#!" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
                     <FiBook className="h-3.5 w-3.5" />
                     <span>Documentation</span>
                   </a>
