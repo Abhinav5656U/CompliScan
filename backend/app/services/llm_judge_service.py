@@ -21,8 +21,11 @@ def evaluate_rule(prompt, text):
         RULE TO EVALUATE:
         {prompt}
         
-        You must respond with EXACTLY one word: PASS or FAIL.
-        Do not explain your reasoning. Just PASS or FAIL.
+        You must respond with valid JSON matching this schema exactly:
+        {{
+            "status": "PASS" or "FAIL",
+            "evidence": "exact short quote from text that justifies this, or null if missing"
+        }}
         """
 
         chat_completion = client.chat.completions.create(
@@ -36,18 +39,25 @@ def evaluate_rule(prompt, text):
                     "content": f"Packaging Text:\n{text}"
                 }
             ],
-            model="llama3-8b-8192",
+            model="qwen/qwen3.8-27b",
             temperature=0,
-            max_tokens=10,
+            max_tokens=100,
+            response_format={"type": "json_object"}
         )
 
-        result = chat_completion.choices[0].message.content.strip().upper()
-        if "PASS" in result:
-            return "pass"
-        elif "FAIL" in result:
-            return "fail"
+        import json
+        response_text = chat_completion.choices[0].message.content.strip()
+        result = json.loads(response_text)
+        
+        status = result.get("status", "").upper()
+        evidence = result.get("evidence")
+        
+        if status == "PASS":
+            return {"status": "pass", "evidence": evidence}
+        elif status == "FAIL":
+            return {"status": "fail", "evidence": evidence}
         else:
-            return "human_review_required"
+            return {"status": "human_review_required", "evidence": None}
 
     except Exception as e:
         print(f"Groq Evaluation Error: {e}")
