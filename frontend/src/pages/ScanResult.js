@@ -5,6 +5,7 @@ import {
   FiShield, FiEye, FiEyeOff, FiFileText, FiExternalLink, FiPackage
 } from 'react-icons/fi';
 import api from '../utils/api';
+import STATUS_COLORS from '../utils/statusColors';
 import { toast } from 'react-toastify';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
@@ -123,28 +124,29 @@ const BboxOverlay = ({ extractedData, imgNaturalWidth, imgNaturalHeight, display
 };
 
 const StatusChip = ({ status }) => {
-  let bg, text, border, label, Icon;
+  let label, Icon;
   switch (status) {
     case 'pass':
-      bg = 'bg-green-50'; text = 'text-green-800'; border = 'border-green-200';
       label = 'PASS'; Icon = FiCheckCircle;
       break;
     case 'fail':
-      bg = 'bg-red-50'; text = 'text-red-800'; border = 'border-red-200';
       label = 'FAIL'; Icon = FiXCircle;
       break;
     case 'human_review_required':
     case 'likely_violation':
-      bg = 'bg-amber-50'; text = 'text-amber-800'; border = 'border-amber-200';
       label = status === 'likely_violation' ? 'VIOLATION' : 'REVIEW';
       Icon = FiAlertTriangle;
       break;
     default:
-      bg = 'bg-gray-50'; text = 'text-gray-700'; border = 'border-gray-200';
       label = 'N/A'; Icon = FiAlertTriangle;
   }
+  const tone = (status === 'pass') ? 'pass'
+    : (status === 'fail') ? 'fail'
+    : (status === 'human_review_required' || status === 'likely_violation') ? 'review'
+    : 'default';
+  const c = STATUS_COLORS[tone] || STATUS_COLORS.default;
   return (
-    <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${bg} ${text} ${border}`}>
+    <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold border ${c.bg} ${c.text} ${c.border}`}>
       <Icon className="h-3.5 w-3.5" />
       <span>{label}</span>
     </span>
@@ -307,34 +309,39 @@ const ScanResult = () => {
 
   const verdictConfig = {
     compliant: {
-      bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-900',
-      icon: FiCheckCircle, iconColor: 'text-green-600',
+      tone: 'pass', icon: FiCheckCircle,
       label: 'Compliant',
       subtitle: 'All checks passed',
-      accent: 'bg-green-600',
     },
     non_compliant: {
-      bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900',
-      icon: FiXCircle, iconColor: 'text-red-600',
+      tone: 'fail', icon: FiXCircle,
       label: 'Non-Compliant',
       subtitle: 'Critical violations detected',
-      accent: 'bg-red-600',
     },
     review_required: {
-      bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-900',
-      icon: FiAlertTriangle, iconColor: 'text-amber-600',
+      tone: 'review', icon: FiAlertTriangle,
       label: 'Human Review Required',
       subtitle: 'Needs officer verification',
-      accent: 'bg-amber-600',
     },
   };
-  const verdict = verdictConfig[overallStatus] || verdictConfig.compliant;
+  const verdictBase = verdictConfig[overallStatus] || verdictConfig.compliant;
+  const toneColors = STATUS_COLORS[verdictBase.tone] || STATUS_COLORS.default;
+  const verdict = {
+    bg: toneColors.bg,
+    border: toneColors.border,
+    text: toneColors.textStrong,
+    icon: verdictBase.icon,
+    iconColor: toneColors.icon,
+    label: verdictBase.label,
+    subtitle: verdictBase.subtitle,
+    accent: toneColors.accent,
+  };
   const VerdictIcon = verdict.icon;
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Verdict Banner */}
-      <div className={`${verdict.bg} border-b ${verdict.border}`}>
+      <div className={`${verdict.bg} border-b ${verdict.border} verdict-enter`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -349,7 +356,7 @@ const ScanResult = () => {
                 <VerdictIcon className="h-7 w-7 text-white" />
               </div>
               <div>
-                <h1 className={`text-2xl sm:text-3xl font-black ${verdict.text} tracking-tight`}>{verdict.label}</h1>
+                <h1 className={`font-heading text-2xl sm:text-3xl font-black ${verdict.text} tracking-tight`}>{verdict.label}</h1>
                 <p className={`text-sm ${verdict.text} opacity-70 mt-0.5`}>{verdict.subtitle}</p>
               </div>
             </div>

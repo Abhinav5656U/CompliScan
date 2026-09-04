@@ -9,6 +9,7 @@ import {
   FiChevronLeft, FiChevronRight, FiMessageCircle
 } from 'react-icons/fi';
 import api from '../utils/api';
+import STATUS_COLORS, { getStatusTone } from '../utils/statusColors';
 import { toast } from 'react-toastify';
 
 const EmptyChart = ({ message }) => (
@@ -82,12 +83,9 @@ const Dashboard = () => {
   };
 
   const getStatusBadge = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'compliant': return 'bg-green-100 text-green-800';
-      case 'non_compliant': case 'non-compliant': return 'bg-red-100 text-red-800';
-      case 'partial': case 'partially_compliant': case 'partially-compliant': return 'bg-amber-100 text-amber-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+    const tone = getStatusTone(status);
+    const config = STATUS_COLORS[tone] || STATUS_COLORS.default;
+    return config.badge;
   };
 
   const trendData = (stats?.scans_per_day || []).map(d => ({
@@ -150,7 +148,7 @@ const Dashboard = () => {
         <div className="mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+              <h1 className="font-heading text-2xl font-bold text-gray-900">Dashboard</h1>
               <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
             </div>
             <Link
@@ -164,7 +162,7 @@ const Dashboard = () => {
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-16 text-center">
           <FiFileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">No scans yet</h2>
+          <h2 className="font-heading text-xl font-semibold text-gray-900 mb-2">No scans yet</h2>
           <p className="text-gray-500 mb-6 max-w-md mx-auto">
             Upload your first product label to see compliance analytics and scan trends here.
           </p>
@@ -184,7 +182,7 @@ const Dashboard = () => {
       <div className="mb-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <h1 className="font-heading text-2xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
           </div>
           <Link
@@ -217,7 +215,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 min-w-0 overflow-hidden">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Scans Over Time</h3>
           {trendData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -235,7 +233,7 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 min-w-0 overflow-hidden">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Violations</h3>
           {violationsData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>

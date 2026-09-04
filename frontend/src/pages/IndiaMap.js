@@ -170,7 +170,7 @@ const IndiaMap = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-6 relative shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 relative shadow-sm min-w-0 overflow-hidden">
         <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center space-x-2">
           <FiMapPin className="h-5 w-5 text-primary-800" />
           <span>Scan Density by State</span>
@@ -178,7 +178,8 @@ const IndiaMap = () => {
 
         <MapTooltip info={tooltipContent} pos={tooltipPos} />
 
-        <div className="flex justify-center bg-[#f8fafc] rounded-xl border border-gray-100 p-4 relative" style={{ overflow: "hidden" }}>
+        <div className="flex justify-center bg-[#f8fafc] rounded-xl border border-gray-100 p-4 relative w-full" style={{ overflow: "hidden" }}>
+          <div className="w-full max-w-full overflow-hidden" style={{ minWidth: 0 }}>
             <ComposableMap 
               projection="geoMercator"
               projectionConfig={{
@@ -246,6 +247,7 @@ const IndiaMap = () => {
                 }
               </Geographies>
             </ComposableMap>
+          </div>
         </div>
 
         <div className="flex flex-wrap justify-center gap-6 mt-6 text-sm text-gray-700 font-medium">

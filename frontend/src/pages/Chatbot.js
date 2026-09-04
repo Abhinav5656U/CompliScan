@@ -150,7 +150,7 @@ const Chatbot = () => {
             <FiMessageCircle className="h-5 w-5" />
             <span className="text-sm font-semibold uppercase tracking-wide">Compliance assistant</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Ask, understand, act</h1>
+          <h1 className="font-heading text-3xl font-bold text-gray-900">Ask, understand, act</h1>
           <p className="text-gray-600 mt-2">Discuss scan results and prepare a complaint from one workspace.</p>
         </div>
         <div className="flex items-center gap-2">

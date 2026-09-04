@@ -1,0 +1,18 @@
+{
+  "name": "MeteroLens - Legal Metrology Compliance Scanner",
+  "short_name": "MeteroLens",
+  "description": "AI-powered compliance scanning for Legal Metrology enforcement. Built for Smart India Hackathon 2026.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1e40af",
+  "theme_color": "#1e40af",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
