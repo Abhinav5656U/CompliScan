@@ -61,6 +61,10 @@ def validate_compliance(pipeline_data, extracted_fields=None):
             items_to_check = extracted_data
 
         combined_text_for_zone = " ".join([i["text"] for i in items_to_check])
+        
+        # Filter out YOLO placeholder tokens so Groq/regex gets clean text
+        import re as _re
+        combined_text_for_zone = _re.sub(r'\[YOLO:\w+\]', '', combined_text_for_zone).strip()
 
         if rule_type == "regex":
             pattern = re.compile(rule["pattern"])
@@ -141,15 +145,26 @@ def validate_compliance(pipeline_data, extracted_fields=None):
         
         elif rule_type == "llm_evaluation":
             eval_result = evaluate_rule(rule["prompt"], combined_text_for_zone)
-            if eval_result == "pass":
+            
+            if isinstance(eval_result, dict):
+                status = eval_result.get("status", "human_review_required")
+                evidence = eval_result.get("evidence")
+            else:
+                status = "human_review_required"
+                evidence = None
+                
+            if status == "pass":
                 checks.append({
                     "rule_name": rule["name"],
                     "status": "pass",
-                    "message": "Groq LLM semantically verified compliance.",
+                    "message": f"Found: {evidence}" if evidence else "Groq LLM semantically verified compliance.",
                     "citation": rule["citation"],
                     "severity": "info"
                 })
-            elif eval_result == "fail":
+                # Populate DB
+                if rule["id"] == "country_of_origin" and evidence:
+                    extracted_fields["country_of_origin"] = evidence
+            elif status == "fail":
                 checks.append({
                     "rule_name": rule["name"],
                     "status": "fail" if rule["severity"] == "critical" else "likely_violation",
@@ -166,7 +181,54 @@ def validate_compliance(pipeline_data, extracted_fields=None):
                     "severity": "warning"
                 })
 
+        elif rule_type == "structured_field":
+            # Logic: We use the exact JSON output from Gemini instead of doing regex on raw text!
+            field_key = rule.get("field_key")
+            llm_extracted_data = pipeline_data.get("llm_extracted_data", {})
+            value = llm_extracted_data.get(field_key)
+            
+            # Gemini might return 'None' literally as a string, or None as a type
+            if value and str(value).lower() not in ["none", "null", ""]:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "pass",
+                    "message": f"Found: {value}",
+                    "citation": rule["citation"],
+                    "severity": "info"
+                })
+                extracted_fields[field_key] = str(value)
+            else:
+                checks.append({
+                    "rule_name": rule["name"],
+                    "status": "fail" if rule["severity"] == "critical" else "likely_violation",
+                    "message": rule["error_msg"],
+                    "citation": rule["citation"],
+                    "severity": rule["severity"]
+                })
+
+
     # --- NEW: Bilingual/Script Compliance & Mistranslation Detector (USP 2) ---
+    # FSSAI fallback: if YOLO detected an FSSAI logo, the product has Hindi text
+    yolo_detected_classes = pipeline_data.get("yolo_detected_classes", [])
+    fssai_detected = "FSSAI" in yolo_detected_classes
+    
+    # Check if the bilingual_label regex already passed
+    bilingual_already_passed = any(
+        c["rule_name"] == "Commodity Name in Hindi and English" and c["status"] == "pass" 
+        for c in checks
+    )
+    
+    # If FSSAI was detected by YOLO but bilingual regex failed (no Devanagari in Gemini text),
+    # override the bilingual check to pass
+    if fssai_detected and not bilingual_already_passed:
+        # Find and update the existing bilingual check
+        for c in checks:
+            if c["rule_name"] == "Commodity Name in Hindi and English":
+                c["status"] = "pass"
+                c["message"] = "FSSAI logo detected by YOLO (contains mandatory Hindi text)."
+                c["severity"] = "info"
+                break
+
     if full_text:
         from app.services.translation_check_service import check_translation_consistency
         translation_result = check_translation_consistency(full_text)

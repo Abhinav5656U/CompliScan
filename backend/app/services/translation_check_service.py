@@ -43,7 +43,7 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
                     "content": f"Packaging Text:\n{text}"
                 }
             ],
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             temperature=0,
             max_tokens=300,
             response_format={"type": "json_object"}
