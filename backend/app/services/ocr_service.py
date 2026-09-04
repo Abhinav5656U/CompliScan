@@ -65,6 +65,17 @@ CRITICAL INSTRUCTIONS FOR raw_text_detected:
 - You MUST preserve any Hindi/Devanagari script text EXACTLY as-is in Unicode (e.g., एफएसएसएआई, आलू चिप्स). Do NOT transliterate Hindi into English.
 - Include ALL text visible on the packaging, including nutritional tables, addresses, barcodes, and regulatory marks.
 - If you see the FSSAI logo, transcribe its text including any Devanagari characters.
+- Include text like "MRP", "Rs.", "₹", tax inclusive statements, net weight, batch numbers, dates, addresses etc.
+- Be extremely thorough — every single piece of text matters for compliance checking.
+
+CRITICAL INSTRUCTIONS FOR structured fields:
+- For 'mrp': Extract the full MRP string including currency symbol and any "incl. of all taxes" text nearby (e.g., "₹10/- (Incl. of all taxes)")
+- For 'manufacturer': Extract the full company name (e.g., "Nestle India Limited")
+- For 'address': Extract the FULL address including city, state, pin code, and country (e.g., "Plot 4, Meerut Road, Ghaziabad, UP 201003, India")
+- For 'net_quantity': Include the value AND unit (e.g., "70g", "200 ml")
+- For 'manufacturing_date': Any date format is fine (e.g., "MFG: 05/2026", "Best Before: 12 months from packaging")
+- For 'batch_number': Any batch/lot identifier (e.g., "Batch No: A123", "L/N: 456")
+- For 'unit_sale_price': Per-unit price if mentioned
 
 Provide a 'confidence_score' from 0 to 100 representing how confident you are in the extracted values.
 
@@ -87,7 +98,13 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
         imgs = [PIL.Image.open(p) for p in image_paths]
         try:
             model = genai.GenerativeModel("gemini-2.5-flash")
-            response = model.generate_content([prompt] + imgs)
+            response = model.generate_content(
+                [prompt] + imgs,
+                generation_config=genai.types.GenerationConfig(
+                    response_mime_type="application/json"
+                ),
+                request_options={"timeout": 60}
+            )
         except Exception as e:
             raise e
                 
@@ -102,7 +119,9 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
             text = text[3:]
         if text.endswith("```"):
             text = text[:-3]
-        return json.loads(text.strip())
+        result = json.loads(text.strip())
+        print(f"Gemini Vision extracted fields: {list(k for k,v in result.items() if v and str(v).lower() not in ('none','null',''))}")
+        return result
     except Exception as e:
         print(f"Gemini Vision Error: {e}")
         return None
@@ -177,7 +196,13 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
     try:
         try:
             model = genai.GenerativeModel("gemini-2.5-flash")
-            response = model.generate_content(prompt)
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    response_mime_type="application/json"
+                ),
+                request_options={"timeout": 60}
+            )
         except Exception as e:
             raise e
                 
@@ -347,10 +372,12 @@ def process_image_pipeline(image_paths):
         except OSError:
             pass
 
-    # Success Path with Gemini
-    if llm_data and "raw_text_detected" in llm_data:
+    # Success Path with Gemini — only if we got meaningful raw text
+    if llm_data and llm_data.get("raw_text_detected") and len(llm_data["raw_text_detected"].strip()) > 20:
         print("Successfully extracted using Gemini Vision!")
         full_text = llm_data["raw_text_detected"]
+        print(f"Extracted text length: {len(full_text)} chars")
+        print(f"First 200 chars: {full_text[:200]}")
         
         # Compute max physical height per zone from actual YOLO detections
         zone_max_heights = {}

@@ -7,23 +7,17 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadUser = async () => {
-      const savedToken = localStorage.getItem('token');
-      if (savedToken) {
-        try {
-          const response = await api.get('/auth/me');
-          setUser(response.data.user);
-          setToken(savedToken);
-        } catch (err) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
-        }
+      try {
+        const response = await api.get('/auth/me');
+        setUser(response.data.user);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+      } catch (err) {
+        localStorage.removeItem('user');
+        setUser(null);
       }
       setLoading(false);
     };
@@ -32,10 +26,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    const { access_token, user: userData } = response.data;
-    localStorage.setItem('token', access_token);
+    const { user: userData } = response.data;
     localStorage.setItem('user', JSON.stringify(userData));
-    setToken(access_token);
     setUser(userData);
     return userData;
   };
@@ -45,21 +37,23 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      console.error(e);
+    }
     localStorage.removeItem('user');
-    setToken(null);
     setUser(null);
   };
 
   const value = {
     user,
-    token,
     loading,
     login,
     register,
     logout,
-    isAuthenticated: !!token && !!user,
+    isAuthenticated: !!user,
   };
 
   return (

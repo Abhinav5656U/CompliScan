@@ -9,7 +9,7 @@ def evaluate_rule(prompt, text):
     api_key = os.environ.get("GROQ_API_KEY")
     if not api_key or api_key == "your_groq_api_key_here":
         print("WARNING: GROQ_API_KEY not found or not set. Falling back to REVIEW.")
-        return "human_review_required"
+        return {"status": "human_review_required", "evidence": None}
 
     try:
         client = Groq(api_key=api_key)
@@ -41,8 +41,9 @@ def evaluate_rule(prompt, text):
             ],
             model="qwen/qwen3.8-27b",
             temperature=0,
-            max_tokens=100,
-            response_format={"type": "json_object"}
+            max_tokens=300,
+            response_format={"type": "json_object"},
+            timeout=15
         )
 
         import json
@@ -61,4 +62,4 @@ def evaluate_rule(prompt, text):
 
     except Exception as e:
         print(f"Groq Evaluation Error: {e}")
-        return "human_review_required"
+        return {"status": "human_review_required", "evidence": None}
