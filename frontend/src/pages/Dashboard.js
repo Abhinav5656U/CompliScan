@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import {
   FiCheckCircle, FiXCircle, FiAlertTriangle, FiFileText, FiEye,
-  FiChevronLeft, FiChevronRight
+  FiChevronLeft, FiChevronRight, FiMessageCircle
 } from 'react-icons/fi';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
@@ -148,8 +148,19 @@ const Dashboard = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
+            </div>
+            <Link
+              to="/chatbot"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-800 hover:bg-primary-900 text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <FiMessageCircle className="h-4 w-4" />
+              <span>Open Assistant</span>
+            </Link>
+          </div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-16 text-center">
           <FiFileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -171,8 +182,19 @@ const Dashboard = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
+          </div>
+          <Link
+            to="/chatbot"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-800 hover:bg-primary-900 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            <FiMessageCircle className="h-4 w-4" />
+            <span>Open Assistant</span>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

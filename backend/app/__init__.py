@@ -12,6 +12,7 @@ jwt = JWTManager()
 
 def create_app(config_name=None):
     app = Flask(__name__)
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
     if config_name == "testing":
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
@@ -23,8 +24,7 @@ def create_app(config_name=None):
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key")
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
-    
-    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+
     app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "uploads")
     app.config["MAX_CONTENT_LENGTH"] = int(
         os.getenv("MAX_CONTENT_LENGTH", 16 * 1024 * 1024)
@@ -40,11 +40,13 @@ def create_app(config_name=None):
 
     from app.routes.auth import auth_bp
     from app.routes.scan import scan_bp
+    from app.routes.chatbot import chatbot_bp
     from app.routes.dashboard import dashboard_bp
     from app.routes.history import history_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(scan_bp, url_prefix="/api/scan")
+    app.register_blueprint(chatbot_bp, url_prefix='/api/chatbot')
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
     app.register_blueprint(history_bp, url_prefix="/api/history")
 

@@ -398,7 +398,7 @@ const LandingPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#!" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
+                  <a href="https://github.com/Abhinav5656U/MeteroLens#readme" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
                     <FiBook className="h-3.5 w-3.5" />
                     <span>Documentation</span>
                   </a>
