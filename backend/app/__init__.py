@@ -70,11 +70,13 @@ def create_app(config_name=None):
 
     from app.routes.auth import auth_bp
     from app.routes.scan import scan_bp
+    from app.routes.chatbot import chatbot_bp
     from app.routes.dashboard import dashboard_bp
     from app.routes.history import history_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(scan_bp, url_prefix="/api/scan")
+    app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
     app.register_blueprint(history_bp, url_prefix="/api/history")
 
