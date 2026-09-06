@@ -22,6 +22,7 @@ const Chatbot = () => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState('');
+  const [sendEmail, setSendEmail] = useState(false);
   const [complaintForm, setComplaintForm] = useState({
     shop_name: '',
     shop_address: '',
@@ -111,15 +112,24 @@ const Chatbot = () => {
     if (!draft || !scanId) return;
     setActionLoading('submit');
     try {
-      await api.post('/chatbot/complaint/submit', {
+      const response = await api.post('/chatbot/complaint/submit', {
         scan_id: Number(scanId),
         complaint_id: draft.complaint_id,
         subject: draft.subject,
         body: draft.body,
         language,
+        send_email: sendEmail,
         ...complaintForm,
       });
-      toast.success('Complaint submitted successfully');
+      if (sendEmail) {
+        if (response.data.email_sent) {
+          toast.success('Complaint submitted and emailed to authorities');
+        } else {
+          toast.warning('Complaint submitted but failed to email authorities: ' + response.data.message);
+        }
+      } else {
+        toast.success('Complaint submitted successfully');
+      }
       setDraft(null);
       loadComplaints();
     } catch (error) {
@@ -221,7 +231,11 @@ const Chatbot = () => {
             <div className="grid gap-2 mt-3">
               {['shop_name', 'shop_address', 'user_phone'].map((field) => <input key={field} value={complaintForm[field]} onChange={(event) => setComplaintForm({ ...complaintForm, [field]: event.target.value })} placeholder={field.replace('_', ' ')} className="rounded-lg border-gray-300 text-sm focus:border-primary-600 focus:ring-primary-600" />)}
             </div>
-            <button onClick={submitComplaint} disabled={actionLoading === 'submit'} className="w-full mt-3 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"><FiCheck />{actionLoading === 'submit' ? 'Submitting...' : 'Submit complaint'}</button>
+            <div className="mt-3 flex items-center gap-2">
+              <input type="checkbox" id="send-email" checked={sendEmail} onChange={(e) => setSendEmail(e.target.checked)} className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+              <label htmlFor="send-email" className="text-sm text-gray-700 font-medium">Email directly to official authorities</label>
+            </div>
+            <button onClick={submitComplaint} disabled={actionLoading === 'submit'} className="w-full mt-3 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"><FiCheck />{actionLoading === 'submit' ? 'Submitting...' : (sendEmail ? 'Submit & Email' : 'Submit complaint')}</button>
           </section>}
 
           <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">

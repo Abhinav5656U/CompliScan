@@ -40,6 +40,12 @@ def create_app(config_name=None):
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+    # SMTP Config
+    app.config["SMTP_SERVER"] = os.getenv("SMTP_SERVER", "smtp.mailtrap.io")
+    app.config["SMTP_PORT"] = os.getenv("SMTP_PORT", 2525)
+    app.config["SMTP_USER"] = os.getenv("SMTP_USER", "")
+    app.config["SMTP_PASSWORD"] = os.getenv("SMTP_PASSWORD", "")
+
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # CORS Config
@@ -70,15 +76,19 @@ def create_app(config_name=None):
 
     from app.routes.auth import auth_bp
     from app.routes.scan import scan_bp
-    # from app.routes.chatbot import chatbot_bp  # disabled: ChatbotService() hard-requires GEMINI_API_KEY at import (blocks boot without a key)
     from app.routes.dashboard import dashboard_bp
     from app.routes.history import history_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(scan_bp, url_prefix="/api/scan")
-    # app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")  # disabled: requires GEMINI_API_KEY
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
     app.register_blueprint(history_bp, url_prefix="/api/history")
+
+    try:
+        from app.routes.chatbot import chatbot_bp
+        app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")
+    except Exception as e:
+        app.logger.warning(f"Chatbot blueprint registration skipped: {e}")
 
     from flask import send_from_directory
     from flask_jwt_extended import jwt_required

@@ -8,7 +8,9 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.services.chatbot_service import ChatbotService
-from app.models import db, Scan, Complaint
+from app.services.email_service import send_complaint_email
+from app.services.report_service import generate_pdf_report
+from app.models import db, Scan, Complaint, User
 
 chatbot_bp = Blueprint('chatbot', __name__)
 
@@ -251,12 +253,48 @@ def submit_complaint():
 
     db.session.add(complaint)
     db.session.commit()
+    
+    email_sent = False
+    email_msg = ''
+    if data.get('send_email'):
+        user = User.query.get(user_id)
+        # Re-construct dict for email service or just pass the kwargs
+        complaint_dict = {
+            'complaint_id': complaint.complaint_id,
+            'subject': complaint.subject,
+            'body': complaint.body,
+            'shop_name': complaint.shop_name,
+            'shop_address': complaint.shop_address,
+            'user_phone': complaint.user_phone
+        }
+        # Get raw scan data for context
+        scan_data_for_email = {
+            'product_name': scan.product_name,
+            'state': scan.state,
+            'violations': scan.compliance_result.get('violations', []) if scan.compliance_result else []
+        }
+        
+        # Generate the PDF report for evidence
+        try:
+            pdf_path = generate_pdf_report(scan)
+        except Exception as e:
+            pdf_path = None
+            print(f"Failed to generate PDF for email: {e}")
+        
+        success, msg = send_complaint_email(complaint_dict, scan_data_for_email, user.email, pdf_path=pdf_path)
+        email_sent = success
+        email_msg = msg
+        
+        if success:
+            complaint.status = 'EMAILED_TO_AUTHORITIES'
+            db.session.commit()
 
     return jsonify({
         'success': True,
         'complaint_id': complaint.complaint_id,
         'status': complaint.status,
-        'message': 'Complaint submitted successfully'
+        'email_sent': email_sent,
+        'message': 'Complaint submitted successfully' + (f'. Email status: {email_msg}' if data.get('send_email') else '')
     }), 201
 
 
