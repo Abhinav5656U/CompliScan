@@ -97,7 +97,8 @@ def login():
         response = jsonify({
             "message": "Login successful",
             "user": user.to_dict(),
-            "csrf_token": csrf_token
+            "csrf_token": csrf_token,
+            "access_token": access_token
         })
         
         # Set HttpOnly cookie

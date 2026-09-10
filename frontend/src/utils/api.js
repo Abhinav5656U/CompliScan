@@ -20,6 +20,10 @@ api.interceptors.request.use(
     if (csrfToken) {
       config.headers['X-CSRF-TOKEN'] = csrfToken;
     }
+    const accessToken = localStorage.getItem('access_token');
+    if (accessToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
     return config;
   },
   (error) => Promise.reject(error)

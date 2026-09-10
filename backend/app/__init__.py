@@ -33,7 +33,7 @@ def create_app(config_name=None):
     
     # Secure JWT Config
     app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret")
-    app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+    app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies"]
     is_dev = os.environ.get("FLASK_ENV") == "development" or app.config.get("TESTING")
     app.config["JWT_COOKIE_SECURE"] = False if is_dev else True  # Must be False for HTTP in dev
     app.config["JWT_COOKIE_CSRF_PROTECT"] = not is_dev  # Disable CSRF in dev to avoid 401 on uploads
