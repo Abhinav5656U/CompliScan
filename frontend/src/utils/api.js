@@ -16,9 +16,9 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const match = document.cookie.match(new RegExp('(^| )csrf_access_token=([^;]+)'));
-    if (match) {
-      config.headers['X-CSRF-TOKEN'] = match[2];
+    const csrfToken = localStorage.getItem('csrf_token');
+    if (csrfToken) {
+      config.headers['X-CSRF-TOKEN'] = csrfToken;
     }
     return config;
   },

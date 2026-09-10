@@ -26,8 +26,11 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    const { user: userData } = response.data;
+    const { user: userData, csrf_token } = response.data;
     localStorage.setItem('user', JSON.stringify(userData));
+    if (csrf_token) {
+      localStorage.setItem('csrf_token', csrf_token);
+    }
     setUser(userData);
     return userData;
   };
@@ -44,6 +47,7 @@ export const AuthProvider = ({ children }) => {
       console.error(e);
     }
     localStorage.removeItem('user');
+    localStorage.removeItem('csrf_token');
     setUser(null);
   };
 

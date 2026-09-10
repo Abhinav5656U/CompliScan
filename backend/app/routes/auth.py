@@ -5,7 +5,9 @@ from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,
     set_access_cookies,
-    unset_jwt_cookies
+    set_access_cookies,
+    unset_jwt_cookies,
+    get_csrf_token
 )
 from app import db
 from app.models import User
@@ -87,10 +89,12 @@ def login():
             return jsonify({"error": "Invalid email or password"}), 401
 
         access_token = create_access_token(identity=str(user.id))
+        csrf_token = get_csrf_token(access_token)
         
         response = jsonify({
             "message": "Login successful",
             "user": user.to_dict(),
+            "csrf_token": csrf_token
         })
         
         # Set HttpOnly cookie
