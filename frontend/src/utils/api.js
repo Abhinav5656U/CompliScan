@@ -18,11 +18,19 @@ api.interceptors.request.use(
   (config) => {
     const csrfToken = localStorage.getItem('csrf_token');
     if (csrfToken) {
-      config.headers['X-CSRF-TOKEN'] = csrfToken;
+      if (config.headers.set) {
+        config.headers.set('X-CSRF-TOKEN', csrfToken);
+      } else {
+        config.headers['X-CSRF-TOKEN'] = csrfToken;
+      }
     }
     const accessToken = localStorage.getItem('access_token');
     if (accessToken) {
-      config.headers['Authorization'] = `Bearer ${accessToken}`;
+      if (config.headers.set) {
+        config.headers.set('Authorization', `Bearer ${accessToken}`);
+      } else {
+        config.headers['Authorization'] = `Bearer ${accessToken}`;
+      }
     }
     return config;
   },
