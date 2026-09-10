@@ -38,7 +38,7 @@ def create_app(config_name=None):
     app.config["JWT_COOKIE_SECURE"] = False if is_dev else True  # Must be False for HTTP in dev
     app.config["JWT_COOKIE_CSRF_PROTECT"] = not is_dev  # Disable CSRF in dev to avoid 401 on uploads
     app.config["JWT_CSRF_CHECK_FORM"] = not is_dev
-    app.config["JWT_COOKIE_SAMESITE"] = "Lax"
+    app.config["JWT_COOKIE_SAMESITE"] = "Lax" if is_dev else "None"
     
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
     app.config["UPLOAD_FOLDER"] = os.path.join(BASE_DIR, "uploads")
