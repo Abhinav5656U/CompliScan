@@ -89,7 +89,10 @@ def login():
             return jsonify({"error": "Invalid email or password"}), 401
 
         access_token = create_access_token(identity=str(user.id))
-        csrf_token = get_csrf_token(access_token)
+        try:
+            csrf_token = get_csrf_token(access_token)
+        except Exception:
+            csrf_token = None
         
         response = jsonify({
             "message": "Login successful",
@@ -102,7 +105,9 @@ def login():
         return response, 200
 
     except Exception as e:
-        return jsonify({"error": "Login failed due to an internal error"}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Login failed: {str(e)}"}), 500
 
 
 @auth_bp.route("/logout", methods=["POST"])
