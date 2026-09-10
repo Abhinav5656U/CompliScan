@@ -7,21 +7,27 @@ import tempfile
 import google.generativeai as genai
 
 # --- YOLOv8 Integration ---
+USE_LOCAL_MODELS = os.environ.get("USE_LOCAL_MODELS", "false").lower() == "true"
+
 try:
-    from ultralytics import YOLO
-    # Since run.py is in the backend directory, 'best.pt' is in the current working directory
-    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "best.pt")
-    if os.path.exists(model_path):
-        print(f"Loading YOLO model from {model_path}...")
-        vision_model = YOLO(model_path)
-    else:
-        # Fallback to current working directory
-        if os.path.exists("best.pt"):
-            print("Loading YOLO model from best.pt...")
-            vision_model = YOLO("best.pt")
+    if USE_LOCAL_MODELS:
+        from ultralytics import YOLO
+        # Since run.py is in the backend directory, 'best.pt' is in the current working directory
+        model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "best.pt")
+        if os.path.exists(model_path):
+            print(f"Loading YOLO model from {model_path}...")
+            vision_model = YOLO(model_path)
         else:
-            print("WARNING: best.pt not found. YOLO object detection will be skipped.")
-            vision_model = None
+            # Fallback to current working directory
+            if os.path.exists("best.pt"):
+                print("Loading YOLO model from best.pt...")
+                vision_model = YOLO("best.pt")
+            else:
+                print("WARNING: best.pt not found. YOLO object detection will be skipped.")
+                vision_model = None
+    else:
+        print("INFO: USE_LOCAL_MODELS is false. Skipping YOLO object detection to save memory.")
+        vision_model = None
 except ImportError:
     print("WARNING: ultralytics not installed. YOLO object detection will be skipped.")
     vision_model = None
@@ -135,6 +141,10 @@ def extract_text(image_path):
             np.long = np.int64
         if not hasattr(np, 'ulong'):
             np.ulong = np.uint64
+            
+        if not USE_LOCAL_MODELS:
+            print("INFO: USE_LOCAL_MODELS is false. Skipping PaddleOCR fallback to save memory.")
+            return []
             
         from paddleocr import PaddleOCR
         ocr = PaddleOCR(use_textline_orientation=True, lang='devanagari')
