@@ -20,12 +20,19 @@ def create_app(config_name=None):
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
         app.config["TESTING"] = True
     else:
-        app.config["SQLALCHEMY_DATABASE_URI"] = os.environ["DATABASE_URL"]
+        db_url = os.environ.get("DATABASE_URL", "sqlite:///app.db")
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 
-    app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
+    # Add ProxyFix for Render/Heroku deployments
+    from werkzeug.middleware.proxy_fix import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-key")
     
     # Secure JWT Config
-    app.config["JWT_SECRET_KEY"] = os.environ["JWT_SECRET_KEY"]
+    app.config["JWT_SECRET_KEY"] = os.environ.get("JWT_SECRET_KEY", "dev-jwt-secret")
     app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
     is_dev = os.environ.get("FLASK_ENV") == "development" or app.config.get("TESTING")
     app.config["JWT_COOKIE_SECURE"] = False if is_dev else True  # Must be False for HTTP in dev
@@ -49,8 +56,12 @@ def create_app(config_name=None):
     os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     # CORS Config
-    origins = os.getenv("CORS_ORIGINS", "").split(",") if os.getenv("CORS_ORIGINS") else ["http://localhost:3000", "http://127.0.0.1:3000"]
-    CORS(app, resources={r"/api/*": {"origins": origins}}, supports_credentials=True)
+    cors_origins = os.getenv("CORS_ORIGINS")
+    if cors_origins == "*":
+        CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+    else:
+        origins = cors_origins.split(",") if cors_origins else ["http://localhost:3000", "http://127.0.0.1:3000"]
+        CORS(app, resources={r"/api/*": {"origins": origins}}, supports_credentials=True)
     
     # Initialize extensions
     db.init_app(app)
