@@ -43,13 +43,16 @@ def upload_scan():
         upload_dir = current_app.config["UPLOAD_FOLDER"]
         os.makedirs(upload_dir, exist_ok=True)
         
+        import mimetypes
         for file in files:
             if file and allowed_file(file.filename):
-                ext = file.filename.rsplit(".", 1)[1].lower()
-                filename = f"{uuid.uuid4().hex}.{ext}"
-                filepath = os.path.join(upload_dir, filename)
-                file.save(filepath)
-                image_paths.append(filepath)
+                mime_type, _ = mimetypes.guess_type(file.filename)
+                if mime_type and mime_type.startswith('image/'):
+                    ext = file.filename.rsplit(".", 1)[1].lower()
+                    filename = secure_filename(f"{uuid.uuid4().hex}.{ext}")
+                    filepath = os.path.join(upload_dir, filename)
+                    file.save(filepath)
+                    image_paths.append(filepath)
 
         if not image_paths:
             return jsonify({
@@ -130,7 +133,7 @@ def upload_scan():
         import traceback
         traceback.print_exc()
         db.session.rollback()
-        return jsonify({"error": f"Upload failed: {str(e)}"}), 500
+        return jsonify({"error": "Upload failed due to an internal error"}), 500
 
 
 @scan_bp.route("/<int:scan_id>", methods=["GET"])
@@ -152,7 +155,7 @@ def get_scan(scan_id):
         return jsonify({"scan": scan.to_dict()}), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to fetch scan: {str(e)}"}), 500
+        return jsonify({"error": "Failed to fetch scan due to an internal error"}), 500
 
 
 @scan_bp.route("/<int:scan_id>/report", methods=["GET"])
@@ -183,7 +186,7 @@ def get_report(scan_id):
         )
 
     except Exception as e:
-        return jsonify({"error": f"Report generation failed: {str(e)}"}), 500
+        return jsonify({"error": "Report generation failed due to an internal error"}), 500
 
 
 @scan_bp.route("/gtin/<string:gtin>/risk", methods=["GET"])
@@ -216,7 +219,7 @@ def gtin_risk(gtin):
         }), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to calculate risk: {str(e)}"}), 500
+        return jsonify({"error": "Failed to calculate risk due to an internal error"}), 500
 
 
 @scan_bp.route("/public-upload", methods=["POST"])
@@ -246,13 +249,16 @@ def public_upload_scan():
         upload_dir = current_app.config["UPLOAD_FOLDER"]
         os.makedirs(upload_dir, exist_ok=True)
         
+        import mimetypes
         for file in files:
             if file and allowed_file(file.filename):
-                ext = file.filename.rsplit(".", 1)[1].lower()
-                filename = f"{uuid.uuid4().hex}.{ext}"
-                filepath = os.path.join(upload_dir, filename)
-                file.save(filepath)
-                image_paths.append(filepath)
+                mime_type, _ = mimetypes.guess_type(file.filename)
+                if mime_type and mime_type.startswith('image/'):
+                    ext = file.filename.rsplit(".", 1)[1].lower()
+                    filename = secure_filename(f"{uuid.uuid4().hex}.{ext}")
+                    filepath = os.path.join(upload_dir, filename)
+                    file.save(filepath)
+                    image_paths.append(filepath)
 
         if not image_paths:
             return jsonify({
@@ -332,4 +338,4 @@ def public_upload_scan():
         import traceback
         traceback.print_exc()
         db.session.rollback()
-        return jsonify({"error": f"Upload failed: {str(e)}"}), 500
+        return jsonify({"error": "Upload failed due to an internal error"}), 500

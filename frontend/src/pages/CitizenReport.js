@@ -95,7 +95,7 @@ const CitizenReport = () => {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
         <FiCheckCircle className="mx-auto h-16 w-16 text-green-500 mb-6" />
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Thank You for Your Report</h1>
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-4">Thank You for Your Report</h1>
         <p className="text-gray-600 text-lg mb-8">
           Your submission has been securely sent to our Legal Metrology inspectors. 
           Crowdsourced leads like yours help ensure market compliance and consumer protection.
@@ -113,7 +113,7 @@ const CitizenReport = () => {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Report a Product Violation</h1>
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-2">Report a Product Violation</h1>
         <p className="text-gray-600">
           Upload clear photos of the product label (showing MRP, net quantity, manufacturer details) to report suspected non-compliance.
         </p>

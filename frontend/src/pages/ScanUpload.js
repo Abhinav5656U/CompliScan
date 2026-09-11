@@ -17,6 +17,7 @@ const INDIA_STATES = [
 
 const BarcodeScanner = ({ onScan, onClose }) => {
   const scannerRef = useRef(null);
+  const [cameraError, setCameraError] = useState(false);
 
   useEffect(() => {
     let html5QrCode = null;
@@ -44,7 +45,7 @@ const BarcodeScanner = ({ onScan, onClose }) => {
       } catch (err) {
         if (mounted) {
           toast.error('Camera access denied or not available');
-          onClose();
+          setCameraError(true);
         }
       }
     };
@@ -74,7 +75,22 @@ const BarcodeScanner = ({ onScan, onClose }) => {
         </div>
         <div className="p-4">
           <div id="barcode-reader" className="w-full rounded-xl overflow-hidden" />
-          <p className="text-xs text-gray-500 text-center mt-3">Point your camera at a barcode or QR code on the product label.</p>
+          {cameraError ? (
+            <div className="mt-3 rounded-xl bg-amber-50 border border-amber-200 p-4 text-center">
+              <FiCamera className="h-6 w-6 text-amber-500 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-amber-800">Camera unavailable &#8212; upload an image instead</p>
+              <p className="text-xs text-amber-600 mt-1">You can still submit a product label photo from your gallery or device.</p>
+              <button
+                onClick={onClose}
+                className="mt-3 inline-flex items-center space-x-2 px-4 py-2 bg-primary-800 hover:bg-primary-900 text-white text-sm font-semibold rounded-lg transition-colors"
+              >
+                <FiUpload className="h-4 w-4" />
+                <span>Upload Image</span>
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 text-center mt-3">Point your camera at a barcode or QR code on the product label.</p>
+          )}
         </div>
       </div>
     </div>
@@ -166,7 +182,7 @@ const ScanUpload = () => {
       )}
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Product Scan</h1>
+        <h1 className="font-heading text-3xl font-bold text-gray-900">Product Scan</h1>
         <p className="text-gray-600 mt-1">Upload a product label image for AI compliance verification.</p>
       </div>
 

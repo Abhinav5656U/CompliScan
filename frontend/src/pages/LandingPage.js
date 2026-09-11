@@ -5,6 +5,7 @@ import {
   FiZap, FiArrowRight, FiGlobe,
   FiCrosshair, FiAlertTriangle, FiBook, FiGithub, FiMail
 } from 'react-icons/fi';
+import STATUS_COLORS, { getStatusTone } from '../utils/statusColors';
 
 const NAV_LINKS = [
   { label: 'Features', href: '#features' },
@@ -77,27 +78,20 @@ const FEATURES = [
 ];
 
 const MockupCheckRow = ({ status, rule, citation }) => {
-  const colors = {
-    pass: 'bg-green-500',
-    fail: 'bg-red-500',
-    review: 'bg-amber-500',
-  };
+  const tone = getStatusTone(status);
+  const c = STATUS_COLORS[tone] || STATUS_COLORS.default;
   const labels = { pass: 'Pass', fail: 'Fail', review: 'Review' };
   return (
     <div className="flex items-center justify-between py-2">
       <div className="flex items-center space-x-2.5 min-w-0">
-        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${colors[status]}`} />
+        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
         <div className="min-w-0">
           <p className="text-xs font-semibold text-white/90 truncate">{rule}</p>
           <p className="text-[10px] text-white/40 font-mono">{citation}</p>
         </div>
       </div>
-      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${
-        status === 'pass' ? 'bg-green-500/20 text-green-300' :
-        status === 'fail' ? 'bg-red-500/20 text-red-300' :
-        'bg-amber-500/20 text-amber-300'
-      }`}>
-        {labels[status]}
+      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${c.softBg} ${c.softText}`}>
+        {labels[status] || 'n/a'}
       </span>
     </div>
   );
@@ -398,7 +392,7 @@ const LandingPage = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#!" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
+                  <a href="https://github.com/Abhinav5656U/MeteroLens#readme" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
                     <FiBook className="h-3.5 w-3.5" />
                     <span>Documentation</span>
                   </a>

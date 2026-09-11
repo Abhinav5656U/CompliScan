@@ -88,7 +88,7 @@ def get_stats():
         }), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to fetch stats: {str(e)}"}), 500
+        return jsonify({"error": "Failed to fetch stats due to an internal error"}), 500
 
 
 @dashboard_bp.route("/scans", methods=["GET"])
@@ -146,7 +146,7 @@ def get_all_scans():
         }), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to fetch scans: {str(e)}"}), 500
+        return jsonify({"error": "Failed to fetch scans due to an internal error"}), 500
 
 
 @dashboard_bp.route("/map", methods=["GET"])
@@ -182,7 +182,7 @@ def get_map_data():
         return jsonify({"states": states}), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to fetch map data: {str(e)}"}), 500
+        return jsonify({"error": "Failed to fetch map data due to an internal error"}), 500
 
 
 @dashboard_bp.route("/alerts", methods=["GET"])
@@ -231,7 +231,7 @@ def get_repeat_offenders():
         return jsonify({"alerts": alerts}), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to fetch alerts: {str(e)}"}), 500
+        return jsonify({"error": "Failed to fetch alerts due to an internal error"}), 500
 
 
 @dashboard_bp.route("/leads", methods=["GET"])
@@ -258,4 +258,4 @@ def get_citizen_leads():
         }), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to fetch leads: {str(e)}"}), 500
+        return jsonify({"error": "Failed to fetch leads due to an internal error"}), 500

@@ -15,6 +15,8 @@ import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import IndiaMap from './pages/IndiaMap';
 import CitizenReport from './pages/CitizenReport';
+import Chatbot from './pages/Chatbot';
+import ChatbotFloat from './components/ChatbotFloat';
 
 const App = () => {
   return (
@@ -79,9 +81,19 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/chatbot"
+              element={
+                <ProtectedRoute>
+                  <Navbar />
+                  <main><Chatbot /></main>
+                </ProtectedRoute>
+              }
+            />
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <ChatbotFloat />
           <ToastContainer
             position="top-right"
             autoClose={4000}

@@ -89,3 +89,42 @@ class Scan(db.Model):
             "image_hash": self.image_hash,
             "created_at": self.created_at.isoformat(),
         }
+
+
+class Complaint(db.Model):
+    __tablename__ = "complaints"
+
+    id = db.Column(db.Integer, primary_key=True)
+    complaint_id = db.Column(db.String(50), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    scan_id = db.Column(db.Integer, db.ForeignKey("scans.id"), nullable=False)
+    shop_name = db.Column(db.String(200), nullable=True)
+    shop_address = db.Column(db.Text, nullable=True)
+    user_phone = db.Column(db.String(30), nullable=True)
+    subject = db.Column(db.String(300), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    language = db.Column(db.String(10), nullable=False, default="en")
+    status = db.Column(db.String(30), nullable=False, default="SUBMITTED")
+    created_at = db.Column(
+        db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    user = db.relationship("User", backref="complaints")
+    scan = db.relationship("Scan", backref="complaints")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "complaint_id": self.complaint_id,
+            "user_id": self.user_id,
+            "scan_id": self.scan_id,
+            "shop_name": self.shop_name,
+            "shop_address": self.shop_address,
+            "user_phone": self.user_phone,
+            "subject": self.subject,
+            "body": self.body,
+            "language": self.language,
+            "status": self.status,
+            "created_at": self.created_at.isoformat(),
+        }
+

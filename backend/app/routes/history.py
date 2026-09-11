@@ -33,7 +33,7 @@ def get_history():
         }), 200
 
     except Exception as e:
-        return jsonify({"error": f"Failed to fetch history: {str(e)}"}), 500
+        return jsonify({"error": "Failed to fetch history due to an internal error"}), 500
 
 
 @history_bp.route("/<int:scan_id>", methods=["DELETE"])
@@ -59,4 +59,4 @@ def delete_scan(scan_id):
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Failed to delete scan: {str(e)}"}), 500
+        return jsonify({"error": "Failed to delete scan due to an internal error"}), 500
