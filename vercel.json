@@ -1,23 +1,26 @@
 {
-  "version": 2,
   "services": {
     "frontend": {
       "root": "frontend",
       "framework": "create-react-app"
     },
     "backend": {
-      "root": "backend"
-      
+      "root": "backend",
+      "entrypoint": "app.py"
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": {
+        "service": "backend"
+      }
     },
     {
       "source": "/(.*)",
-      "destination": "$1"
+      "destination": {
+        "service": "frontend"
+      }
     }
   ]
 }
