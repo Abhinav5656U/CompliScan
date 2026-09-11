@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 import { FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock, FiMapPin, FiMessageCircle } from 'react-icons/fi';
 
 const Navbar = () => {
@@ -27,13 +28,13 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const getRoleBadgeColor = (role) => {
-    if (role === 'admin') return 'bg-purple-100 text-purple-800';
-    if (role === 'officer') return 'bg-blue-100 text-blue-800';
-    return 'bg-gray-100 text-gray-800';
+    if (role === 'admin') return 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300';
+    if (role === 'officer') return 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300';
+    return 'bg-surface-sunken text-ink-muted';
   };
 
   return (
-    <nav className="bg-primary-800 shadow-lg no-print">
+    <nav className="bg-primary-800 shadow-sm no-print sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -41,7 +42,7 @@ const Navbar = () => {
               <div className="bg-white rounded-lg p-1.5">
                 <FiSearch className="h-5 w-5 text-primary-800" />
               </div>
-              <span className="text-white text-xl font-bold tracking-tight">MeteroLens</span>
+              <span className="text-white text-xl font-heading font-bold tracking-tight">MeteroLens</span>
             </Link>
           </div>
 
@@ -67,7 +68,9 @@ const Navbar = () => {
             </div>
           )}
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-1">
+            <ThemeToggle className="text-primary-200 hover:text-white hover:bg-primary-700" />
+
             {isAuthenticated && (
               <div className="relative">
                 <button
@@ -88,17 +91,17 @@ const Navbar = () => {
                 {dropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl py-2 z-20 border border-gray-100">
-                      <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="text-sm font-semibold text-gray-900">{user?.full_name || user?.username}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{user?.email}</p>
+                    <div className="absolute right-0 mt-2 w-56 bg-surface-raised rounded-xl shadow-lg py-2 z-20 border border-line">
+                      <div className="px-4 py-3 border-b border-line">
+                        <p className="text-sm font-semibold text-ink">{user?.full_name || user?.username}</p>
+                        <p className="text-xs text-ink-muted mt-0.5">{user?.email}</p>
                         <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${getRoleBadgeColor(user?.role)}`}>
                           {user?.role}
                         </span>
                       </div>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                        className="w-full flex items-center space-x-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200"
                       >
                         <FiLogOut className="h-4 w-4" />
                         <span>Sign out</span>
@@ -111,7 +114,8 @@ const Navbar = () => {
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden ml-2 text-primary-200 hover:text-white p-2"
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+              className="md:hidden ml-1 text-primary-200 hover:text-white p-2 rounded-lg hover:bg-primary-700"
             >
               {mobileMenuOpen ? <FiX className="h-5 w-5" /> : <FiMenu className="h-5 w-5" />}
             </button>
