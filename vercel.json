@@ -6,8 +6,8 @@
       "framework": "create-react-app"
     },
     "backend": {
-      "root": "backend",
-      "src": "app.py"
+      "root": "backend"
+      
     }
   },
   "rewrites": [
