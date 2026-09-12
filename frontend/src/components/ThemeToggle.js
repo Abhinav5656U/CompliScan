@@ -1,45 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FiSun, FiMoon } from 'react-icons/fi';
+import { useTheme } from '../context/ThemeContext';
 
-const ThemeToggle = ({ className = '' }) => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDarkMode(false);
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDarkMode(true);
-    }
-  };
+const ThemeToggle = () => {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
 
   return (
     <button
       onClick={toggleTheme}
-      aria-label="Toggle theme"
-      className={`p-2 rounded-lg transition-colors duration-200 ${className}`}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={isDark ? 'Light mode' : 'Dark mode'}
+      className="p-2 rounded-lg text-ink-muted hover:bg-surface-sunken hover:text-ink transition-colors"
     >
-      {isDarkMode ? (
-        <FiSun className="h-5 w-5 text-amber-300" />
-      ) : (
-        <FiMoon className="h-5 w-5" />
-      )}
+      {isDark ? <FiSun className="h-4 w-4" /> : <FiMoon className="h-4 w-4" />}
     </button>
   );
 };

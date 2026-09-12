@@ -2,51 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-::-webkit-scrollbar {
-  width: 8px;
+:root {
+  /* Light mode surface tokens (RGB triplets, no commas — required for Tailwind's alpha syntax) */
+  --surface: 255 255 255;
+  --surface-raised: 255 255 255;
+  --surface-sunken: 248 250 249;
+  --ink: 17 24 23;
+  --ink-muted: 90 102 100;
+  --ink-faint: 148 160 158;
+  --line: 226 232 230;
 }
 
-::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #94a3b8;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+.dark {
+  /* Dark mode surface tokens */
+  --surface: 10 26 25;
+  --surface-raised: 18 39 38;
+  --surface-sunken: 6 18 17;
+  --ink: 236 245 244;
+  --ink-muted: 163 180 177;
+  --ink-faint: 100 116 113;
+  --line: 34 58 56;
 }
 
 body {
-  margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f1f5f9;
+  @apply bg-surface text-ink transition-colors duration-200;
 }
 
-@keyframes verdictSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Verdict banner entrance animation, used on ScanResult */
+@keyframes verdict-enter {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 .verdict-enter {
-  animation: verdictSlideIn 0.4s ease-out both;
-}
-
-@media print {
-  .no-print {
-    display: none !important;
-  }
-  body {
-    background: white;
-  }
+  animation: verdict-enter 0.35s ease-out;
 }
