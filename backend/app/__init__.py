@@ -12,6 +12,7 @@ from flask_talisman import Talisman
 db = SQLAlchemy()
 migrate = Migrate()
 jwt = JWTManager()
+limiter = Limiter(key_func=get_remote_address, default_limits=["200 per day", "50 per hour"])
 
 def create_app(config_name=None):
     app = Flask(__name__)
@@ -69,13 +70,8 @@ def create_app(config_name=None):
     jwt.init_app(app)
     
     # Rate Limiting
-    storage_uri = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
-    limiter = Limiter(
-        get_remote_address,
-        app=app,
-        storage_uri=storage_uri,
-        default_limits=["200 per day", "50 per hour"]
-    )
+    app.config["RATELIMIT_STORAGE_URI"] = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+    limiter.init_app(app)
     
     # Security Headers
     Talisman(app, content_security_policy={
@@ -117,6 +113,10 @@ def create_app(config_name=None):
     @app.errorhandler(404)
     def not_found_error(e):
         return jsonify(error="Not Found"), 404
+
+    @app.errorhandler(429)
+    def ratelimit_error(e):
+        return jsonify(error="Rate limit exceeded", message=str(e.description)), 429
 
     with app.app_context():
         db.create_all()

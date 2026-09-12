@@ -238,22 +238,42 @@ const ScanResult = () => {
   const imgRef = useRef(null);
 
   useEffect(() => {
+    let pollInterval;
     const fetchScan = async () => {
       try {
-        const response = await api.get(`/scan/${id}`);
-        setScan(response.data.scan);
-        if (response.data.scan.gtin) {
-          const riskResp = await api.get(`/scan/gtin/${response.data.scan.gtin}/risk`);
-          setRiskData(riskResp.data);
+        const statusResponse = await api.get(`/scan/${id}/status`);
+        const status = statusResponse.data.status;
+        
+        if (status === 'processing') {
+          // Keep polling
+          if (!pollInterval) {
+            pollInterval = setInterval(fetchScan, 3000);
+          }
+        } else {
+          // Done processing
+          if (pollInterval) clearInterval(pollInterval);
+          
+          const response = await api.get(`/scan/${id}`);
+          setScan(response.data.scan);
+          if (response.data.scan.gtin) {
+            try {
+              const riskResp = await api.get(`/scan/gtin/${response.data.scan.gtin}/risk`);
+              setRiskData(riskResp.data);
+            } catch (riskErr) {}
+          }
+          setLoading(false);
         }
       } catch (err) {
+        if (pollInterval) clearInterval(pollInterval);
         toast.error('Failed to load scan results');
         navigate('/upload');
-      } finally {
-        setLoading(false);
       }
     };
     fetchScan();
+    
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
+    };
   }, [id, navigate]);
 
   const handleImageLoad = useCallback(() => {
@@ -285,9 +305,22 @@ const ScanResult = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary-200 border-t-primary-800" />
-          <p className="text-gray-500 text-sm font-medium">Loading inspection report...</p>
+        <div className="flex flex-col items-center space-y-6 max-w-md w-full px-4 text-center">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-100 border-t-indigo-600 shadow-sm"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="h-2 w-2 bg-indigo-600 rounded-full animate-ping"></div>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-gray-900">Analyzing Product Label</h2>
+            <p className="text-sm text-gray-500">Our AI is extracting text, verifying compliance rules, and cross-checking data. This usually takes 5-10 seconds.</p>
+          </div>
+          <div className="w-full space-y-4 mt-8 animate-pulse">
+            <div className="h-20 bg-gray-200 rounded-xl w-full"></div>
+            <div className="h-40 bg-gray-200 rounded-xl w-full"></div>
+            <div className="h-10 bg-gray-200 rounded-xl w-3/4 mx-auto"></div>
+          </div>
         </div>
       </div>
     );

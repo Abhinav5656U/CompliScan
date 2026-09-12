@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiUser, FiMail, FiLock, FiAlertCircle, FiHash } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiAlertCircle, FiHash, FiCheckCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 const Register = () => {
@@ -15,8 +15,40 @@ const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailValid, setEmailValid] = useState(null);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
+
+  const calculatePasswordStrength = (password) => {
+    let strength = 0;
+    if (password.length >= 8) strength += 25;
+    if (password.match(/[A-Z]/)) strength += 25;
+    if (password.match(/[0-9]/)) strength += 25;
+    if (password.match(/[^a-zA-Z0-9]/)) strength += 25;
+    return strength;
+  };
+
+  useEffect(() => {
+    if (formData.email) {
+      setEmailValid(validateEmail(formData.email) !== null);
+    } else {
+      setEmailValid(null);
+    }
+  }, [formData.email]);
+
+  useEffect(() => {
+    setPasswordStrength(calculatePasswordStrength(formData.password));
+  }, [formData.password]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -25,6 +57,16 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!emailValid) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (passwordStrength < 100) {
+      setError('Please choose a stronger password.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -43,20 +85,26 @@ const Register = () => {
     }
   };
 
+  const strengthColor = () => {
+    if (passwordStrength < 50) return 'bg-red-500';
+    if (passwordStrength < 100) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-800 via-primary-900 to-gray-900 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="bg-white rounded-2xl p-3 inline-block shadow-lg mb-4">
-            <svg className="h-10 w-10 text-primary-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-white rounded-2xl p-3 inline-block shadow-sm border border-gray-200 mb-4">
+            <svg className="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
-          <h1 className="font-heading text-3xl font-bold text-white">MeteroLens</h1>
-          <p className="text-primary-200 mt-2">Create your account</p>
+          <h1 className="font-heading text-3xl font-bold text-gray-900">MeteroLens</h1>
+          <p className="text-gray-500 mt-2">Create your account</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           {error && (
             <div className="mb-6 flex items-center space-x-2 bg-red-50 text-red-700 p-3 rounded-lg border border-red-200">
               <FiAlertCircle className="h-5 w-5 flex-shrink-0" />
@@ -77,7 +125,7 @@ const Register = () => {
                   required
                   value={formData.full_name}
                   onChange={handleChange}
-                  className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                  className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                   placeholder="John Doe"
                 />
               </div>
@@ -95,7 +143,7 @@ const Register = () => {
                   required
                   value={formData.username}
                   onChange={handleChange}
-                  className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                  className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                   placeholder="johndoe"
                 />
               </div>
@@ -113,10 +161,20 @@ const Register = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                  className={`block w-full pl-9 pr-10 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm ${emailValid === false ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}`}
                   placeholder="you@example.com"
                 />
+                {emailValid !== null && (
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    {emailValid ? (
+                      <FiCheckCircle className="h-5 w-5 text-green-500" />
+                    ) : (
+                      <FiAlertCircle className="h-5 w-5 text-red-500" />
+                    )}
+                  </div>
+                )}
               </div>
+              {emailValid === false && <p className="text-xs text-red-500 mt-1">Please enter a valid email.</p>}
             </div>
 
             <div>
@@ -131,10 +189,23 @@ const Register = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
-                  placeholder="Min 8 characters"
+                  className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                  placeholder="Min 8 chars, uppercase, number, symbol"
                 />
               </div>
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-300 ${strengthColor()}`}
+                      style={{ width: `${passwordStrength}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {passwordStrength < 100 ? 'Needs 8+ chars, uppercase, number, symbol' : 'Strong password!'}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -144,12 +215,11 @@ const Register = () => {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="block w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-gray-50"
+                  className="block w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
                   disabled
                 >
                   <option value="viewer">Viewer</option>
                 </select>
-                <p className="text-xs text-gray-400 mt-1">New accounts are assigned Viewer role</p>
               </div>
 
               <div>
@@ -163,7 +233,7 @@ const Register = () => {
                     name="badge_number"
                     value={formData.badge_number}
                     onChange={handleChange}
-                    className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-sm"
+                    className="block w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                     placeholder="Optional"
                   />
                 </div>
@@ -172,8 +242,8 @@ const Register = () => {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full flex justify-center items-center py-2.5 px-4 bg-primary-800 hover:bg-primary-900 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm mt-2"
+              disabled={loading || !emailValid || passwordStrength < 100}
+              className="w-full flex justify-center items-center py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm mt-2"
             >
               {loading ? (
                 <div className="flex items-center space-x-2">
@@ -189,7 +259,7 @@ const Register = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}
-              <Link to="/login" className="font-semibold text-primary-800 hover:text-primary-600 transition-colors">
+              <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors">
                 Sign in
               </Link>
             </p>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -6,93 +6,109 @@ import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
-import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ScanUpload from './pages/ScanUpload';
-import ScanResult from './pages/ScanResult';
-import Dashboard from './pages/Dashboard';
-import History from './pages/History';
-import IndiaMap from './pages/IndiaMap';
-import CitizenReport from './pages/CitizenReport';
-import Chatbot from './pages/Chatbot';
 import ChatbotFloat from './components/ChatbotFloat';
+
+// Lazy loaded components
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const VerifyOtp = lazy(() => import('./pages/VerifyOtp'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const ScanUpload = lazy(() => import('./pages/ScanUpload'));
+const ScanResult = lazy(() => import('./pages/ScanResult'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const History = lazy(() => import('./pages/History'));
+const IndiaMap = lazy(() => import('./pages/IndiaMap'));
+const CitizenReport = lazy(() => import('./pages/CitizenReport'));
+const Chatbot = lazy(() => import('./pages/Chatbot'));
+
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+  </div>
+);
 
 const App = () => {
   return (
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
-          <Routes>
-            {/* Public routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/report" element={
-              <>
-                <Navbar />
-                <main><CitizenReport /></main>
-              </>
-            } />
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/verify-otp" element={<VerifyOtp />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/report" element={
+                <>
+                  <Navbar />
+                  <main><CitizenReport /></main>
+                </>
+              } />
 
-            {/* Protected app routes */}
-            <Route
-              path="/upload"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <main><ScanUpload /></main>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/scan/:id"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <main><ScanResult /></main>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <main><Dashboard /></main>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/map"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <main><IndiaMap /></main>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <main><History /></main>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/chatbot"
-              element={
-                <ProtectedRoute>
-                  <Navbar />
-                  <main><Chatbot /></main>
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected app routes */}
+              <Route
+                path="/upload"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><ScanUpload /></main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/scan/:id"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><ScanResult /></main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><Dashboard /></main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/map"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><IndiaMap /></main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><History /></main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chatbot"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><Chatbot /></main>
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
           <ChatbotFloat />
           <ToastContainer
             position="top-right"

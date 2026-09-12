@@ -5,9 +5,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import User, Scan
-from app.services.ocr_service import process_image_pipeline
-from app.services.validation_service import validate_compliance
-from app.services.mismatch_service import cross_check
 from app.services.report_service import generate_pdf_report
 
 scan_bp = Blueprint("scan", __name__)
@@ -97,32 +94,19 @@ def upload_scan():
         cloud_url = upload_to_cloudinary(stitched_path)
         final_image_path = cloud_url if cloud_url else stitched_path
 
-        pipeline_data = process_image_pipeline(image_paths)
-        extracted_fields = {}
-        compliance_result = validate_compliance(pipeline_data, extracted_fields)
-        ocr_text = pipeline_data.get("full_text", "")
-        
-        mismatch_result = cross_check(listing_url, extracted_fields) if listing_url else None
-
-        product_name = extracted_fields.get("product_name", "")
-        manufacturer = extracted_fields.get("manufacturer", "")
-
         scan = Scan(
             user_id=user_id,
             image_path=final_image_path,
-            ocr_text=ocr_text,
-            extracted_fields=extracted_fields,
-            compliance_result=compliance_result,
-            mismatch_result=mismatch_result,
             gtin=gtin,
             state=state,
-            overall_status=compliance_result.get("overall_status", "unknown"),
-            product_name=product_name,
-            manufacturer=manufacturer,
+            overall_status="processing",
             image_hash=image_hash,
-        )
+        )  # type: ignore
         db.session.add(scan)
         db.session.commit()
+
+        from app.tasks import process_scan_task
+        process_scan_task.delay(scan.id, image_paths, listing_url)
 
         return jsonify({
             "message": "Scan uploaded and processed successfully",
@@ -134,6 +118,26 @@ def upload_scan():
         traceback.print_exc()
         db.session.rollback()
         return jsonify({"error": "Upload failed due to an internal error"}), 500
+
+
+from app import db, limiter
+
+@scan_bp.route("/<int:scan_id>/status", methods=["GET"])
+@jwt_required(optional=True)
+@limiter.exempt
+def get_scan_status(scan_id):
+    try:
+        scan = Scan.query.get(scan_id)
+        if not scan:
+            return jsonify({"error": "Scan not found"}), 404
+            
+        return jsonify({
+            "scan_id": scan.id,
+            "status": scan.overall_status,
+            "scan": scan.to_dict() if scan.overall_status != "processing" else None
+        }), 200
+    except Exception as e:
+        return jsonify({"error": "Failed to fetch status"}), 500
 
 
 @scan_bp.route("/<int:scan_id>", methods=["GET"])
@@ -303,31 +307,21 @@ def public_upload_scan():
         cloud_url = upload_to_cloudinary(stitched_path)
         final_image_path = cloud_url if cloud_url else stitched_path
 
-        pipeline_data = process_image_pipeline(image_paths)
-        extracted_fields = {}
-        compliance_result = validate_compliance(pipeline_data, extracted_fields)
-        ocr_text = pipeline_data.get("full_text", "")
-        
-        product_name = extracted_fields.get("product_name", "")
-        manufacturer = extracted_fields.get("manufacturer", "")
-
         scan = Scan(
             user_id=user_id,
             image_path=final_image_path,
-            ocr_text=ocr_text,
-            extracted_fields=extracted_fields,
-            compliance_result=compliance_result,
             gtin=gtin,
             source="citizen",
             latitude=latitude,
             longitude=longitude,
-            overall_status=compliance_result.get("overall_status", "unknown"),
-            product_name=product_name,
-            manufacturer=manufacturer,
+            overall_status="processing",
             image_hash=image_hash,
         )
         db.session.add(scan)
         db.session.commit()
+
+        from app.tasks import process_scan_task
+        process_scan_task.delay(scan.id, image_paths, None)
 
         return jsonify({
             "message": "Scan uploaded successfully. Thank you for your report.",
