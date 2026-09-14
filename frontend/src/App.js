@@ -10,6 +10,7 @@ import ChatbotFloat from './components/ChatbotFloat';
 
 // Lazy loaded components
 const LandingPage = lazy(() => import('./pages/LandingPage'));
+const HowItWorks = lazy(() => import('./pages/HowItWorksPage'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -38,6 +39,7 @@ const App = () => {
             <Routes>
               {/* Public routes */}
               <Route path="/" element={<LandingPage />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

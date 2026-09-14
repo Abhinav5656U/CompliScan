@@ -9,7 +9,7 @@ import STATUS_COLORS, { getStatusTone } from '../utils/statusColors';
 
 const NAV_LINKS = [
   { label: 'Features', href: '#features' },
-  { label: 'How it Works', href: '#how-it-works' },
+  { label: 'How it Works', href: '/how-it-works', isRoute: true },
   { label: 'Team', href: '#footer' },
 ];
 
@@ -165,9 +165,11 @@ const LandingPage = () => {
   }, []);
 
   const handleAnchor = (e, href) => {
-    e.preventDefault();
-    const el = document.querySelector(href);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (href.startsWith('#')) {
+      e.preventDefault();
+      const el = document.querySelector(href);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   return (
@@ -186,14 +188,24 @@ const LandingPage = () => {
 
           <div className="hidden md:flex items-center space-x-8">
             {NAV_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={(e) => handleAnchor(e, link.href)}
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                {link.label}
-              </a>
+              link.isRoute ? (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => handleAnchor(e, link.href)}
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  {link.label}
+                </a>
+              )
             ))}
           </div>
 
