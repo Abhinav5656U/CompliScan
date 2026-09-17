@@ -160,10 +160,16 @@ const ScanUpload = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
-      toast.success('Scan completed successfully!');
-      const scanId = response.data.scan?.id || response.data.scan_id;
-      if (scanId) {
-        navigate(`/scan/${scanId}`);
+      toast.success(response.data.message || 'Scan completed successfully!');
+      const scans = response.data.scans;
+      if (scans && scans.length > 1) {
+        const ids = scans.map(s => s.id).join(',');
+        navigate(`/scan-batch?ids=${ids}`);
+      } else {
+        const scanId = response.data.scan?.id || response.data.scan_id;
+        if (scanId) {
+          navigate(`/scan/${scanId}`);
+        }
       }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Upload failed');

@@ -128,3 +128,30 @@ class Complaint(db.Model):
             "created_at": self.created_at.isoformat(),
         }
 
+class ImprovementNotice(db.Model):
+    __tablename__ = "improvement_notices"
+
+    id = db.Column(db.Integer, primary_key=True)
+    scan_id = db.Column(db.Integer, db.ForeignKey("scans.id"), nullable=False, unique=True)
+    manufacturer_normalized = db.Column(db.String(250), nullable=False)
+    pdf_url = db.Column(db.String(500), nullable=True)
+    issued_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    deadline_date = db.Column(db.DateTime, nullable=False)
+    created_at = db.Column(
+        db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    scan = db.relationship("Scan", backref=db.backref("improvement_notice", uselist=False))
+    issuer = db.relationship("User", backref="issued_notices")
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "scan_id": self.scan_id,
+            "manufacturer_normalized": self.manufacturer_normalized,
+            "pdf_url": self.pdf_url,
+            "issued_by": self.issued_by,
+            "deadline_date": self.deadline_date.isoformat(),
+            "created_at": self.created_at.isoformat(),
+        }
+

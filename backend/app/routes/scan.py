@@ -57,60 +57,77 @@ def upload_scan():
             }), 400
 
         try:
-            from PIL import Image
-            imgs = [Image.open(p) for p in image_paths]
-            target_height = 800
-            resized_imgs = []
-            for img in imgs:
-                w_percent = (target_height / float(img.size[1]))
-                h_size = int((float(img.size[0]) * float(w_percent)))
-                resized = img.resize((h_size, target_height), Image.Resampling.LANCZOS)
-                resized_imgs.append(resized)
-            
-            total_width = sum(i.size[0] for i in resized_imgs)
-            max_height = max(i.size[1] for i in resized_imgs)
-            
-            stitched = Image.new('RGB', (total_width, max_height))
-            x_offset = 0
-            for img in resized_imgs:
-                stitched.paste(img, (x_offset, 0))
-                x_offset += img.size[0]
-                
-            stitched_path = os.path.join(upload_dir, f"stitched_{uuid.uuid4().hex}.jpg")
-            stitched.save(stitched_path, format="JPEG", quality=85)
+            from app.services.image_grouping_service import group_images_by_product
+            grouped_indices = group_images_by_product(image_paths)
         except Exception as e:
-            print(f"Stitching failed: {e}")
-            stitched_path = image_paths[0]
+            print(f"Grouping failed: {e}")
+            grouped_indices = [[i] for i in range(len(image_paths))]
 
+        from PIL import Image
         import hashlib
-        try:
-            with open(stitched_path, "rb") as f:
-                image_hash = hashlib.sha256(f.read()).hexdigest()
-        except Exception as e:
-            print(f"Hashing failed: {e}")
-            image_hash = None
-
         from app.services.cloudinary_service import upload_to_cloudinary
-        cloud_url = upload_to_cloudinary(stitched_path)
-        final_image_path = cloud_url if cloud_url else stitched_path
-
-        scan = Scan(
-            user_id=user_id,
-            image_path=final_image_path,
-            gtin=gtin,
-            state=state,
-            overall_status="processing",
-            image_hash=image_hash,
-        )  # type: ignore
-        db.session.add(scan)
-        db.session.commit()
-
         from app.tasks import process_scan_task
-        process_scan_task.delay(scan.id, image_paths, listing_url)
+        
+        created_scans = []
+        
+        for group in grouped_indices:
+            group_paths = [image_paths[i] for i in group]
+            if not group_paths:
+                continue
+
+            try:
+                imgs = [Image.open(p) for p in group_paths]
+                target_height = 800
+                resized_imgs = []
+                for img in imgs:
+                    w_percent = (target_height / float(img.size[1]))
+                    h_size = int((float(img.size[0]) * float(w_percent)))
+                    resized = img.resize((h_size, target_height), Image.Resampling.LANCZOS)
+                    resized_imgs.append(resized)
+                
+                total_width = sum(i.size[0] for i in resized_imgs)
+                max_height = max(i.size[1] for i in resized_imgs)
+                
+                stitched = Image.new('RGB', (total_width, max_height))
+                x_offset = 0
+                for img in resized_imgs:
+                    stitched.paste(img, (x_offset, 0))
+                    x_offset += img.size[0]
+                    
+                stitched_path = os.path.join(upload_dir, f"stitched_{uuid.uuid4().hex}.jpg")
+                stitched.save(stitched_path, format="JPEG", quality=85)
+            except Exception as e:
+                print(f"Stitching failed: {e}")
+                stitched_path = group_paths[0]
+
+            try:
+                with open(stitched_path, "rb") as f:
+                    image_hash = hashlib.sha256(f.read()).hexdigest()
+            except Exception as e:
+                print(f"Hashing failed: {e}")
+                image_hash = None
+
+            cloud_url = upload_to_cloudinary(stitched_path)
+            final_image_path = cloud_url if cloud_url else stitched_path
+
+            scan = Scan(
+                user_id=user_id,
+                image_path=final_image_path,
+                gtin=gtin if len(grouped_indices) == 1 else None, # Only apply GTIN if single product
+                state=state,
+                overall_status="processing",
+                image_hash=image_hash,
+            )  # type: ignore
+            db.session.add(scan)
+            db.session.commit()
+
+            process_scan_task.delay(scan.id, group_paths, listing_url if len(grouped_indices) == 1 else None)
+            created_scans.append(scan.to_dict())
 
         return jsonify({
-            "message": "Scan uploaded and processed successfully",
-            "scan": scan.to_dict(),
+            "message": f"Successfully queued {len(created_scans)} product scan(s).",
+            "scans": created_scans,
+            "scan": created_scans[0] if created_scans else None, # For backward compatibility
         }), 201
 
     except Exception as e:

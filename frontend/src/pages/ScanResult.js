@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   FiCheckCircle, FiXCircle, FiAlertTriangle, FiDownload, FiArrowLeft,
-  FiShield, FiEye, FiEyeOff, FiFileText, FiExternalLink, FiPackage
+  FiShield, FiEye, FiEyeOff, FiFileText, FiExternalLink, FiPackage, FiAlertOctagon
 } from 'react-icons/fi';
 import api from '../utils/api';
 import STATUS_COLORS from '../utils/statusColors';
@@ -226,11 +226,14 @@ const MismatchCard = ({ mismatch }) => {
   );
 };
 
-const ScanResult = () => {
-  const { id } = useParams();
+const ScanResult = ({ scanIdProp }) => {
+  const { id: paramId } = useParams();
+  const id = scanIdProp || paramId;
   const navigate = useNavigate();
   const [scan, setScan] = useState(null);
   const [riskData, setRiskData] = useState(null);
+  const [noticeEligibility, setNoticeEligibility] = useState(null);
+  const [generatingNotice, setGeneratingNotice] = useState(false);
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [showBboxes, setShowBboxes] = useState(false);
@@ -261,6 +264,14 @@ const ScanResult = () => {
               setRiskData(riskResp.data);
             } catch (riskErr) {}
           }
+          if (response.data.scan.overall_status === 'non_compliant' || response.data.scan.overall_status === 'review_required') {
+            try {
+              const eligRes = await api.get(`/notice/eligibility/${id}`);
+              setNoticeEligibility(eligRes.data);
+            } catch (e) {
+              console.error("Failed to fetch notice eligibility", e);
+            }
+          }
           setLoading(false);
         }
       } catch (err) {
@@ -286,19 +297,38 @@ const ScanResult = () => {
   const downloadReport = async () => {
     setDownloading(true);
     try {
-      const response = await api.get(`/scan/${id}/report`, { responseType: 'blob' });
+      const response = await api.get(`/report/generate/${id}`, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `meterolens-report-${id}.pdf`);
+      link.setAttribute('download', `compliscan_report_${id}.pdf`);
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      link.parentNode.removeChild(link);
     } catch (err) {
-      toast.error('Failed to download report');
+      toast.error('Failed to download PDF report');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const generateNotice = async () => {
+    setGeneratingNotice(true);
+    try {
+      const response = await api.post(`/notice/generate/${id}`);
+      toast.success('Improvement Notice generated successfully!');
+      setNoticeEligibility({
+        ...noticeEligibility,
+        status: 'already_issued',
+        notice: response.data.notice
+      });
+      // Auto download the new notice
+      const url = `http://localhost:5000/api/notice/download/${response.data.notice.pdf_url.split('/').pop()}`;
+      window.open(url, '_blank');
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to generate notice');
+    } finally {
+      setGeneratingNotice(false);
     }
   };
 
@@ -435,6 +465,68 @@ const ScanResult = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Jan Vishwas Banner */}
+        {noticeEligibility && (
+          <div className={`mb-6 rounded-xl border p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm transition-all ${
+            noticeEligibility.status === 'eligible' ? 'bg-green-50 border-green-200' :
+            noticeEligibility.status === 'already_issued' ? 'bg-blue-50 border-blue-200' :
+            noticeEligibility.status === 'repeat_offender' ? 'bg-red-50 border-red-200' :
+            'hidden'
+          }`}>
+            <div className="flex items-start space-x-3 mb-4 sm:mb-0">
+              <div className={`p-2 rounded-lg mt-0.5 ${
+                noticeEligibility.status === 'eligible' ? 'bg-green-100 text-green-700' :
+                noticeEligibility.status === 'already_issued' ? 'bg-blue-100 text-blue-700' :
+                'bg-red-100 text-red-700'
+              }`}>
+                {noticeEligibility.status === 'repeat_offender' ? <FiAlertOctagon className="h-5 w-5" /> : <FiFileText className="h-5 w-5" />}
+              </div>
+              <div>
+                <h4 className={`font-bold ${
+                  noticeEligibility.status === 'eligible' ? 'text-green-900' :
+                  noticeEligibility.status === 'already_issued' ? 'text-blue-900' :
+                  'text-red-900'
+                }`}>
+                  {noticeEligibility.status === 'eligible' ? 'Jan Vishwas Assessment: Eligible for Notice' :
+                   noticeEligibility.status === 'already_issued' ? 'Jan Vishwas Notice Already Issued' :
+                   'Jan Vishwas Assessment: Repeat Offender'}
+                </h4>
+                <p className={`text-sm mt-0.5 ${
+                  noticeEligibility.status === 'eligible' ? 'text-green-700' :
+                  noticeEligibility.status === 'already_issued' ? 'text-blue-700' :
+                  'text-red-700'
+                }`}>
+                  {noticeEligibility.message}
+                </p>
+              </div>
+            </div>
+            
+            {noticeEligibility.status === 'eligible' && (
+              <button
+                onClick={generateNotice}
+                disabled={generatingNotice}
+                className="w-full sm:w-auto px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+              >
+                <FiFileText className="h-4 w-4" />
+                <span>{generatingNotice ? 'Generating...' : 'Issue Improvement Notice'}</span>
+              </button>
+            )}
+            
+            {noticeEligibility.status === 'already_issued' && (
+              <a
+                href={`http://localhost:5000/api/notice/download/${noticeEligibility.notice?.pdf_url?.split('/').pop()}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full sm:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors flex items-center justify-center space-x-2"
+              >
+                <FiDownload className="h-4 w-4" />
+                <span>Download Issued Notice</span>
+              </a>
+            )}
+          </div>
+        )}
+
         {/* Mobile download button */}
         <button
           onClick={downloadReport}

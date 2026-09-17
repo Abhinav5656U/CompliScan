@@ -1,0 +1,74 @@
+# Problem Statement: SIH26034
+**Title:** Software System to check compliance of Packaged Commodities under Legal Metrology (Packaged Commodities) Rules, 2011
+**Sponsoring Ministry:** Ministry of Consumer Affairs, Food & Public Distribution
+**Objective:** To develop a system that checks the compliance of packaged commodities with legal metrology rules by scanning products, images, and labels.
+
+# Meet MeteroLens: The Complete AI Metrology Solution
+
+We have built **MeteroLens**, a comprehensive, hybrid AI-powered platform designed to completely digitize and automate the work of Legal Metrology Officers. 
+
+Here are the primary capabilities that make MeteroLens stand out:
+
+1. **(USP) Intelligent Data Extraction with Smart Fallbacks:** Our system doesn't rely on just one engine. It uses **Gemini 2.5 Flash** for multimodal OCR and structured JSON field extraction, but seamlessly falls back to **PaddleOCR (Multilingual)** if needed, ensuring we never miss a detail on messy or curved packaging.
+
+2. **(USP) Custom Model Training & Object Detection:** We didn't just use out-of-the-box APIs. We trained a custom **YOLOv8** object detection model combined with OpenCV to accurately detect bounding boxes of mandatory declarations, completely automating the visual inspection process.
+
+3. **(USP) AR-Assisted Physical Dimension Calibration:** We completely remove human subjectivity when measuring if a font size is legal (Rule 7). By simply placing a standard reference card next to the label, our CV pipeline perfectly calibrates the physical height (in millimeters) of the text on the package!
+
+4. **(USP) Hybrid Compliance Rule Engine:** We use a two-pronged approach to check compliance: a blazing-fast Deterministic Engine (Regex and geometry checks) for strict rules, paired with a Semantic LLM Judge (Groq LLaMA 3) to evaluate ambiguous claims and ingredients.
+
+5. **(USP) Automated Improvement Notice Generator (Jan Vishwas Act):** When a manufacturer makes a minor labeling mistake for the first time, our system checks their history and automatically drafts a legally formatted PDF "Improvement Notice," giving them a 30-day grace period to fix it—fully automating the government's new workflow!
+
+6. **(USP) End-to-End Legal Reporting & Evidence Integrity:** Every single image captured is instantly locked with a **SHA-256 cryptographic hash**, ensuring the digital evidence is tamper-proof. The system then automatically generates court-admissible PDF compliance reports (compliant with Section 65B(4) of the Evidence Act) using ReportLab.
+
+7. **(USP) Bilingual Semantic Consistency Checker:** The AI doesn't just read English; it reads Hindi (Devanagari) right alongside it. It cross-checks both languages to ensure companies aren't printing misleading translations or contradicting themselves on the package.
+
+8. **(USP) Automatic Unit Sale Price (USP) Calculator:** No more mental math for inspectors. The system extracts the MRP and Net Quantity, calculates the exact price per gram/ml, and verifies that the label follows the strict LMPC rounding rules.
+
+9. **(USP) State Portal API Integrator (Vaidhmapan Sync):** We've eliminated double data entry. As soon as an officer finishes a digital inspection on MeteroLens, the compliance reports, fines, and GPS data are instantly synced into official state databases like Vaidhmapan in real-time.
+
+10. **(USP) E-commerce SKU Crawler (Rule 18):** Non-compliance isn't just physical anymore. An officer can scan a physical product's barcode, and our system will automatically crawl its online listing (like Amazon or Flipkart) to ensure the digital label perfectly matches the physical rules.
+
+11. **(USP) Bulk Multi-Scan & Panoramic Stitching:** Instead of taking a single photo, officers can rapid-fire scan multiple sides of a package or even a whole batch of different products. The AI intelligently stitches the angles together into a single panoramic view and processes everything simultaneously.
+
+12. **(USP) GTIN/Barcode Risk Scoring & Dashboard Analytics:** A historical analytics engine tracks compliance failures by product GTIN and automatically assigns a Risk Tier (High/Medium/Low). This is displayed on a React-based web dashboard featuring trend graphs and geographic mapping of offenses.
+
+13. **Citizen Crowdsourcing with GPS Tracking:** A dedicated public reporting portal allows everyday consumers to upload non-compliant products. The system automatically tags their GPS coordinates and flags the issue directly into the inspector's prioritized "Risk Queue".
+
+14. **Interactive Multilingual AI Assistant:** An embedded conversational AI that can explain complex legal rule violations to citizens, draft formal complaint emails, and route them directly to the correct State Controller.
+
+---
+
+# Corrected Technology Stack for MeteroLens (Actual Implementation)
+
+1. **Capture App & Frontend (User Interface)**
+- Core Framework: React.js (v18) (Responsive Web App)
+- Styling: Tailwind CSS
+- Dashboard Analytics: Recharts (for trend graphs)
+- Map Visualization: react-simple-maps (for geographic plotting of scans)
+- Web Scanner: html5-qrcode (for browser-based QR/Barcode scanning)
+
+2. **Backend Framework & Authentication**
+- Core Framework: Flask (v3.0.3, Python) with modular Flask Blueprints
+- Authentication: JWT-based Role Authentication (Flask-JWT-Extended)
+- Serialization & Security: Marshmallow, Flask-Limiter, Flask-Talisman
+
+3. **Database & Storage**
+- Relational Database: PostgreSQL (via psycopg2-binary) managed with Flask-SQLAlchemy
+- In-Memory Data Store / Caching: Redis
+- Evidence Storage: Cloudinary API (for secure image hosting)
+
+4. **AI Label Detection, OCR, & Object Detection (Hybrid Pipeline)**
+- Primary AI Engine (Vision + NLP): Gemini 2.5 Flash. Handles multimodal label text extraction (OCR) and structured JSON field mapping simultaneously.
+- Fallback OCR Engine: PaddleOCR (Multilingual English + Hindi) 
+- Object Detection: YOLOv8 (via ultralytics) for precise geometrical validation.
+- Image Pre-processing: OpenCV (cv2) + Pillow for denoising and automated image stitching.
+
+5. **Compliance Rule Engine (Hybrid Deterministic + LLM)**
+- Deterministic Validation: Python-based script executing Regex pattern matching and physical font-height bounds checking.
+- LLM Judge (Semantic Verification): Groq API (llama3-8b-8192) evaluates ambiguous rules semantically.
+- Bilingual/Script Compliance Detector: Groq API (llama-3.3-70b-versatile) cross-checks English vs. Hindi (Devanagari).
+
+6. **Reporting & Evidence Non-Repudiation**
+- PDF Generation: ReportLab (Python) for automated compliance certificate generation and Improvement Notices.
+- Evidence Integrity: SHA-256 Cryptographic Hashing applied to image evidence at the time of capture.

@@ -322,18 +322,15 @@ def validate_compliance(pipeline_data, extracted_fields=None):
                 "citation": "Rule 8 (Cross-check)",
                 "severity": "warning"
             })
+        elif translation_result["status"] == "not_bilingual":
+             checks.append({
+                "rule_name": "Bilingual Mistranslation Detector",
+                "status": "pass",
+                "message": "Label is monolingual. No translation conflicts.",
+                "citation": "Rule 8 (Cross-check)",
+                "severity": "info"
+            })
 
-    # Overall status calculation
-    failed_critical = sum(1 for c in checks if c["status"] == "fail")
-    needs_review = sum(1 for c in checks if c["status"] in ["human_review_required", "likely_violation"])
-
-    if failed_critical == 0 and needs_review == 0:
-        overall_status = "compliant"
-    elif failed_critical == 0 and needs_review > 0:
-        overall_status = "review_required"
-    else:
-        overall_status = "non_compliant"
-        
     llm_data = pipeline_data.get("llm_extracted_data", {})
     if llm_data:
         if llm_data.get("product_name"): extracted_fields["product_name"] = llm_data.get("product_name")
@@ -345,8 +342,39 @@ def validate_compliance(pipeline_data, extracted_fields=None):
         if llm_data.get("batch_number"): extracted_fields["batch_number"] = llm_data.get("batch_number")
         if llm_data.get("address"): extracted_fields["address"] = llm_data.get("address")
         
-        if llm_data.get("confidence_score", 100) < 80:
-            overall_status = "manual_review"
+    # USP Verification
+    from app.services.usp_service import verify_usp
+    usp_result = verify_usp(
+        extracted_fields.get("mrp"), 
+        extracted_fields.get("net_quantity"), 
+        extracted_fields.get("unit_sale_price")
+    )
+    
+    if usp_result["status"] != "skipped":
+        severity = "critical" if usp_result["status"] == "fail" else ("info" if usp_result["status"] == "pass" else "warning")
+        checks.append({
+            "rule_name": "Unit Sale Price (USP) Declaration",
+            "status": usp_result["status"],
+            "message": usp_result["message"],
+            "citation": "Rule 6(1)(e)",
+            "severity": severity
+        })
+        if usp_result.get("expected_usp"):
+            extracted_fields["calculated_expected_usp"] = usp_result["expected_usp"]
+
+    # Overall status calculation
+    failed_critical = sum(1 for c in checks if c["status"] == "fail")
+    needs_review = sum(1 for c in checks if c["status"] in ["human_review_required", "likely_violation"])
+
+    if failed_critical == 0 and needs_review == 0:
+        overall_status = "compliant"
+    elif failed_critical == 0 and needs_review > 0:
+        overall_status = "review_required"
+    else:
+        overall_status = "non_compliant"
+
+    if llm_data and llm_data.get("confidence_score", 100) < 80:
+        overall_status = "manual_review"
 
     return {
         "overall_status": overall_status,

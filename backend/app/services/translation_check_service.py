@@ -43,7 +43,7 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
                     "content": f"Packaging Text:\n{text}"
                 }
             ],
-            model="qwen/qwen3.8-27b",
+            model="llama3-70b-8192",
             temperature=0,
             max_tokens=300,
             response_format={"type": "json_object"},
@@ -51,7 +51,16 @@ Return ONLY valid JSON matching this schema exactly, with no markdown formatting
         )
 
         response_text = chat_completion.choices[0].message.content.strip()
-        result = json.loads(response_text)
+        
+        # Clean markdown from JSON response if present
+        if response_text.startswith("```json"):
+            response_text = response_text[7:]
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+        
+        result = json.loads(response_text.strip())
         
         # Ensure fallback defaults if LLM hallucinated keys
         return {

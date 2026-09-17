@@ -18,12 +18,13 @@ const VerifyOtp = lazy(() => import('./pages/VerifyOtp'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ScanUpload = lazy(() => import('./pages/ScanUpload'));
 const ScanResult = lazy(() => import('./pages/ScanResult'));
+const BatchScanResult = lazy(() => import('./pages/BatchScanResult'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const History = lazy(() => import('./pages/History'));
 const IndiaMap = lazy(() => import('./pages/IndiaMap'));
 const CitizenReport = lazy(() => import('./pages/CitizenReport'));
 const Chatbot = lazy(() => import('./pages/Chatbot'));
-
+const EcommerceCrawler = lazy(() => import('./pages/EcommerceCrawler'));
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -72,6 +73,14 @@ const App = () => {
                 }
               />
               <Route
+                path="/scan-batch"
+                element={
+                  <ProtectedRoute>
+                    <main><BatchScanResult /></main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/dashboard"
                 element={
                   <ProtectedRoute>
@@ -104,6 +113,15 @@ const App = () => {
                   <ProtectedRoute>
                     <Navbar />
                     <main><Chatbot /></main>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/ecommerce-crawler"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><EcommerceCrawler /></main>
                   </ProtectedRoute>
                 }
               />
