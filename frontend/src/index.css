@@ -50,3 +50,9 @@ body {
     background: white;
   }
 }
+
+/* Dark mode map tiles via CSS invert on standard OSM tiles */
+.dark-map-tiles .leaflet-layer,
+.dark-map-tiles .leaflet-tile {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}

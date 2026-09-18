@@ -157,29 +157,24 @@ def get_map_data():
         if error:
             return error
 
-        state_rows = (
-            db.session.query(
-                Scan.state,
-                func.count(Scan.id).label("total"),
-                func.sum(db.case((Scan.overall_status == "compliant", 1), else_=0)).label("compliant"),
-                func.sum(db.case((Scan.overall_status == "non_compliant", 1), else_=0)).label("non_compliant"),
-            )
-            .filter(Scan.state.isnot(None), Scan.state != "")
-            .group_by(Scan.state)
+        scan_rows = (
+            Scan.query
+            .filter(Scan.latitude.isnot(None), Scan.longitude.isnot(None))
             .all()
         )
 
-        states = []
-        for row in state_rows:
-            states.append({
-                "state": row.state,
-                "total": row.total,
-                "compliant": row.compliant or 0,
-                "non_compliant": row.non_compliant or 0,
-                "violation_rate": round((row.non_compliant or 0) / row.total * 100, 1),
+        points = []
+        for scan in scan_rows:
+            points.append({
+                "id": scan.id,
+                "latitude": scan.latitude,
+                "longitude": scan.longitude,
+                "status": scan.overall_status,
+                "state": scan.state,
+                "date": scan.created_at.isoformat() if scan.created_at else None
             })
 
-        return jsonify({"states": states}), 200
+        return jsonify({"points": points}), 200
 
     except Exception as e:
         return jsonify({"error": "Failed to fetch map data due to an internal error"}), 500

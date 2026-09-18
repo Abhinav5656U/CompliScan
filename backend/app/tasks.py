@@ -36,6 +36,7 @@ def process_scan_task(scan_id, image_paths, listing_url):
         return "Success"
     except Exception as e:
         traceback.print_exc()
+        db.session.rollback()
         scan = Scan.query.get(scan_id)
         if scan:
             scan.overall_status = "error"

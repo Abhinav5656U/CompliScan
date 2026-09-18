@@ -146,6 +146,26 @@ const ScanUpload = () => {
     }
 
     setUploading(true);
+    
+    let lat = null;
+    let lng = null;
+    if ("geolocation" in navigator) {
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false, // Better success rate on desktop without GPS
+            timeout: 10000, // Give it 10 seconds to resolve
+            maximumAge: 0
+          });
+        });
+        lat = position.coords.latitude;
+        lng = position.coords.longitude;
+      } catch (error) {
+        console.warn("Geolocation failed or denied:", error);
+        toast.warning("Could not capture exact GPS location. Ensure location services are enabled on your device.");
+      }
+    }
+
     try {
       const formData = new FormData();
       files.forEach(f => {
@@ -153,6 +173,8 @@ const ScanUpload = () => {
       });
       if (gtin) formData.append('gtin', gtin);
       if (state) formData.append('state', state);
+      if (lat !== null) formData.append('latitude', lat);
+      if (lng !== null) formData.append('longitude', lng);
 
       const response = await api.post('/scan/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

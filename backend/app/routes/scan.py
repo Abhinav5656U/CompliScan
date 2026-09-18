@@ -32,6 +32,10 @@ def upload_scan():
         listing_url = request.form.get("listing_url")
         gtin = request.form.get("gtin")
         state = request.form.get("state")
+        lat_str = request.form.get("latitude")
+        lng_str = request.form.get("longitude")
+        lat = float(lat_str) if lat_str else None
+        lng = float(lng_str) if lng_str else None
         
         if not files or all(f.filename == "" for f in files):
             return jsonify({"error": "No files selected"}), 400
@@ -115,6 +119,8 @@ def upload_scan():
                 image_path=final_image_path,
                 gtin=gtin if len(grouped_indices) == 1 else None, # Only apply GTIN if single product
                 state=state,
+                latitude=lat,
+                longitude=lng,
                 overall_status="processing",
                 image_hash=image_hash,
             )  # type: ignore
