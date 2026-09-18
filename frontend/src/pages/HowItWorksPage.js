@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { FiSearch } from 'react-icons/fi';
 import PacketScene from '../components/landing/PacketScene';
+import Navbar from '../components/Navbar';
 
 const NAV_LINKS = [
   { label: 'Features', href: '/#features' },
@@ -12,6 +14,7 @@ const NAV_LINKS = [
 export default function HowItWorksPage() {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -42,6 +45,11 @@ export default function HowItWorksPage() {
       }} />
 
       {/* ─── Navbar ─── */}
+      {isAuthenticated ? (
+        <div className="fixed top-0 inset-x-0 z-50 shadow-md">
+          <Navbar />
+        </div>
+      ) : (
       <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent'
       }`}>
@@ -79,25 +87,37 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="flex items-center space-x-3">
-            <Link
-              to="/login"
-              className={`hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold border rounded-lg transition-colors ${
-                scrolled 
-                  ? 'text-gray-700 border-gray-300 hover:bg-gray-50' 
-                  : 'text-white border-white/20 hover:bg-white/10'
-              }`}
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/upload"
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-primary-800 hover:bg-primary-900 rounded-lg transition-colors shadow-sm"
-            >
-              Try Demo
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to="/upload"
+                className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-primary-800 hover:bg-primary-900 rounded-lg transition-colors shadow-sm"
+              >
+                Go to App
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className={`hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold border rounded-lg transition-colors ${
+                    scrolled 
+                      ? 'text-gray-700 border-gray-300 hover:bg-gray-50' 
+                      : 'text-white border-white/20 hover:bg-white/10'
+                  }`}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/upload"
+                  className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-primary-800 hover:bg-primary-900 rounded-lg transition-colors shadow-sm"
+                >
+                  Try Demo
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
+      )}
 
       {/* The 3D Scroll Story Canvas */}
       <main className="w-full h-screen relative z-10">

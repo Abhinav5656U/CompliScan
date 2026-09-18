@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock, FiMapPin, FiMessageCircle, FiShoppingCart } from 'react-icons/fi';
+import { FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock, FiMapPin, FiMessageCircle, FiShoppingCart, FiHelpCircle } from 'react-icons/fi';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -23,6 +23,7 @@ const Navbar = () => {
     { to: '/history', label: 'History', icon: FiClock, show: isAuthenticated },
     { to: '/ecommerce-crawler', label: 'E-Crawler', icon: FiShoppingCart, show: isAuthenticated },
     { to: '/chatbot', label: 'Assistant', icon: FiMessageCircle, show: isAuthenticated },
+    { to: '/how-it-works', label: 'How it Works', icon: FiHelpCircle, show: isAuthenticated },
   ];
 
   const isActive = (path) => location.pathname === path;

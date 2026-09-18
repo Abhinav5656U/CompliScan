@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FiEye, FiTrash2, FiClock, FiFileText, FiChevronLeft, FiChevronRight, FiX
+  FiEye, FiTrash2, FiClock, FiFileText, FiChevronLeft, FiChevronRight, FiX, FiSearch
 } from 'react-icons/fi';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
@@ -9,15 +9,25 @@ import { toast } from 'react-toastify';
 const History = () => {
   const [scans, setScans] = useState([]);
   const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState({ open: false, scan: null });
   const [deleting, setDeleting] = useState(false);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      setPage(1); // Reset page to 1 when a new search triggers
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const fetchHistory = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/history?page=${page}`);
+      const response = await api.get(`/history?page=${page}&q=${encodeURIComponent(debouncedQuery)}`);
       const data = response.data;
       setScans(data.scans || data.items || data.results || []);
       setTotalPages(data.pagination?.total_pages ?? 1);
@@ -26,7 +36,7 @@ const History = () => {
     } finally {
       setLoading(false);
     }
-  }, [page]);
+  }, [page, debouncedQuery]);
 
   useEffect(() => {
     fetchHistory();
@@ -69,9 +79,23 @@ const History = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="font-heading text-2xl font-bold text-gray-900">Scan History</h1>
-        <p className="text-gray-600 mt-1">Your previously uploaded scans</p>
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-gray-900">Scan History</h1>
+          <p className="text-gray-600 mt-1">Your previously uploaded scans</p>
+        </div>
+        <div className="relative w-full sm:w-72">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <FiSearch className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-colors"
+            placeholder="Search by ID or product name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">

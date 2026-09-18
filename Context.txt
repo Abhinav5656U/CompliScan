@@ -45,16 +45,18 @@ Here are the primary capabilities that make MeteroLens stand out:
 - Core Framework: React.js (v18) (Responsive Web App)
 - Styling: Tailwind CSS
 - Dashboard Analytics: Recharts (for trend graphs)
-- Map Visualization: react-simple-maps (for geographic plotting of scans)
+- Map Visualization: react-leaflet (for geographic plotting of scans)
 - Web Scanner: html5-qrcode (for browser-based QR/Barcode scanning)
+- 3D Interactive Canvas: React Three Fiber (@react-three/fiber, three.js)
 
 2. **Backend Framework & Authentication**
 - Core Framework: Flask (v3.0.3, Python) with modular Flask Blueprints
-- Authentication: JWT-based Role Authentication (Flask-JWT-Extended)
+- Authentication: JWT-based Role Authentication (Flask-JWT-Extended, bcrypt)
 - Serialization & Security: Marshmallow, Flask-Limiter, Flask-Talisman
+- Asynchronous Task Queue: Celery (with gevent)
 
 3. **Database & Storage**
-- Relational Database: PostgreSQL (via psycopg2-binary) managed with Flask-SQLAlchemy
+- Relational Database: PostgreSQL hosted on Supabase (via psycopg2-binary) managed with Flask-SQLAlchemy, utilizing Supabase Connection Pooler (Session Mode) for IPv4 network compatibility.
 - In-Memory Data Store / Caching: Redis
 - Evidence Storage: Cloudinary API (for secure image hosting)
 
@@ -66,8 +68,8 @@ Here are the primary capabilities that make MeteroLens stand out:
 
 5. **Compliance Rule Engine (Hybrid Deterministic + LLM)**
 - Deterministic Validation: Python-based script executing Regex pattern matching and physical font-height bounds checking.
-- LLM Judge (Semantic Verification): Groq API (llama3-8b-8192) evaluates ambiguous rules semantically.
-- Bilingual/Script Compliance Detector: Groq API (llama-3.3-70b-versatile) cross-checks English vs. Hindi (Devanagari).
+- LLM Judge (Semantic Verification): Groq API (qwen/qwen3.8-27b) evaluates ambiguous rules semantically.
+- Bilingual/Script Compliance Detector: Groq API (llama3-70b-8192) cross-checks English vs. Hindi (Devanagari).
 
 6. **Reporting & Evidence Non-Repudiation**
 - PDF Generation: ReportLab (Python) for automated compliance certificate generation and Improvement Notices.

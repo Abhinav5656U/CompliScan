@@ -18,8 +18,29 @@ def get_history():
         page = request.args.get("page", 1, type=int)
         per_page = request.args.get("per_page", 20, type=int)
         per_page = min(per_page, 100)
+        q = request.args.get("q", "").strip()
 
-        query = Scan.query.filter_by(user_id=user_id).order_by(Scan.created_at.desc())
+        query = Scan.query.filter_by(user_id=user_id)
+        
+        if q:
+            from sqlalchemy import cast, String, func
+            
+            search_vector_name = func.to_tsvector('english', func.coalesce(Scan.product_name, ''))
+            search_vector_json = func.to_tsvector('english', func.coalesce(cast(Scan.extracted_fields, String), ''))
+            ts_query = func.plainto_tsquery('english', q)
+            
+            filters = [
+                Scan.product_name.ilike(f"%{q}%"),
+                cast(Scan.extracted_fields, String).ilike(f"%{q}%"),
+                search_vector_name.op('@@')(ts_query),
+                search_vector_json.op('@@')(ts_query)
+            ]
+            
+            if q.isdigit():
+                filters.append(Scan.id == int(q))
+            query = query.filter(db.or_(*filters))
+
+        query = query.order_by(Scan.created_at.desc())
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
 
         return jsonify({
