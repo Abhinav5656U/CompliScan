@@ -100,7 +100,6 @@ const BarcodeScanner = ({ onScan, onClose }) => {
 const ScanUpload = () => {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
-  const [listingUrl, setListingUrl] = useState('');
   const [gtin, setGtin] = useState('');
   const [state, setState] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -152,7 +151,6 @@ const ScanUpload = () => {
       files.forEach(f => {
         formData.append('images', f);
       });
-      if (listingUrl) formData.append('listing_url', listingUrl);
       if (gtin) formData.append('gtin', gtin);
       if (state) formData.append('state', state);
 
@@ -249,22 +247,6 @@ const ScanUpload = () => {
               </div>
             </div>
           )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">E-Commerce Listing URL (Optional)</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiLink className="text-gray-400" />
-              </div>
-              <input
-                type="url"
-                value={listingUrl}
-                onChange={(e) => setListingUrl(e.target.value)}
-                placeholder="https://amazon.in/dp/..."
-                className="pl-10 w-full rounded-lg border-gray-300 border p-3 focus:ring-primary-500 focus:border-primary-500"
-              />
-            </div>
-          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

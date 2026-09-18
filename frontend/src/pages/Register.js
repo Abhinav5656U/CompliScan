@@ -215,10 +215,10 @@ const Register = () => {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="block w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50"
-                  disabled
+                  className="block w-full border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
                 >
                   <option value="viewer">Viewer</option>
+                  <option value="officer">Officer (Inspector)</option>
                 </select>
               </div>
 
@@ -240,6 +240,15 @@ const Register = () => {
               </div>
             </div>
 
+            {formData.role === 'officer' && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-sm flex items-start space-x-2">
+                <FiAlertCircle className="h-5 w-5 flex-shrink-0 text-blue-500 mt-0.5" />
+                <span>
+                  <strong>Note:</strong> Inspector accounts require an official <code>@gov.in</code> or <code>@nic.in</code> email address for verification.
+                </span>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading || !emailValid || passwordStrength < 100}
@@ -253,6 +262,32 @@ const Register = () => {
               ) : (
                 'Create account'
               )}
+            </button>
+            
+            <div className="relative mt-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or register with</span>
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/auth/janparichay/login');
+                  const data = await res.json();
+                  if (data.redirect_url) window.location.href = data.redirect_url;
+                } catch (e) {
+                  toast.error("Failed to initiate JanParichay SSO");
+                }
+              }}
+              className="w-full flex justify-center items-center py-2.5 px-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors duration-200 shadow-sm mt-4"
+            >
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Gov Logo" className="h-5 w-5 mr-2" />
+              JanParichay (Gov SSO)
             </button>
           </form>
 

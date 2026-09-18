@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FiMail, FiLock, FiAlertCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
@@ -9,8 +9,29 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, ssoLogin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const sso = params.get('sso');
+    if (sso === 'janparichay_mock') {
+      const handleSSO = async () => {
+        setLoading(true);
+        try {
+          await ssoLogin('janparichay');
+          toast.success('SSO Login Successful!');
+          navigate('/upload');
+        } catch (err) {
+          setError('SSO Login failed');
+        } finally {
+          setLoading(false);
+        }
+      };
+      handleSSO();
+    }
+  }, [location, ssoLogin, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -104,6 +125,32 @@ const Login = () => {
               ) : (
                 'Sign in'
               )}
+            </button>
+            
+            <div className="relative mt-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or sign in with</span>
+              </div>
+            </div>
+            
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/auth/janparichay/login');
+                  const data = await res.json();
+                  if (data.redirect_url) window.location.href = data.redirect_url;
+                } catch (e) {
+                  toast.error("Failed to initiate JanParichay SSO");
+                }
+              }}
+              className="w-full flex justify-center items-center py-2.5 px-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-lg transition-colors duration-200 shadow-sm mt-4"
+            >
+              <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Gov Logo" className="h-5 w-5 mr-2" />
+              JanParichay (Gov SSO)
             </button>
           </form>
 

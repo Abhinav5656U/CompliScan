@@ -66,12 +66,15 @@ def register():
         if User.query.filter_by(username=data["username"]).first() or User.query.filter_by(email=data["email"]).first():
             return jsonify({"error": "Registration failed. Username or email may already be in use."}), 409
 
-        # Only allow viewer role for public registration
-        role = "viewer"
+        role = data.get("role", "viewer")
         
-        # If an admin is creating the user (requires jwt_required but this is public endpoint, 
-        # normally you'd separate admin user creation to a different endpoint)
-        # We will enforce "viewer" always here to prevent mass assignment.
+        if role == "officer":
+            email_domain = data["email"].lower()
+            if not (email_domain.endswith("@gov.in") or email_domain.endswith("@nic.in")):
+                return jsonify({"error": "Inspector accounts require a valid @gov.in or @nic.in email address."}), 400
+        else:
+            # Enforce viewer role for all other public registrations to prevent mass assignment
+            role = "viewer"
 
         user = User(
             username=data["username"],
@@ -265,3 +268,60 @@ def reset_password():
     except Exception as e:
         return jsonify({"error": "Internal server error"}), 500
 
+@auth_bp.route("/janparichay/login", methods=["GET"])
+def janparichay_login():
+    """Mock endpoint to initiate JanParichay SSO"""
+    # In a real scenario, this would generate a SAML request or OAuth URL 
+    # and redirect the user to the government SSO portal.
+    # For now, we mock it by returning a mock redirect URL.
+    mock_redirect_url = "http://localhost:3000/login?sso=janparichay_mock"
+    return jsonify({"redirect_url": mock_redirect_url}), 200
+
+@auth_bp.route("/janparichay/callback", methods=["POST"])
+def janparichay_callback():
+    """Mock endpoint to handle SSO callback from JanParichay"""
+    try:
+        data = request.get_json()
+        if data.get("provider") != "janparichay":
+            return jsonify({"error": "Invalid SSO provider"}), 400
+
+        # MOCK DATA representing what we would decode from a JanParichay SAML response
+        mock_gov_email = "officer.demo@nic.in"
+        mock_full_name = "Gov Inspector Demo"
+        mock_badge_number = "NIC-2026-9912"
+
+        # Check if user already exists
+        user = User.query.filter_by(email=mock_gov_email).first()
+        if not user:
+            # Auto-provision the user with officer role
+            user = User(
+                username=mock_gov_email.split("@")[0],
+                email=mock_gov_email,
+                role="officer",
+                full_name=mock_full_name,
+                badge_number=mock_badge_number,
+            )
+            # Create a strong random password since they use SSO
+            user.set_password(os.urandom(24).hex())
+            db.session.add(user)
+            db.session.commit()
+
+        # Log them in
+        access_token = create_access_token(identity=str(user.id))
+        try:
+            csrf_token = get_csrf_token(access_token)
+        except Exception:
+            csrf_token = None
+        
+        response = jsonify({
+            "message": "JanParichay SSO login successful",
+            "user": user.to_dict(),
+            "csrf_token": csrf_token,
+            "access_token": access_token
+        })
+        
+        set_access_cookies(response, access_token)
+        return response, 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"SSO failed: {str(e)}"}), 500

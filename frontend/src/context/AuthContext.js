@@ -43,6 +43,20 @@ export const AuthProvider = ({ children }) => {
     return response.data;
   };
 
+  const ssoLogin = async (provider) => {
+    const response = await api.post(`/auth/${provider}/callback`, { provider });
+    const { user: userData, csrf_token, access_token } = response.data;
+    localStorage.setItem('user', JSON.stringify(userData));
+    if (csrf_token) {
+      localStorage.setItem('csrf_token', csrf_token);
+    }
+    if (access_token) {
+      localStorage.setItem('access_token', access_token);
+    }
+    setUser(userData);
+    return userData;
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -59,6 +73,7 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
+    ssoLogin,
     register,
     logout,
     isAuthenticated: !!user,

@@ -5,7 +5,7 @@
 
 # Meet MeteroLens: The Complete AI Metrology Solution
 
-We have built **MeteroLens**, a comprehensive, hybrid AI-powered platform designed to completely digitize and automate the work of Legal Metrology Officers. 
+We have built **MeteroLens**, acomprehensive, hybrid AI-powered platform designed to completely digitize and automate the work of Legal Metrology Officers. 
 
 Here are the primary capabilities that make MeteroLens stand out:
 
@@ -13,7 +13,7 @@ Here are the primary capabilities that make MeteroLens stand out:
 
 2. **(USP) Custom Model Training & Object Detection:** We didn't just use out-of-the-box APIs. We trained a custom **YOLOv8** object detection model combined with OpenCV to accurately detect bounding boxes of mandatory declarations, completely automating the visual inspection process.
 
-3. **(USP) AR-Assisted Physical Dimension Calibration:** We completely remove human subjectivity when measuring if a font size is legal (Rule 7). By simply placing a standard reference card next to the label, our CV pipeline perfectly calibrates the physical height (in millimeters) of the text on the package!
+3. **(USP) Physical Dimension Calibration:** We completely remove human subjectivity when measuring if a font size is legal (Rule 7).Our YOLOv8 model combined with OpenCV helps calculate the exact font size.
 
 4. **(USP) Hybrid Compliance Rule Engine:** We use a two-pronged approach to check compliance: a blazing-fast Deterministic Engine (Regex and geometry checks) for strict rules, paired with a Semantic LLM Judge (Groq LLaMA 3) to evaluate ambiguous claims and ingredients.
 
@@ -25,7 +25,7 @@ Here are the primary capabilities that make MeteroLens stand out:
 
 8. **(USP) Automatic Unit Sale Price (USP) Calculator:** No more mental math for inspectors. The system extracts the MRP and Net Quantity, calculates the exact price per gram/ml, and verifies that the label follows the strict LMPC rounding rules.
 
-9. **(USP) State Portal API Integrator (Vaidhmapan Sync):** We've eliminated double data entry. As soon as an officer finishes a digital inspection on MeteroLens, the compliance reports, fines, and GPS data are instantly synced into official state databases like Vaidhmapan in real-time.
+//9. **(USP) State Portal API Integrator (Vaidhmapan Sync):** We've eliminated double data entry. As soon as an officer finishes a digital inspection on MeteroLens, the compliance reports, fines, and GPS data are instantly synced into official state databases like Vaidhmapan in real-time.
 
 10. **(USP) E-commerce SKU Crawler (Rule 18):** Non-compliance isn't just physical anymore. An officer can scan a physical product's barcode, and our system will automatically crawl its online listing (like Amazon or Flipkart) to ensure the digital label perfectly matches the physical rules.
 
