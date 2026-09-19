@@ -92,12 +92,14 @@ def create_app(config_name=None):
     from app.routes.history import history_bp
     from app.routes.notice import notice_bp
     from app.routes.ecommerce import ecommerce_bp
+    from app.routes.report import report_bp
 
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(scan_bp, url_prefix="/api/scan")
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
     app.register_blueprint(history_bp, url_prefix="/api/history")
     app.register_blueprint(notice_bp, url_prefix="/api/notice")
+    app.register_blueprint(report_bp, url_prefix="/api/report")
     app.register_blueprint(ecommerce_bp)
 
     try:

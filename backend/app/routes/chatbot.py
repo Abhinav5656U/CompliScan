@@ -237,7 +237,7 @@ def submit_complaint():
     if not scan:
         return jsonify({'error': 'Scan not found'}), 404
 
-    complaint = Complaint(
+    complaint = Complaint(  # type: ignore
         complaint_id=data['complaint_id'],
         user_id=user_id,
         scan_id=scan_id_val,

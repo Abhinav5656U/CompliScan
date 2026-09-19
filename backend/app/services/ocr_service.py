@@ -75,12 +75,13 @@ CRITICAL INSTRUCTIONS FOR raw_text_detected:
 - Be extremely thorough — every single piece of text matters for compliance checking.
 
 CRITICAL INSTRUCTIONS FOR structured fields:
+- STRICT RULE: If a value is NOT explicitly printed next to its label (like 'B. NO:' being blank), you MUST return null. Do NOT guess or pull values from unrelated sections.
 - For 'mrp': Extract the full MRP string including currency symbol and any "incl. of all taxes" text nearby (e.g., "₹10/- (Incl. of all taxes)")
 - For 'manufacturer': Extract the full company name (e.g., "Nestle India Limited")
 - For 'address': Extract the FULL address including city, state, pin code, and country (e.g., "Plot 4, Meerut Road, Ghaziabad, UP 201003, India")
-- For 'net_quantity': Include the value AND unit (e.g., "70g", "200 ml")
+- For 'net_quantity': Include the value AND unit (e.g., "70g", "200 ml"). Do NOT pull weights from the "Nutritional Information" table.
 - For 'manufacturing_date': Any date format is fine (e.g., "MFG: 05/2026", "Best Before: 12 months from packaging")
-- For 'batch_number': Any batch/lot identifier (e.g., "Batch No: A123", "L/N: 456")
+- For 'batch_number': Any batch/lot identifier (e.g., "Batch No: A123", "L/N: 456"). Do NOT pull random connective words like "and".
 - For 'unit_sale_price': Per-unit price if mentioned
 
 Provide a 'confidence_score' from 0 to 100 representing how confident you are in the extracted values.
@@ -176,21 +177,16 @@ def extract_text(image_path):
                 pass
 
 def extract_structured_data_llm(ocr_text):
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        return {"confidence_score": 0}
-        
-    genai.configure(api_key=api_key)
-    
     prompt = f"""
 You are a compliance extraction AI. Given the following raw OCR text from a product packaging, extract the required compliance fields.
 If a field is not found, leave it as null.
+STRICT RULE: If a value is NOT explicitly stated in a clear label context (like 'Batch No', 'Net Qty'), you MUST return null. Do NOT guess or pull random numbers from nutritional tables. Do NOT pull random stray words.
 Provide a 'confidence_score' from 0 to 100.
 
 Raw OCR Text:
 {ocr_text}
 
-Return ONLY valid JSON matching this schema, without any markdown formatting:
+Return ONLY valid JSON matching this schema exactly, without any markdown formatting:
 {{
   "product_name": "string or null",
   "mrp": "string or null",
@@ -200,22 +196,44 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
   "net_quantity": "string or null",
   "manufacturing_date": "string or null",
   "batch_number": "string or null",
-  "confidence_score": integer
+  "confidence_score": 100
 }}
 """
-    try:
+    groq_api_key = os.environ.get("GROQ_API_KEY")
+    if groq_api_key and groq_api_key != "your_groq_api_key_here":
         try:
-            model = genai.GenerativeModel("gemini-2.5-flash")
-            response = model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    response_mime_type="application/json"
-                ),
-                request_options={"timeout": 60}
+            from groq import Groq
+            client = Groq(api_key=groq_api_key)
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": prompt}
+                ],
+                model="llama3-70b-8192",
+                temperature=0,
+                max_tokens=800,
+                response_format={"type": "json_object"},
+                timeout=15
             )
+            response_text = chat_completion.choices[0].message.content.strip()
+            return json.loads(response_text)
         except Exception as e:
-            raise e
-                
+            print(f"Groq LLM Error: {e}")
+
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return {"confidence_score": 0}
+        
+    genai.configure(api_key=api_key)
+    
+    try:
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(
+            prompt,
+            generation_config=genai.types.GenerationConfig(
+                response_mime_type="application/json"
+            ),
+            request_options={"timeout": 60}
+        )
         text = response.text
         if not text:
             print("Gemini returned empty response in PaddleOCR fallback (possible safety filter).")
@@ -316,7 +334,7 @@ YOLO_CLASS_TO_ZONE = {
     "FSSAI": "fssai_zone",
 }
 
-def process_image_pipeline(image_paths):
+def process_image_pipeline(image_paths, scan_mode="deep"):
     # Hardcoding to the user's calibrated pipeline ratio to prevent random 
     # rectangles on the packaging from being falsely detected as credit cards.
     pixels_per_mm = 1 / 0.033 
@@ -372,51 +390,61 @@ def process_image_pipeline(image_paths):
     # Send BOTH original images (for full context) AND crops (for precision on tiny text) to Gemini
     images_to_process = image_paths + cropped_paths
     
-    # 2. Extract Text via Gemini Flash on the highly relevant cropped regions
-    llm_data = extract_structured_data_gemini_vision(images_to_process)
-    
-    # Cleanup temp crops
-    for p in cropped_paths:
-        try:
-            os.remove(p)
-        except OSError:
-            pass
+    if scan_mode == "deep":
+        # 2. Extract Text via Gemini Flash on the highly relevant cropped regions
+        llm_data = extract_structured_data_gemini_vision(images_to_process)
+        
+        # Cleanup temp crops
+        for p in cropped_paths:
+            try:
+                os.remove(p)
+            except OSError:
+                pass
 
-    # Success Path with Gemini — only if we got meaningful raw text
-    if llm_data and llm_data.get("raw_text_detected") and len(llm_data["raw_text_detected"].strip()) > 20:
-        print("Successfully extracted using Gemini Vision!")
-        full_text = llm_data["raw_text_detected"]
-        print(f"Extracted text length: {len(full_text)} chars")
-        print(f"First 200 chars: {full_text[:200]}")
-        
-        # Compute max physical height per zone from actual YOLO detections
-        zone_max_heights = {}
-        for item in yolo_zoned_data:
-            z = item.get("zone", "unknown")
-            h = item.get("physical_height_mm", 0.0)
-            if z not in zone_max_heights or h > zone_max_heights[z]:
-                zone_max_heights[z] = h
-        
-        # Inject the full text into all zones so the Validation Engine RegEx can find everything
-        # Carry forward the real YOLO physical height for each zone
-        for zone_name in ["any", "mrp_zone", "manufacturer_zone", "net_qty_zone", "consumer_care_zone"]:
-            yolo_zoned_data.append({
-                "text": full_text,
-                "bbox": [[0,0],[10,0],[10,10],[0,10]],
-                "confidence": 1.0,
-                "zone": zone_name,
-                "physical_height_mm": zone_max_heights.get(zone_name, 0.0)
-            })
+        # Success Path with Gemini — only if we got meaningful raw text
+        if llm_data and llm_data.get("raw_text_detected") and len(llm_data["raw_text_detected"].strip()) > 20:
+            print("Successfully extracted using Gemini Vision!")
+            full_text = llm_data["raw_text_detected"]
+            print(f"Extracted text length: {len(full_text)} chars")
+            print(f"First 200 chars: {full_text[:200]}")
             
-        return {
-            "calibrated_pixels_per_mm": float(pixels_per_mm),
-            "extracted_data": yolo_zoned_data,
-            "full_text": full_text,
-            "llm_extracted_data": llm_data,
-            "yolo_detected_classes": list(yolo_detected_classes)
-        }
-        
-    print("Falling back to PaddleOCR pipeline...")
+            # Compute max physical height per zone from actual YOLO detections
+            zone_max_heights = {}
+            for item in yolo_zoned_data:
+                z = item.get("zone", "unknown")
+                h = item.get("physical_height_mm", 0.0)
+                if z not in zone_max_heights or h > zone_max_heights[z]:
+                    zone_max_heights[z] = h
+            
+            # Inject the full text into all zones so the Validation Engine RegEx can find everything
+            # Carry forward the real YOLO physical height for each zone
+            for zone_name in ["any", "mrp_zone", "manufacturer_zone", "net_qty_zone", "consumer_care_zone"]:
+                yolo_zoned_data.append({
+                    "text": full_text,
+                    "bbox": [[0,0],[10,0],[10,10],[0,10]],
+                    "confidence": 1.0,
+                    "zone": zone_name,
+                    "physical_height_mm": zone_max_heights.get(zone_name, 0.0)
+                })
+                
+            return {
+                "calibrated_pixels_per_mm": float(pixels_per_mm),
+                "extracted_data": yolo_zoned_data,
+                "full_text": full_text,
+                "llm_extracted_data": llm_data,
+                "yolo_detected_classes": list(yolo_detected_classes)
+            }
+        print("Falling back to PaddleOCR pipeline...")
+
+    if scan_mode == "fast":
+        print("Running Fast Mode (PaddleOCR + Groq)...")
+        # Cleanup temp crops for fast mode since we don't send them to Gemini
+        for p in cropped_paths:
+            try:
+                if os.path.exists(p):
+                    os.remove(p)
+            except OSError:
+                pass
     img = cv2.imread(image_paths[0])
     height, width = (0, 0)
     if img is not None:

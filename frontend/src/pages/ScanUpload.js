@@ -102,6 +102,7 @@ const ScanUpload = () => {
   const [previews, setPreviews] = useState([]);
   const [gtin, setGtin] = useState('');
   const [state, setState] = useState('');
+  const [scanMode, setScanMode] = useState('deep');
   const [uploading, setUploading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const cameraInputRef = useRef(null);
@@ -173,6 +174,7 @@ const ScanUpload = () => {
       });
       if (gtin) formData.append('gtin', gtin);
       if (state) formData.append('state', state);
+      formData.append('scan_mode', scanMode);
       if (lat !== null) formData.append('latitude', lat);
       if (lng !== null) formData.append('longitude', lng);
 
@@ -308,6 +310,44 @@ const ScanUpload = () => {
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-3">Analysis Mode</h3>
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+              <label className={`flex-1 flex cursor-pointer items-start p-4 border rounded-lg transition-colors ${scanMode === 'fast' ? 'bg-primary-50 border-primary-500' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center h-5">
+                  <input
+                    type="radio"
+                    name="scan_mode"
+                    value="fast"
+                    checked={scanMode === 'fast'}
+                    onChange={(e) => setScanMode(e.target.value)}
+                    className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300"
+                  />
+                </div>
+                <div className="ml-3">
+                  <span className={`block text-sm font-medium ${scanMode === 'fast' ? 'text-primary-900' : 'text-gray-900'}`}>Fast Mode (~15s)</span>
+                  <span className="block text-xs text-gray-500 mt-1">PaddleOCR + Groq. Prioritizes raw speed.</span>
+                </div>
+              </label>
+              <label className={`flex-1 flex cursor-pointer items-start p-4 border rounded-lg transition-colors ${scanMode === 'deep' ? 'bg-primary-50 border-primary-500' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center h-5">
+                  <input
+                    type="radio"
+                    name="scan_mode"
+                    value="deep"
+                    checked={scanMode === 'deep'}
+                    onChange={(e) => setScanMode(e.target.value)}
+                    className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300"
+                  />
+                </div>
+                <div className="ml-3">
+                  <span className={`block text-sm font-medium ${scanMode === 'deep' ? 'text-primary-900' : 'text-gray-900'}`}>Deep Mode (~90s)</span>
+                  <span className="block text-xs text-gray-500 mt-1">Gemini Vision 2.5 Flash. Prioritizes deep context.</span>
+                </div>
+              </label>
             </div>
           </div>
 

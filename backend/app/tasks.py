@@ -1,9 +1,10 @@
 from app.celery_app import celery
 from app import db
-from app.models import Scan
+from app.models import Scan, ScanImage
 from app.services.ocr_service import process_image_pipeline
 from app.services.validation_service import validate_compliance
 from app.services.mismatch_service import cross_check
+from app.services.cloudinary_service import upload_to_cloudinary
 import traceback
 import os
 from flask import current_app
@@ -15,7 +16,21 @@ def process_scan_task(scan_id, image_paths, listing_url):
         if not scan:
             return "Scan not found"
             
-        pipeline_data = process_image_pipeline(image_paths)
+        uploaded_urls = []
+        for path in image_paths:
+            cloud_url = upload_to_cloudinary(path)
+            final_url = cloud_url if cloud_url else path
+            uploaded_urls.append(final_url)
+            
+            scan_img = ScanImage(scan_id=scan.id, image_url=final_url)
+            db.session.add(scan_img)
+            
+        if scan.image_path == "processing" and uploaded_urls:
+            scan.image_path = uploaded_urls[0]
+            
+        db.session.commit()
+            
+        pipeline_data = process_image_pipeline(image_paths, scan_mode=scan.scan_mode)
         extracted_fields = {}
         compliance_result = validate_compliance(pipeline_data, extracted_fields)
         ocr_text = pipeline_data.get("full_text", "")
