@@ -72,5 +72,14 @@ Here are the primary capabilities that make MeteroLens stand out:
 - Bilingual/Script Compliance Detector: Groq API (llama3-70b-8192) cross-checks English vs. Hindi (Devanagari).
 
 6. **Reporting & Evidence Non-Repudiation**
-- PDF Generation: ReportLab (Python) for automated compliance certificate generation and Improvement Notices.
-- Evidence Integrity: SHA-256 Cryptographic Hashing applied to image evidence at the time of capture.
+- PDF Generation: ReportLab (Python) for automated compliance certificates.
+- Evidence Integrity: SHA-256 Cryptographic Hashing.
+
+---
+
+# Recent Updates (Previous Day's Work)
+
+- **AI & Scanning Pipeline:** Implemented a robust dual-mode scanning pipeline and significantly improved the LLM prompts for better accuracy.
+- **Frontend Enhancements:** Added semantic search functionality to the history page and fixed navbar routing issues.
+- **Map & Geolocation:** Implemented red dots on the map for clear visualization, and added a reliable desktop geolocation fallback mechanism.
+- **Backend Stability:** Fixed database connection timeouts and added mobile URL logging for better debugging.
