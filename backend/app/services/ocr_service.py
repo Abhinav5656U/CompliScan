@@ -41,6 +41,15 @@ def preprocess_image_for_ocr(image_path):
     if img is None:
         return image_path
         
+    # Resize image if it's too large to speed up PaddleOCR without losing essential quality
+    max_dimension = 1280
+    height, width = img.shape[:2]
+    if max(height, width) > max_dimension:
+        scale = max_dimension / float(max(height, width))
+        new_width = int(width * scale)
+        new_height = int(height * scale)
+        img = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_AREA)
+        
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
     enhanced = clahe.apply(gray)
@@ -119,13 +128,18 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
         if not text:
             print("Gemini returned empty response (possible safety filter).")
             return None
-        text = text.strip()
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
+            
+        import re
+        # Try to find JSON block if markdown is present
+        match = re.search(r'```(?:json)?\s*(.*?)\s*```', text, re.DOTALL)
+        if match:
+            text = match.group(1)
+        else:
+            # Try to just find the outermost curly braces
+            match = re.search(r'\{.*\}', text, re.DOTALL)
+            if match:
+                text = match.group(0)
+                
         result = json.loads(text.strip())
         print(f"Gemini Vision extracted fields: {list(k for k,v in result.items() if v and str(v).lower() not in ('none','null',''))}")
         return result
@@ -148,7 +162,7 @@ def extract_text(image_path):
             return []
             
         from paddleocr import PaddleOCR
-        ocr = PaddleOCR(use_textline_orientation=True, lang='devanagari')
+        ocr = PaddleOCR(use_textline_orientation=True, lang='devanagari', use_onnx=True)
         result = ocr.ocr(temp_path)
         extracted = []
         
@@ -402,38 +416,46 @@ def process_image_pipeline(image_paths, scan_mode="deep"):
                 pass
 
         # Success Path with Gemini — only if we got meaningful raw text
-        if llm_data and llm_data.get("raw_text_detected") and len(llm_data["raw_text_detected"].strip()) > 20:
-            print("Successfully extracted using Gemini Vision!")
-            full_text = llm_data["raw_text_detected"]
-            print(f"Extracted text length: {len(full_text)} chars")
-            print(f"First 200 chars: {full_text[:200]}")
+        if llm_data and llm_data.get("raw_text_detected"):
+            raw_text = llm_data["raw_text_detected"].strip()
             
-            # Compute max physical height per zone from actual YOLO detections
-            zone_max_heights = {}
-            for item in yolo_zoned_data:
-                z = item.get("zone", "unknown")
-                h = item.get("physical_height_mm", 0.0)
-                if z not in zone_max_heights or h > zone_max_heights[z]:
-                    zone_max_heights[z] = h
-            
-            # Inject the full text into all zones so the Validation Engine RegEx can find everything
-            # Carry forward the real YOLO physical height for each zone
-            for zone_name in ["any", "mrp_zone", "manufacturer_zone", "net_qty_zone", "consumer_care_zone"]:
-                yolo_zoned_data.append({
-                    "text": full_text,
-                    "bbox": [[0,0],[10,0],[10,10],[0,10]],
-                    "confidence": 1.0,
-                    "zone": zone_name,
-                    "physical_height_mm": zone_max_heights.get(zone_name, 0.0)
-                })
+            # If we got good text, OR if we have no local fallback available, use Gemini's result
+            if len(raw_text) > 20 or not USE_LOCAL_MODELS:
+                if len(raw_text) <= 20:
+                    print("Gemini extracted short text and PaddleOCR is disabled. Using Gemini output.")
+                else:
+                    print("Successfully extracted using Gemini Vision!")
+                    
+                full_text = raw_text
+                print(f"Extracted text length: {len(full_text)} chars")
+                print(f"First 200 chars: {full_text[:200]}")
                 
-            return {
-                "calibrated_pixels_per_mm": float(pixels_per_mm),
-                "extracted_data": yolo_zoned_data,
-                "full_text": full_text,
-                "llm_extracted_data": llm_data,
-                "yolo_detected_classes": list(yolo_detected_classes)
-            }
+                # Compute max physical height per zone from actual YOLO detections
+                zone_max_heights = {}
+                for item in yolo_zoned_data:
+                    z = item.get("zone", "unknown")
+                    h = item.get("physical_height_mm", 0.0)
+                    if z not in zone_max_heights or h > zone_max_heights[z]:
+                        zone_max_heights[z] = h
+                
+                # Inject the full text into all zones so the Validation Engine RegEx can find everything
+                # Carry forward the real YOLO physical height for each zone
+                for zone_name in ["any", "mrp_zone", "manufacturer_zone", "net_qty_zone", "consumer_care_zone"]:
+                    yolo_zoned_data.append({
+                        "text": full_text,
+                        "bbox": [[0,0],[10,0],[10,10],[0,10]],
+                        "confidence": 1.0,
+                        "zone": zone_name,
+                        "physical_height_mm": zone_max_heights.get(zone_name, 0.0)
+                    })
+                    
+                return {
+                    "calibrated_pixels_per_mm": float(pixels_per_mm),
+                    "extracted_data": yolo_zoned_data,
+                    "full_text": full_text,
+                    "llm_extracted_data": llm_data,
+                    "yolo_detected_classes": list(yolo_detected_classes)
+                }
         print("Falling back to PaddleOCR pipeline...")
 
     if scan_mode == "fast":
