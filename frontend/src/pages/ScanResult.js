@@ -237,7 +237,6 @@ const ScanResult = ({ scanIdProp }) => {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [showBboxes, setShowBboxes] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imgDims, setImgDims] = useState({ natW: 0, natH: 0, dispW: 0, dispH: 0 });
   const imgRef = useRef(null);
 
@@ -363,14 +362,7 @@ const ScanResult = ({ scanIdProp }) => {
   const ruleVersion = scan.compliance_result?.rule_version_applied || 'Base Rules';
   const mismatch = scan.mismatch_result;
   const overallStatus = scan.overall_status || scan.status || 'unknown';
-  
-  const fallbackImageUrl = scan.image_url || (scan.image_path ? `${API_BASE_URL}/uploads/${scan.image_path.split(/[\\/]/).pop()}` : null);
-  const images = scan.images && scan.images.length > 0 
-    ? scan.images.map(img => img.image_url || `${API_BASE_URL}/uploads/${img.image_path.split(/[\\/]/).pop()}`)
-    : (fallbackImageUrl ? [fallbackImageUrl] : []);
-    
-  const currentImageUrl = images[selectedImageIndex] || fallbackImageUrl;
-
+  const imageUrl = scan.image_url || (scan.image_path ? `${API_BASE_URL}/uploads/${scan.image_path.split(/[\\/]/).pop()}` : null);
   const extractedData = scan.extracted_data || scan.ocr_extracted_data || null;
   const hasBboxData = extractedData && extractedData.length > 0 && extractedData.some(d => d.bbox);
 
@@ -566,40 +558,24 @@ const ScanResult = ({ scanIdProp }) => {
                 )}
               </div>
               <div className="p-4">
-                <div className="relative bg-gray-50 rounded-lg overflow-hidden flex flex-col">
-                  <div className="relative">
-                    {showBboxes && hasBboxData && selectedImageIndex === 0 && currentImageUrl && (
-                      <BboxOverlay
-                        extractedData={extractedData}
-                        imgNaturalWidth={imgDims.natW}
-                        imgNaturalHeight={imgDims.natH}
-                        displayWidth={imgDims.dispW}
-                        displayHeight={imgDims.dispH}
-                        checks={checks}
-                      />
-                    )}
-                    <img
-                      ref={imgRef}
-                      src={currentImageUrl}
-                      alt="Scanned product label"
-                      onLoad={handleImageLoad}
-                      className="w-full h-64 sm:h-80 object-contain"
+                <div className="relative bg-gray-50 rounded-lg overflow-hidden">
+                  {showBboxes && hasBboxData && imageUrl && (
+                    <BboxOverlay
+                      extractedData={extractedData}
+                      imgNaturalWidth={imgDims.natW}
+                      imgNaturalHeight={imgDims.natH}
+                      displayWidth={imgDims.dispW}
+                      displayHeight={imgDims.dispH}
+                      checks={checks}
                     />
-                  </div>
-                  
-                  {images.length > 1 && (
-                    <div className="flex overflow-x-auto gap-2 p-2 mt-2 border-t border-gray-100 snap-x">
-                      {images.map((imgUrl, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setSelectedImageIndex(idx)}
-                          className={`relative flex-none snap-start rounded-md overflow-hidden h-16 w-16 border-2 transition-colors ${selectedImageIndex === idx ? 'border-primary-600' : 'border-transparent hover:border-gray-300'}`}
-                        >
-                          <img src={imgUrl} alt={`Thumbnail ${idx+1}`} className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
                   )}
+                  <img
+                    ref={imgRef}
+                    src={imageUrl}
+                    alt="Scanned product label"
+                    onLoad={handleImageLoad}
+                    className="w-full h-64 sm:h-80 object-contain"
+                  />
                 </div>
                 {hasBboxData && showBboxes && (
                   <div className="mt-3 flex flex-wrap gap-2">

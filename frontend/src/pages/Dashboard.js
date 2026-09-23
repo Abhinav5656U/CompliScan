@@ -178,35 +178,38 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 font-body">
+      <div className="mb-8 border-b border-line pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="font-heading text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">Compliance scan overview and analytics</p>
+            <div className="text-[11px] font-mono uppercase tracking-wider text-seal font-semibold mb-1">
+              Statutory Supervisory Register &middot; Legal Metrology Enforcement
+            </div>
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy">Enforcement Analytics Dashboard</h1>
+            <p className="text-xs text-[#555] mt-1">Real-time surveillance of packaged commodity compliance, violation metrics, and citizen risk queues.</p>
           </div>
           <Link
             to="/chatbot"
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary-800 hover:bg-primary-900 text-white rounded-lg text-sm font-medium transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-navy hover:bg-navy-700 text-white rounded-xs text-xs font-semibold transition-colors border border-[#374B73]"
           >
-            <FiMessageCircle className="h-4 w-4" />
-            <span>Open Assistant</span>
+            <FiMessageCircle className="h-4 w-4 text-seal" />
+            <span>Statutory Assistant</span>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 border border-line bg-white divide-y sm:divide-y-0 sm:divide-x divide-line mb-8 shadow-ledger">
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.label} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div key={card.label} className="p-5 hover:bg-[#FAF9F5] transition-colors">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">{card.label}</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-1">{card.value}</p>
+                  <p className="text-xs font-mono font-semibold text-[#666] uppercase tracking-wider">{card.label}</p>
+                  <p className="text-3xl font-bold font-mono text-navy mt-1.5">{card.value}</p>
                 </div>
-                <div className={`${card.iconBg} rounded-xl p-3`}>
-                  <Icon className={`h-6 w-6 ${card.color.split(' ')[1]}`} />
+                <div className={`${card.iconBg} rounded-xs p-2.5 border border-line/60`}>
+                  <Icon className={`h-5 w-5 ${card.color.split(' ')[1]}`} />
                 </div>
               </div>
             </div>
@@ -215,38 +218,44 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 min-w-0 overflow-hidden">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Scans Over Time</h3>
+        <div className="bg-white border border-line rounded-xs p-5 shadow-ledger min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between mb-4 border-b border-line pb-2">
+            <h3 className="font-heading text-base font-bold text-navy">Surveillance Frequency (Scans Over Time)</h3>
+            <span className="text-[10px] font-mono text-[#777] uppercase">Daily Ingestion</span>
+          </div>
           {trendData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="2 2" stroke="#EAE6DC" />
+                <XAxis dataKey="date" tick={{ fontSize: 10, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
+                <YAxis tick={{ fontSize: 10, fontFamily: 'IBM Plex Mono' }} stroke="#888" allowDecimals={false} />
                 <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="count" stroke="#1e40af" strokeWidth={2} name="Scans" dot={{ r: 3 }} />
+                <Legend wrapperStyle={{ fontSize: '11px', fontFamily: 'Public Sans' }} />
+                <Line type="monotone" dataKey="count" stroke="#14213D" strokeWidth={2.5} name="Total Field Audits" dot={{ r: 3, fill: '#A6790A' }} />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <EmptyChart message="No scan data available yet" />
+            <EmptyChart message="No field audit records cataloged for this period" />
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 min-w-0 overflow-hidden">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Violations</h3>
+        <div className="bg-white border border-line rounded-xs p-5 shadow-ledger min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between mb-4 border-b border-line pb-2">
+            <h3 className="font-heading text-base font-bold text-navy">Top Infractions (Statutory Breach Count)</h3>
+            <span className="text-[10px] font-mono text-[#777] uppercase">Rule Infringement Breakdown</span>
+          </div>
           {violationsData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={violationsData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="rule" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="2 2" stroke="#EAE6DC" />
+                <XAxis dataKey="rule" tick={{ fontSize: 10, fontFamily: 'IBM Plex Mono' }} stroke="#888" />
+                <YAxis tick={{ fontSize: 10, fontFamily: 'IBM Plex Mono' }} stroke="#888" allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#1e40af" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" fill="#B3261E" radius={[2, 2, 0, 0]} name="Breach Instances" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <EmptyChart message="No violations recorded yet" />
+            <EmptyChart message="No statutory breaches recorded in registry" />
           )}
         </div>
       </div>

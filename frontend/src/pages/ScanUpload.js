@@ -201,7 +201,7 @@ const ScanUpload = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 font-body">
       {showScanner && (
         <BarcodeScanner
           onScan={handleBarcodeScan}
@@ -209,14 +209,19 @@ const ScanUpload = () => {
         />
       )}
 
-      <div className="mb-8">
-        <h1 className="font-heading text-3xl font-bold text-gray-900">Product Scan</h1>
-        <p className="text-gray-600 mt-1">Upload a product label image for AI compliance verification.</p>
+      <div className="mb-8 border-b border-line pb-4">
+        <div className="text-[11px] font-mono uppercase tracking-wider text-seal font-semibold mb-1">
+          Form FL-02 &middot; Field Examination Docket Ingestion
+        </div>
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy">Field Packaging Audit Scan</h1>
+        <p className="text-xs text-[#555] mt-1">Ingest product packaging photographs for optical declaration extraction and statutory verification under the Legal Metrology (Packaged Commodities) Rules, 2011.</p>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-        <h2 className="text-xl font-bold mb-2">Upload Label Image</h2>
-        <p className="text-gray-600 mb-6">Capture the product label clearly, including MRP, manufacturer details, and quantity.</p>
+      <div className="bg-white border border-line shadow-ledger rounded-xs p-6 sm:p-8">
+        <div className="flex items-center justify-between border-b border-line pb-3 mb-6">
+          <h2 className="font-heading text-lg font-bold text-navy">Packaging Image Acquisition</h2>
+          <span className="text-[11px] font-mono text-[#777]">MANDATORY PRINCIPAL DISPLAY PANEL</span>
+        </div>
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -313,39 +318,42 @@ const ScanUpload = () => {
             </div>
           </div>
 
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-6">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">Analysis Mode</h3>
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-              <label className={`flex-1 flex cursor-pointer items-start p-4 border rounded-lg transition-colors ${scanMode === 'fast' ? 'bg-primary-50 border-primary-500' : 'bg-white border-gray-200'}`}>
-                <div className="flex items-center h-5">
+          <div className="bg-paper border border-line rounded-xs p-4 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-navy">Audit Verification Pipeline</h3>
+              <span className="text-[10px] font-mono text-seal bg-[#FAF1DD] px-1.5 py-0.5 border border-seal/30">STATUTORY MODE</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className={`flex cursor-pointer items-start p-3 border rounded-xs transition-colors ${scanMode === 'fast' ? 'bg-white border-seal shadow-xs' : 'bg-white/60 border-line hover:bg-white'}`}>
+                <div className="flex items-center h-4 mt-0.5">
                   <input
                     type="radio"
                     name="scan_mode"
                     value="fast"
                     checked={scanMode === 'fast'}
                     onChange={(e) => setScanMode(e.target.value)}
-                    className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300"
+                    className="focus:ring-seal h-3.5 w-3.5 text-seal border-line"
                   />
                 </div>
-                <div className="ml-3">
-                  <span className={`block text-sm font-medium ${scanMode === 'fast' ? 'text-primary-900' : 'text-gray-900'}`}>Fast Mode (~15s)</span>
-                  <span className="block text-xs text-gray-500 mt-1">PaddleOCR + Groq. Prioritizes raw speed.</span>
+                <div className="ml-2.5">
+                  <span className={`block text-xs font-bold font-heading ${scanMode === 'fast' ? 'text-navy' : 'text-ink'}`}>Fast Mode (~15s)</span>
+                  <span className="block text-[11px] text-[#666] mt-0.5">PaddleOCR + Groq. Prioritizes field triage speed.</span>
                 </div>
               </label>
-              <label className={`flex-1 flex cursor-pointer items-start p-4 border rounded-lg transition-colors ${scanMode === 'deep' ? 'bg-primary-50 border-primary-500' : 'bg-white border-gray-200'}`}>
-                <div className="flex items-center h-5">
+              <label className={`flex cursor-pointer items-start p-3 border rounded-xs transition-colors ${scanMode === 'deep' ? 'bg-white border-seal shadow-xs' : 'bg-white/60 border-line hover:bg-white'}`}>
+                <div className="flex items-center h-4 mt-0.5">
                   <input
                     type="radio"
                     name="scan_mode"
                     value="deep"
                     checked={scanMode === 'deep'}
                     onChange={(e) => setScanMode(e.target.value)}
-                    className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300"
+                    className="focus:ring-seal h-3.5 w-3.5 text-seal border-line"
                   />
                 </div>
-                <div className="ml-3">
-                  <span className={`block text-sm font-medium ${scanMode === 'deep' ? 'text-primary-900' : 'text-gray-900'}`}>Deep Mode (~90s)</span>
-                  <span className="block text-xs text-gray-500 mt-1">Gemini Vision 2.5 Flash. Prioritizes deep context.</span>
+                <div className="ml-2.5">
+                  <span className={`block text-xs font-bold font-heading ${scanMode === 'deep' ? 'text-navy' : 'text-ink'}`}>Deep Mode (~90s)</span>
+                  <span className="block text-[11px] text-[#666] mt-0.5">Gemini Vision 2.5 Flash. Prioritizes legal citation depth.</span>
                 </div>
               </label>
             </div>
@@ -354,9 +362,16 @@ const ScanUpload = () => {
           <button
             onClick={handleUpload}
             disabled={uploading || files.length === 0}
-            className="w-full flex justify-center items-center py-4 bg-primary-800 hover:bg-primary-900 text-white font-bold rounded-xl transition-colors disabled:opacity-50"
+            className="w-full flex justify-center items-center py-3.5 bg-seal hover:bg-seal-hover text-white text-sm font-semibold rounded-xs transition-colors disabled:opacity-50 shadow-xs"
           >
-            {uploading ? 'Analyzing and Verifying...' : 'Submit for AI Verification'}
+            {uploading ? (
+              <span className="font-mono flex items-center space-x-2">
+                <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>Executing Statutory Rule Audit...</span>
+              </span>
+            ) : (
+              'Submit Packaging for Statutory Rule Verification'
+            )}
           </button>
         </div>
       </div>

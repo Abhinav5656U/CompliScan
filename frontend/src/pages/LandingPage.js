@@ -1,434 +1,550 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FiSearch, FiUpload, FiXCircle, FiFileText, FiShield, FiBarChart2,
-  FiZap, FiArrowRight, FiGlobe,
-  FiCrosshair, FiAlertTriangle, FiBook, FiGithub, FiMail
+  FiSearch, FiUpload, FiFileText, FiShield,
+  FiArrowRight, FiCheck, FiX, FiAlertTriangle,
+  FiExternalLink, FiBook, FiGithub, FiMail
 } from 'react-icons/fi';
-import STATUS_COLORS, { getStatusTone } from '../utils/statusColors';
 
-const NAV_LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'How it Works', href: '/how-it-works', isRoute: true },
-  { label: 'Team', href: '#footer' },
+const MANDATORY_RULES = [
+  { rule: 'Rule 5', name: 'Manufacturer / Packer Address', requirement: 'Complete postal address with state and PIN code', status: 'Mandatory' },
+  { rule: 'Rule 6(1)(a)', name: 'Generic / Common Name', requirement: 'Clear nomenclature of commodity contained within', status: 'Mandatory' },
+  { rule: 'Rule 6(1)(d)', name: 'Month & Year of Manufacture', requirement: 'Month and year of manufacture, packing, or import', status: 'Mandatory' },
+  { rule: 'Rule 6(1)(e)', name: 'Maximum Retail Price (MRP)', requirement: 'Inclusive of all taxes in standard Indian currency format', status: 'Mandatory' },
+  { rule: 'Rule 6(1)(f)', name: 'Consumer Care Helpline', requirement: 'Name, address, telephone number, and email of redressal officer', status: 'Mandatory' },
+  { rule: 'Rule 6(11)', name: 'Unit Sale Price', requirement: 'Mandatory price per gram/ml for goods over specified weights', status: 'Mandatory' },
+  { rule: 'Rule 7', name: 'Standard Net Quantity', requirement: 'Standard SI metric units (g, kg, ml, l) adhering to Schedule II', status: 'Mandatory' },
+  { rule: 'Rule 6(10)', name: 'Country of Origin', requirement: 'Clear declaration for imported goods without misleading claims', status: 'Mandatory' },
 ];
 
-const STATS = [
-  { icon: FiBook, value: '8', label: 'Legal Metrology Rules Checked' },
-  { icon: FiZap, value: 'OCR + Rule Engine', label: 'Dual-Layer Verification' },
-  { icon: FiFileText, value: 'PDF', label: 'Evidence Reports' },
-  { icon: FiGlobe, value: 'Bilingual', label: 'Label Detection' },
+const CAPABILITIES = [
+  {
+    id: 'CAP-01',
+    title: 'Dual-Layer Optical Label Extraction',
+    citation: 'Section 15, Legal Metrology Act 2009',
+    description: 'Bilingual OCR parses Hindi and English packaging text, isolates mandatory declaration zones, and extracts numerical dimensions with bounding coordinates.',
+  },
+  {
+    id: 'CAP-02',
+    title: 'Versioned Statutory Rule Engine',
+    citation: 'Rules 5–11, Packaged Commodities Rules 2011',
+    description: 'Evaluates extracted label declarations against versioned legal rules, automatically mapping discrepancies to specific rule sub-clauses and schedules.',
+  },
+  {
+    id: 'CAP-03',
+    title: 'Admissible Evidence PDF Dossiers',
+    citation: 'Section 65B, Indian Evidence Act',
+    description: 'Generates cryptographically timestamped inspection dossiers containing high-resolution packaging crops, bounding boxes, and statutory citations for prosecution.',
+  },
+  {
+    id: 'CAP-04',
+    title: 'E-Commerce Marketplace Cross-Audit',
+    citation: 'Rule 6(1)(1B), E-Commerce Disclosures',
+    description: 'Automated crawler queries online listings (Amazon, Flipkart, Blinkit) by barcode/GTIN to flag discrepancies between physical packaging and e-shelf MRP.',
+  },
+  {
+    id: 'CAP-05',
+    title: 'GTIN Repeat-Offender Registry',
+    citation: 'Enforcement Risk Profiling',
+    description: 'Aggregates historical inspection records by barcode to generate an objective risk score, identifying systematic non-compliance across distributor batches.',
+  },
+  {
+    id: 'CAP-06',
+    title: 'Statutory Notice Draft Generator',
+    citation: 'Form 1 / Section 39 Compound Notices',
+    description: 'Auto-populates formal show-cause notices for field officers with manufacturer details, contravened rules, and statutory compounding penalty calculations.',
+  },
 ];
 
 const STEPS = [
   {
-    num: '01',
-    icon: FiUpload,
-    title: 'Capture',
-    desc: 'Officer photographs the product label in the field using any mobile or desktop camera.',
-    color: 'bg-blue-500',
+    stage: 'Stage 01',
+    title: 'Physical Ingestion',
+    subtitle: 'Field officer captures packaging',
+    desc: 'Using standard mobile or desktop camera hardware, officer captures the principal display panel and subsidiary panels in natural lighting.',
   },
   {
-    num: '02',
-    icon: FiSearch,
-    title: 'Extract & Verify',
-    desc: 'OCR extracts text, then the rule engine checks it against versioned Legal Metrology rules with citations.',
-    color: 'bg-primary-600',
+    stage: 'Stage 02',
+    title: 'Automated Verification',
+    subtitle: 'OCR + statutory validation',
+    desc: 'System parses text bounding coordinates, validates metric declarations against Legal Metrology tolerances, and checks GTIN authenticity.',
   },
   {
-    num: '03',
-    icon: FiFileText,
-    title: 'Report',
-    desc: 'Instant verdict with legal citations, downloadable PDF evidence report, and e-commerce listing cross-check.',
-    color: 'bg-green-600',
+    stage: 'Stage 03',
+    title: 'Regulatory Action',
+    subtitle: 'Notice & evidence generation',
+    desc: 'Instant official verdict is produced. Officer downloads court-ready PDF evidence report or dispatches statutory Form 1 notice to manufacturer.',
   },
 ];
-
-const FEATURES = [
-  {
-    icon: FiSearch,
-    title: 'OCR Label Scanning',
-    desc: 'Extracts text from product packaging photos with high-accuracy optical character recognition.',
-  },
-  {
-    icon: FiBook,
-    title: 'Rule-Based Verification',
-    desc: 'Checks against versioned Legal Metrology Rules with legal citations for every verdict.',
-  },
-  {
-    icon: FiCrosshair,
-    title: 'E-Commerce Mismatch Detection',
-    desc: 'Cross-checks physical labels against online listings for MRP and origin discrepancies.',
-  },
-  {
-    icon: FiShield,
-    title: 'GTIN Risk Scoring',
-    desc: 'Flags repeat-offender products by tracking compliance history across barcode scans.',
-  },
-  {
-    icon: FiBarChart2,
-    title: 'Officer Dashboard',
-    desc: 'Analytics, filters, enforcement trends, and violation breakdowns for supervisory oversight.',
-  },
-  {
-    icon: FiFileText,
-    title: 'PDF Evidence Reports',
-    desc: 'Court and enforcement-ready compliance reports with ruled citations and extracted evidence.',
-  },
-];
-
-const MockupCheckRow = ({ status, rule, citation }) => {
-  const tone = getStatusTone(status);
-  const c = STATUS_COLORS[tone] || STATUS_COLORS.default;
-  const labels = { pass: 'Pass', fail: 'Fail', review: 'Review' };
-  return (
-    <div className="flex items-center justify-between py-2">
-      <div className="flex items-center space-x-2.5 min-w-0">
-        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${c.dot}`} />
-        <div className="min-w-0">
-          <p className="text-xs font-semibold text-white/90 truncate">{rule}</p>
-          <p className="text-[10px] text-white/40 font-mono">{citation}</p>
-        </div>
-      </div>
-      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ml-2 ${c.softBg} ${c.softText}`}>
-        {labels[status] || 'n/a'}
-      </span>
-    </div>
-  );
-};
-
-const HeroMockup = () => (
-  <div className="relative w-full max-w-lg mx-auto lg:mx-0">
-    <div className="absolute -inset-1 bg-gradient-to-br from-primary-500/20 via-primary-400/10 to-amber-500/10 rounded-2xl blur-xl" />
-    <div className="relative bg-[#0f172a]/90 backdrop-blur border border-white/10 rounded-2xl overflow-hidden shadow-2xl">
-      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <div className="h-2 w-2 rounded-full bg-green-500" />
-          <span className="text-[11px] font-semibold text-white/70 tracking-wide">Scan Result</span>
-        </div>
-        <span className="text-[10px] font-mono text-white/30">ID #4821</span>
-      </div>
-
-      <div className="p-4">
-        {/* Fake product image with bbox overlays */}
-        <div className="relative bg-white/5 rounded-lg overflow-hidden mb-4">
-          <div className="h-36 sm:h-44 bg-gradient-to-br from-gray-700/40 to-gray-800/40 flex items-center justify-center relative">
-            <div className="absolute inset-0 opacity-20" style={{
-              backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(255,255,255,0.03) 8px, rgba(255,255,255,0.03) 9px), repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(255,255,255,0.03) 8px, rgba(255,255,255,0.03) 9px)',
-            }} />
-            {/* Bounding boxes */}
-            <div className="absolute top-3 left-6 w-24 h-8 border-2 border-green-500 bg-green-500/15 rounded">
-              <span className="absolute -top-3.5 left-0 text-[8px] font-bold bg-green-500 text-white px-1.5 py-0.5 rounded-sm">MRP</span>
-            </div>
-            <div className="absolute top-14 left-4 w-32 h-7 border-2 border-blue-400 bg-blue-400/15 rounded">
-              <span className="absolute -top-3.5 left-0 text-[8px] font-bold bg-blue-400 text-white px-1.5 py-0.5 rounded-sm">Net Qty</span>
-            </div>
-            <div className="absolute bottom-6 left-4 right-4 h-10 border-2 border-red-500 bg-red-500/15 rounded">
-              <span className="absolute -top-3.5 left-0 text-[8px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded-sm">Manufacturer</span>
-            </div>
-            <FiSearch className="h-8 w-8 text-white/20" />
-          </div>
-        </div>
-
-        {/* Fake product info */}
-        <div className="mb-3">
-          <p className="text-sm font-bold text-white">Premium Basmati Rice</p>
-          <p className="text-[11px] text-white/50">Agro Foods Pvt. Ltd. &bull; GTIN: 8901234567890</p>
-        </div>
-
-        {/* Verdict badge */}
-        <div className="flex items-center space-x-2 mb-3 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-lg">
-          <FiXCircle className="h-4 w-4 text-red-400" />
-          <span className="text-xs font-bold text-red-300">Non-Compliant</span>
-          <span className="text-[10px] text-red-400/60 ml-auto">2 critical failures</span>
-        </div>
-
-        {/* Rule checks */}
-        <div className="space-y-0 divide-y divide-white/5">
-          <MockupCheckRow status="pass" rule="MRP Declaration" citation="Rule 6(1)(e)" />
-          <MockupCheckRow status="fail" rule="Manufacturer Address" citation="Rule 5(1)(a)" />
-          <MockupCheckRow status="pass" rule="Net Quantity" citation="Rule 7(1)(a)" />
-          <MockupCheckRow status="review" rule="Consumer Care Details" citation="Rule 6(1)(f)" />
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 const LandingPage = () => {
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const handleAnchor = (e, href) => {
-    if (href.startsWith('#')) {
-      e.preventDefault();
-      const el = document.querySelector(href);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
   return (
-    <div className="font-body min-h-screen bg-white">
-      {/* ─── Navbar ─── */}
-      <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100' : 'bg-transparent'
-      }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2.5">
-            <div className="bg-primary-800 rounded-lg p-1.5">
-              <FiSearch className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-heading text-xl font-bold text-gray-900 tracking-tight">MeteroLens</span>
-          </Link>
+    <div className="font-body min-h-screen bg-paper text-ink selection:bg-seal selection:text-white">
+      {/* ─── Top Statutory Authority Banner ─── */}
+      <div className="bg-[#0B1323] text-[#D8D3C7] border-b border-[#1E2E4E] text-[11px] font-mono tracking-wider py-1.5 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center space-x-2">
+            <span className="w-1.5 h-1.5 bg-seal inline-block" />
+            <span className="font-semibold text-white">MINISTRY OF CONSUMER AFFAIRS, FOOD & PUBLIC DISTRIBUTION</span>
+            <span className="text-[#687790] hidden sm:inline">&middot;</span>
+            <span className="text-[#A2B1C6] hidden sm:inline">LEGAL METROLOGY DIVISION</span>
+          </div>
+          <div className="text-[10px] font-mono text-seal tracking-widest uppercase">
+            Statutory Digital Enforcement Platform
+          </div>
+        </div>
+      </div>
 
-          <div className="hidden md:flex items-center space-x-8">
-            {NAV_LINKS.map((link) => (
-              link.isRoute ? (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(e) => handleAnchor(e, link.href)}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  {link.label}
-                </a>
-              )
+      {/* ─── Hero Section (Asymmetric, Ledger Inspired) ─── */}
+      <section className="border-b border-line">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+            
+            {/* Left Column: Authoritative Framing & Real Data Row */}
+            <div className="lg:col-span-7 flex flex-col justify-between">
+              <div>
+                <div className="inline-flex items-center space-x-2 px-2.5 py-1 bg-white border border-line rounded-xs text-[11px] font-mono text-navy uppercase tracking-wider mb-6">
+                  <span className="w-2 h-2 bg-navy inline-block" />
+                  <span>Legal Metrology (Packaged Commodities) Rules, 2011</span>
+                </div>
+
+                <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-[1.15] tracking-tight">
+                  Digital Verification & Legal Metrology Enforcement for Packaged Commodities.
+                </h1>
+
+                <p className="mt-5 text-base sm:text-lg text-[#333333] leading-relaxed max-w-2xl font-normal">
+                  Field officers and citizens scan packaging labels. MeteroLens extracts declarations via optical character recognition, executes rule-based legal audits against mandatory Indian statutes, and generates court-admissible evidence reports with statutory citations.
+                </p>
+
+                {/* Primary Action Buttons */}
+                <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
+                  <Link
+                    to="/upload"
+                    className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-seal hover:bg-seal-hover text-white text-sm font-semibold rounded-xs transition-colors shadow-xs"
+                  >
+                    <span>Launch Inspector Scan</span>
+                    <FiArrowRight className="h-4 w-4" />
+                  </Link>
+
+                  <Link
+                    to="/report"
+                    className="inline-flex items-center justify-center space-x-2 px-6 py-3 bg-white hover:bg-[#EFECE3] text-navy text-sm font-semibold border border-line rounded-xs transition-colors"
+                  >
+                    <FiAlertTriangle className="h-4 w-4 text-seal" />
+                    <span>Submit Citizen Violation Report</span>
+                  </Link>
+
+                  <Link
+                    to="/how-it-works"
+                    className="inline-flex items-center justify-center space-x-1.5 px-4 py-3 text-xs font-semibold text-[#555] hover:text-navy transition-colors"
+                  >
+                    <span>Statutory Methodology</span>
+                    <FiExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Real Data Row (Not Floating Stat Cards, but an Official Ledger Register) */}
+              <div className="mt-12 pt-8 border-t border-line">
+                <p className="text-[11px] font-mono uppercase tracking-wider text-[#666] mb-3">
+                  National Enforcement Verification Parameters
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-0 border border-line bg-white divide-x divide-y sm:divide-y-0 divide-line">
+                  <div className="p-3.5">
+                    <p className="font-mono text-2xl font-bold text-navy">8 / 8</p>
+                    <p className="text-xs text-[#555] mt-1 leading-snug">Mandatory Declarations Audited</p>
+                  </div>
+                  <div className="p-3.5">
+                    <p className="font-mono text-2xl font-bold text-navy">Dual</p>
+                    <p className="text-xs text-[#555] mt-1 leading-snug">OCR + Statutory Rule Engine</p>
+                  </div>
+                  <div className="p-3.5">
+                    <p className="font-mono text-2xl font-bold text-navy">Sec 39</p>
+                    <p className="text-xs text-[#555] mt-1 leading-snug">Form 1 Notice Ready Export</p>
+                  </div>
+                  <div className="p-3.5">
+                    <p className="font-mono text-2xl font-bold text-navy">&lt; 3.2s</p>
+                    <p className="text-xs text-[#555] mt-1 leading-snug">Average Field Audit Latency</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Actual Inspection Evidence Sheet & Stamped Verdict */}
+            <div className="lg:col-span-5">
+              <div className="bg-white border-2 border-line shadow-ledger rounded-xs overflow-hidden">
+                {/* Docket Header */}
+                <div className="bg-[#14213D] text-white px-4 py-3 border-b border-[#25375A] flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-mono tracking-widest uppercase text-[#8EA0BE] block">
+                      Inspection Docket
+                    </span>
+                    <span className="text-xs font-mono font-bold text-white">
+                      RECORD #2026-IN-4821
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-mono text-[#8EA0BE] block">GTIN BARCODE</span>
+                    <span className="text-xs font-mono text-seal font-semibold">8901030887412</span>
+                  </div>
+                </div>
+
+                {/* Packaging Scan Visual with Hairline Calipers */}
+                <div className="p-4 border-b border-line bg-[#FAF9F5]">
+                  <div className="relative border border-line bg-white p-3">
+                    <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
+                      <div className="flex items-center space-x-2">
+                        <span className="h-2 w-2 bg-success inline-block" />
+                        <span className="text-xs font-bold font-heading text-ink">Packaged Commodity: Fortified Wheat Flour</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-[#777]">BATCH: B-409/26</span>
+                    </div>
+
+                    {/* Caliper Bounding Box Region */}
+                    <div className="relative bg-[#ECE8DC] border border-[#CFC9BA] h-40 flex flex-col justify-between p-2 font-mono text-[10px] overflow-hidden">
+                      {/* Bounding Box 1: MRP */}
+                      <div className="absolute top-3 left-4 border border-success bg-success-50/80 px-2 py-1 text-success-700 font-semibold shadow-xs">
+                        <span>[x:42, y:18] MRP ₹ 245.00 (INCL. TAXES)</span>
+                      </div>
+
+                      {/* Bounding Box 2: Net Qty */}
+                      <div className="absolute top-12 right-4 border border-navy bg-navy-50/80 px-2 py-1 text-navy-800 font-semibold shadow-xs">
+                        <span>[x:180, y:72] Net Qty: 5 kg</span>
+                      </div>
+
+                      {/* Bounding Box 3: Mfg Address (Defective) */}
+                      <div className="absolute bottom-3 left-4 right-4 border-2 border-dashed border-danger bg-danger-50/90 p-1.5 text-danger font-semibold">
+                        <div className="flex items-center justify-between">
+                          <span>[VIOLATION] Mfg: M/s Royal Milling, Plot 14</span>
+                          <span className="text-[9px] bg-danger text-white px-1 py-0.2 uppercase">Pin Missing</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Single Deliberate Motion: Official Stamped Verdict */}
+                    <div className="mt-3 flex items-center justify-between pt-2 border-t border-line">
+                      <div>
+                        <span className="text-[10px] font-mono text-[#666] block">INSPECTION DETERMINATION</span>
+                        <span className="text-xs font-semibold text-ink">Rule 5(1)(a) Breach Detected</span>
+                      </div>
+                      <div className="stamp-verdict border-2 border-danger px-3 py-1 bg-danger-50 text-danger text-xs font-mono font-bold uppercase tracking-wider shadow-stamp">
+                        NON-COMPLIANT
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Statutory Check Register (Ledger Format) */}
+                <div className="p-0">
+                  <div className="bg-[#EFECE3] px-4 py-2 border-b border-line flex items-center justify-between text-[11px] font-mono font-semibold text-navy">
+                    <span>STATUTORY CLAUSE</span>
+                    <span>AUDIT STATUS</span>
+                  </div>
+
+                  <div className="divide-y divide-line text-xs font-mono">
+                    <div className="px-4 py-2.5 flex items-center justify-between bg-white">
+                      <div>
+                        <span className="font-semibold text-ink block font-sans">Rule 6(1)(e) — Maximum Retail Price</span>
+                        <span className="text-[11px] text-[#666]">₹ 245.00 declared with ₹ 49.00/kg unit sale price</span>
+                      </div>
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 bg-success-50 text-success border border-success/30 font-bold text-[10px]">
+                        <FiCheck className="h-3 w-3" />
+                        <span>PASS</span>
+                      </span>
+                    </div>
+
+                    <div className="px-4 py-2.5 flex items-center justify-between bg-[#FCEDE8]">
+                      <div>
+                        <span className="font-semibold text-danger block font-sans">Rule 5(1)(a) — Complete Manufacturer Address</span>
+                        <span className="text-[11px] text-danger/80">Missing postal PIN code and registered state jurisdiction</span>
+                      </div>
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 bg-danger text-white font-bold text-[10px]">
+                        <FiX className="h-3 w-3" />
+                        <span>FAIL</span>
+                      </span>
+                    </div>
+
+                    <div className="px-4 py-2.5 flex items-center justify-between bg-white">
+                      <div>
+                        <span className="font-semibold text-ink block font-sans">Rule 7(1) — Standard Net Quantity</span>
+                        <span className="text-[11px] text-[#666]">5 kg permissible under Schedule II standard packs</span>
+                      </div>
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 bg-success-50 text-success border border-success/30 font-bold text-[10px]">
+                        <FiCheck className="h-3 w-3" />
+                        <span>PASS</span>
+                      </span>
+                    </div>
+
+                    <div className="px-4 py-2.5 flex items-center justify-between bg-[#FDF9F0]">
+                      <div>
+                        <span className="font-semibold text-seal block font-sans">Rule 6(1)(f) — Consumer Grievance Contact</span>
+                        <span className="text-[11px] text-[#705106]">Contact person name missing; helpline phone present</span>
+                      </div>
+                      <span className="inline-flex items-center space-x-1 px-2 py-0.5 bg-[#FAF1DD] text-seal border border-seal/30 font-bold text-[10px]">
+                        <FiAlertTriangle className="h-3 w-3" />
+                        <span>REVIEW</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dossier Action Footer */}
+                <div className="bg-[#FAF9F5] px-4 py-3 border-t border-line flex items-center justify-between text-xs">
+                  <span className="text-[#666] font-mono text-[11px]">Dossier Hash: 9f8a2...c41</span>
+                  <Link
+                    to="/upload"
+                    className="font-semibold text-navy hover:text-seal flex items-center space-x-1"
+                  >
+                    <span>Test Full OCR Verification</span>
+                    <FiArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Mandatory Statutory Declarations Register (Ledger View) ─── */}
+      <section className="py-16 border-b border-line bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-line">
+            <div>
+              <p className="text-xs font-mono uppercase tracking-wider text-seal font-semibold">
+                Legal Metrology (Packaged Commodities) Rules, 2011
+              </p>
+              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-navy mt-1">
+                Mandatory Packaging Declarations Register
+              </h2>
+            </div>
+            <p className="text-xs font-mono text-[#666] mt-2 md:mt-0 max-w-md">
+              Every packaged commodity distributed in Indian commerce must satisfy each statutory declaration. Failure constitutes an offence under Section 39.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto border border-line">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#EFECE3] text-navy font-mono text-[11px] border-b border-line">
+                  <th className="py-3 px-4 font-bold w-36">STATUTORY RULE</th>
+                  <th className="py-3 px-4 font-bold w-64">MANDATORY DECLARATION</th>
+                  <th className="py-3 px-4 font-bold">STATUTORY SPECIFICATION & TOLERANCE</th>
+                  <th className="py-3 px-4 font-bold w-32 text-right">AUDIT STATUS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line font-sans">
+                {MANDATORY_RULES.map((item, idx) => (
+                  <tr key={idx} className="hover:bg-[#FAF9F5] transition-colors">
+                    <td className="py-3 px-4 font-mono font-semibold text-navy bg-paper/50">
+                      {item.rule}
+                    </td>
+                    <td className="py-3 px-4 font-semibold text-ink">
+                      {item.name}
+                    </td>
+                    <td className="py-3 px-4 text-[#444]">
+                      {item.requirement}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <span className="inline-block px-2 py-0.5 text-[10px] font-mono font-semibold bg-[#EDF5F1] text-success border border-success/30 rounded-none">
+                        ENFORCED
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Enforcement Capabilities (Official Register Grid) ─── */}
+      <section id="features" className="py-16 border-b border-line bg-paper">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl mb-12">
+            <p className="text-xs font-mono uppercase tracking-wider text-seal font-semibold">
+              Statutory Capabilities & Inspection Tooling
+            </p>
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-navy mt-1">
+              Engineered for Field Officers and Regulatory Authorities
+            </h2>
+            <p className="text-sm text-[#555] mt-2">
+              Every capability is calibrated to produce unambiguous legal findings backed by photographic evidence and statutory citations.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0 border border-line bg-white divide-y md:divide-y-0 md:divide-x divide-line">
+            {CAPABILITIES.map((cap, i) => (
+              <div
+                key={cap.id}
+                className={`p-6 flex flex-col justify-between ${
+                  i >= 3 ? 'lg:border-t lg:border-line' : ''
+                } hover:bg-[#FAF9F5] transition-colors`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[11px] font-mono font-bold text-seal">{cap.id}</span>
+                    <span className="text-[10px] font-mono text-[#777] bg-paper px-1.5 py-0.5 border border-line">
+                      VERIFIED
+                    </span>
+                  </div>
+                  <h3 className="font-heading text-lg font-bold text-navy mb-2">
+                    {cap.title}
+                  </h3>
+                  <p className="text-xs font-mono text-[#666] mb-3 pb-2 border-b border-line">
+                    {cap.citation}
+                  </p>
+                  <p className="text-xs text-[#444] leading-relaxed">
+                    {cap.description}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
-
-          <div className="flex items-center space-x-3">
-            <Link
-              to="/login"
-              className="hidden sm:inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/upload"
-              className="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-primary-800 hover:bg-primary-900 rounded-lg transition-colors shadow-sm"
-            >
-              Try Demo
-            </Link>
-          </div>
         </div>
-      </nav>
+      </section>
 
-      {/* ─── Hero ─── */}
-      <section className="relative pt-32 pb-20 sm:pt-40 sm:pb-28 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-950 via-primary-900 to-gray-950" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-          backgroundSize: '32px 32px',
-        }} />
+      {/* ─── Procedural Enforcement Workflow (GOV.UK Step Sequence) ─── */}
+      <section className="py-16 border-b border-line bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-10">
+            <p className="text-xs font-mono uppercase tracking-wider text-seal font-semibold">
+              Standard Operating Procedure
+            </p>
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-navy mt-1">
+              Field Enforcement Workflow
+            </h2>
+          </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            <div>
-              <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-white/10 backdrop-blur border border-white/10 rounded-full mb-6">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                <span className="text-xs font-semibold text-white/80 tracking-wide">Smart India Hackathon 2026 &middot; Ministry of Consumer Affairs</span>
-              </div>
-
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.1] tracking-tight">
-                Legal Metrology Compliance,{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-300 to-amber-300">
-                  Scanned in Seconds
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-line divide-y md:divide-y-0 md:divide-x divide-line">
+            {STEPS.map((s, idx) => (
+              <div key={idx} className="p-6 bg-paper/30">
+                <span className="text-[11px] font-mono font-bold text-navy px-2 py-0.5 bg-[#EFECE3] border border-line inline-block mb-4">
+                  {s.stage}
                 </span>
-              </h1>
+                <h3 className="font-heading text-xl font-bold text-navy mb-1">{s.title}</h3>
+                <p className="text-xs font-mono text-seal font-medium mb-3">{s.subtitle}</p>
+                <p className="text-xs text-[#555] leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <p className="mt-6 text-base sm:text-lg text-white/60 leading-relaxed max-w-xl">
-                Upload a product label photo. MeteroLens uses OCR and rule-based verification to instantly check MRP, net quantity, manufacturer details, and 8 more mandatory declarations — with legal citations for every check.
+      {/* ─── Statutory Mandate & Legal Authority Notice ─── */}
+      <section className="py-14 border-b border-line bg-[#EFECE3]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="border border-line bg-white p-6 sm:p-8 flex flex-col md:flex-row items-start gap-6">
+            <div className="h-12 w-12 rounded-none bg-navy flex items-center justify-center flex-shrink-0 text-seal">
+              <FiShield className="h-6 w-6" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-heading text-lg font-bold text-navy">
+                Statutory Authority & Evidentiary Standard
+              </h3>
+              <p className="text-xs text-[#444] leading-relaxed">
+                MeteroLens operates in conformity with the Legal Metrology Act, 2009 (Act No. 1 of 2010) and the Legal Metrology (Packaged Commodities) Rules, 2011. Evidence reports generated by this platform incorporate automated timestamping, SHA-256 packaging digest hashes, and section-wise rule citations suitable for preliminary inquiry and notice drafting under Section 18 and Section 39.
               </p>
-
-              <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <Link
-                  to="/upload"
-                  className="inline-flex items-center space-x-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-primary-900/30"
-                >
-                  <span>Inspector Demo</span>
-                  <FiArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  to="/report"
-                  className="inline-flex items-center space-x-2 px-6 py-3 bg-amber-500 hover:bg-amber-400 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-amber-500/30"
-                >
-                  <FiAlertTriangle className="h-4 w-4" />
-                  <span>Report Violation (Citizen)</span>
-                </Link>
+              <div className="pt-2 flex flex-wrap gap-4 text-[11px] font-mono text-navy font-semibold">
+                <span>&bull; Smart India Hackathon 2026</span>
+                <span>&bull; Ministry of Consumer Affairs Problem PS26034</span>
+                <span>&bull; Open Source Enforcement Tooling</span>
               </div>
             </div>
-
-            <div className="hidden lg:block">
-              <HeroMockup />
-            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Stats Strip ─── */}
-      <section className="relative -mt-8 z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 px-6 py-6">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {STATS.map((stat, i) => {
-                const Icon = stat.icon;
-                return (
-                  <div key={i} className="flex items-center space-x-3">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-primary-50 flex items-center justify-center">
-                      <Icon className="h-5 w-5 text-primary-700" />
-                    </div>
-                    <div>
-                      <p className="text-lg font-bold font-heading text-gray-900">{stat.value}</p>
-                      <p className="text-xs text-gray-500 leading-tight">{stat.label}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── How It Works ─── */}
-      <section id="how-it-works" className="py-24 sm:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-700 uppercase tracking-widest mb-3">Process</p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">How It Works</h2>
-            <p className="mt-3 text-gray-500 max-w-lg mx-auto">From field capture to enforcement-ready report in under 30 seconds.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-            {STEPS.map((step, i) => {
-              const Icon = step.icon;
-              return (
-                <div key={i} className="relative text-center group">
-                  {i < STEPS.length - 1 && (
-                    <div className="hidden md:block absolute top-10 left-[60%] w-[80%] border-t-2 border-dashed border-gray-200" />
-                  )}
-                  <div className={`relative z-10 inline-flex items-center justify-center h-20 w-20 rounded-2xl ${step.color} text-white shadow-lg mb-6 group-hover:scale-105 transition-transform`}>
-                    <Icon className="h-8 w-8" />
-                  </div>
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-6 h-6 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center hidden md:flex">
-                    <span className="text-[10px] font-bold text-gray-400">{step.num}</span>
-                  </div>
-                  <h3 className="font-heading text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed max-w-xs mx-auto">{step.desc}</p>
+      {/* ─── Official Digital Service Footer ─── */}
+      <footer id="footer" className="bg-[#0B1323] text-[#C5D0E0] text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-[#1E2E4E]">
+            <div className="md:col-span-2 space-y-3">
+              <div className="flex items-center space-x-2">
+                <div className="h-6 w-6 bg-[#1D2E52] border border-[#374B73] flex items-center justify-center text-seal font-bold text-xs">
+                  ML
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Feature Grid ─── */}
-      <section id="features" className="py-24 sm:py-32 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <p className="text-sm font-semibold text-primary-700 uppercase tracking-widest mb-3">Capabilities</p>
-            <h2 className="font-heading text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">Built for Enforcement</h2>
-            <p className="mt-3 text-gray-500 max-w-lg mx-auto">Every feature designed for the workflow of a legal metrology officer in the field.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map((feature, i) => {
-              const Icon = feature.icon;
-              return (
-                <div key={i} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md hover:border-primary-200 transition-all group">
-                  <div className="inline-flex items-center justify-center h-11 w-11 rounded-xl bg-primary-50 text-primary-700 mb-4 group-hover:bg-primary-100 transition-colors">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="font-heading text-base font-bold text-gray-900 mb-1.5">{feature.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Trust / Credibility Bar ─── */}
-      <section className="py-16 bg-white border-t border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-6 sm:space-y-0 sm:space-x-10 text-center">
-            <div className="flex items-center space-x-4">
-              <div className="h-14 w-14 rounded-full bg-primary-50 border-2 border-primary-100 flex items-center justify-center flex-shrink-0">
-                <FiShield className="h-7 w-7 text-primary-700" />
+                <span className="font-heading text-lg font-bold text-white tracking-wide">MeteroLens</span>
               </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-gray-900">Built for enforcement officers under</p>
-                <p className="text-sm text-gray-500">Ministry of Consumer Affairs, Food & Public Distribution</p>
-                <p className="text-xs text-gray-400 mt-0.5">Legal Metrology (Packaged Commodities) Rules, 2011</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Footer ─── */}
-      <footer id="footer" className="bg-gray-950 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-            <div className="lg:col-span-2">
-              <div className="flex items-center space-x-2.5 mb-4">
-                <div className="bg-primary-700 rounded-lg p-1.5">
-                  <FiSearch className="h-5 w-5 text-white" />
-                </div>
-                <span className="font-heading text-xl font-bold tracking-tight">MeteroLens</span>
-              </div>
-              <p className="text-sm text-gray-400 leading-relaxed max-w-sm">
-                AI-powered compliance scanning for Legal Metrology enforcement. Built for Smart India Hackathon 2026.
+              <p className="text-xs text-[#8EA0BE] leading-relaxed max-w-md">
+                An authoritative digital compliance and enforcement platform for Indian Legal Metrology regulations. Developed for Smart India Hackathon 2026 under Problem Statement PS26034.
+              </p>
+              <p className="text-[11px] font-mono text-[#687790]">
+                Repository: github.com/Abhinav5656U/MeteroLens
               </p>
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Links</h4>
-              <ul className="space-y-2.5">
+              <p className="font-mono text-[11px] uppercase tracking-wider text-white font-bold mb-3">
+                Operational Portals
+              </p>
+              <ul className="space-y-2 font-mono text-[11px]">
                 <li>
-                  <a href="https://github.com/Abhinav5656U/MeteroLens" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
-                    <FiGithub className="h-3.5 w-3.5" />
-                    <span>GitHub</span>
-                  </a>
+                  <Link to="/upload" className="text-[#8EA0BE] hover:text-white transition-colors">
+                    &rarr; Field Packaging Scan
+                  </Link>
                 </li>
                 <li>
-                  <a href="https://github.com/Abhinav5656U/MeteroLens#readme" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
-                    <FiBook className="h-3.5 w-3.5" />
-                    <span>Documentation</span>
-                  </a>
+                  <Link to="/report" className="text-[#8EA0BE] hover:text-white transition-colors">
+                    &rarr; Citizen Violation Reporting
+                  </Link>
                 </li>
                 <li>
-                  <a href="mailto:team@meterolens.in" className="text-sm text-gray-400 hover:text-white transition-colors flex items-center space-x-1.5">
-                    <FiMail className="h-3.5 w-3.5" />
-                    <span>Contact</span>
-                  </a>
+                  <Link to="/how-it-works" className="text-[#8EA0BE] hover:text-white transition-colors">
+                    &rarr; Statutory Rule Specifications
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" className="text-[#8EA0BE] hover:text-white transition-colors">
+                    &rarr; Officer Credential Login
+                  </Link>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider">Team</h4>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                MeteroLens was built by a 6-member interdisciplinary team for Smart India Hackathon 2026, Problem Statement PS26034.
+              <p className="font-mono text-[11px] uppercase tracking-wider text-white font-bold mb-3">
+                Legal & References
               </p>
+              <ul className="space-y-2 font-mono text-[11px]">
+                <li>
+                  <a
+                    href="https://consumeraffairs.nic.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#8EA0BE] hover:text-white transition-colors flex items-center space-x-1"
+                  >
+                    <span>Ministry of Consumer Affairs</span>
+                    <FiExternalLink className="h-3 w-3" />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://github.com/Abhinav5656U/MeteroLens#readme"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#8EA0BE] hover:text-white transition-colors flex items-center space-x-1"
+                  >
+                    <span>System Documentation</span>
+                    <FiBook className="h-3 w-3" />
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="mailto:team@meterolens.in"
+                    className="text-[#8EA0BE] hover:text-white transition-colors flex items-center space-x-1"
+                  >
+                    <span>Technical Support Desk</span>
+                    <FiMail className="h-3 w-3" />
+                  </a>
+                </li>
+              </ul>
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
-            <p className="text-xs text-gray-500">&copy; {new Date().getFullYear()} MeteroLens. All rights reserved.</p>
-            <p className="text-xs text-gray-600">Smart India Hackathon 2026 &middot; PS26034</p>
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] font-mono text-[#687790] gap-2">
+            <p>MeteroLens &middot; Legal Metrology Digital Enforcement Framework</p>
+            <p>Smart India Hackathon 2026 &middot; PS26034 &middot; Government of India</p>
           </div>
         </div>
       </footer>

@@ -25,7 +25,7 @@ const CitizenReport = () => {
         },
         (error) => {
           console.log("Geolocation error:", error);
-          toast.warning("Could not automatically determine location. This helps inspectors find the product.");
+          toast.warning("Could not automatically determine location. Location coordinates assist inspection teams.");
         }
       );
     }
@@ -37,7 +37,7 @@ const CitizenReport = () => {
     const newFiles = Array.from(selectedFiles).filter(f => f.type.startsWith('image/'));
     
     if (newFiles.length + files.length > 5) {
-      toast.error('Maximum 5 images allowed per report');
+      toast.error('Maximum 5 images allowed per statutory report');
       return;
     }
 
@@ -60,7 +60,7 @@ const CitizenReport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (files.length === 0) {
-      toast.error('Please add at least one image of the product label');
+      toast.error('Please attach at least one image of the product packaging');
       return;
     }
 
@@ -83,9 +83,9 @@ const CitizenReport = () => {
       });
       
       setSuccess(true);
-      toast.success(response.data.message || 'Report submitted successfully!');
+      toast.success(response.data.message || 'Report registered in the inspection queue.');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to submit report. Please try again.');
+      toast.error(err.response?.data?.error || 'Failed to submit report. Please recheck images and try again.');
     } finally {
       setUploading(false);
     }
@@ -93,71 +93,84 @@ const CitizenReport = () => {
 
   if (success) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-        <FiCheckCircle className="mx-auto h-16 w-16 text-green-500 mb-6" />
-        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-4">Thank You for Your Report</h1>
-        <p className="text-gray-600 text-lg mb-8">
-          Your submission has been securely sent to our Legal Metrology inspectors. 
-          Crowdsourced leads like yours help ensure market compliance and consumer protection.
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <div className="inline-flex items-center justify-center h-16 w-16 bg-success-50 text-success border border-success/30 rounded-xs mb-6">
+          <FiCheckCircle className="h-8 w-8" />
+        </div>
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy mb-3">
+          Statutory Violation Report Lodged
+        </h1>
+        <p className="text-[#555] text-sm leading-relaxed max-w-lg mx-auto mb-8 font-sans">
+          Your packaging report has been cataloged in the enforcement queue. Verified discrepancies are forwarded to the jurisdictional Legal Metrology controller for physical verification under Section 15.
         </p>
         <button
           onClick={() => { setSuccess(false); setFiles([]); setPreviews([]); setGtin(''); }}
-          className="bg-primary-800 text-white px-8 py-3 rounded-full font-medium hover:bg-primary-900 transition-colors"
+          className="bg-navy hover:bg-navy-700 text-white text-xs font-semibold px-6 py-2.5 rounded-xs transition-colors border border-[#374B73]"
         >
-          Submit Another Report
+          Submit Another Packaging Report
         </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-2">Report a Product Violation</h1>
-        <p className="text-gray-600">
-          Upload clear photos of the product label (showing MRP, net quantity, manufacturer details) to report suspected non-compliance.
+    <div className="max-w-2xl mx-auto px-4 py-10 font-body">
+      <div className="mb-8 border-b border-line pb-4">
+        <div className="flex items-center space-x-2 text-[11px] font-mono uppercase tracking-wider text-seal font-semibold mb-1">
+          <span>Form PR-01</span>
+          <span>&middot;</span>
+          <span>Public Grievance Registry</span>
+        </div>
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy">
+          Report a Packaged Commodity Violation
+        </h1>
+        <p className="text-xs text-[#555] mt-1">
+          Upload clear photographs of the product packaging (MRP, net quantity, manufacturer address, or consumer helpline) to initiate automated compliance auditing.
         </p>
       </div>
 
-      <div className="bg-white rounded-3xl shadow-soft p-6 md:p-8">
+      <div className="bg-white border border-line shadow-ledger rounded-xs p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Product Images <span className="text-red-500">*</span>
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-navy mb-2">
+              Packaging Evidence Photographs <span className="text-danger">*</span>
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
               {previews.map((preview, idx) => (
-                <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group">
-                  <img src={preview} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                <div key={idx} className="relative aspect-square rounded-xs overflow-hidden border border-line group bg-paper">
+                  <img src={preview} alt={`Packaging ${idx + 1}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeFile(idx)}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                    className="absolute top-1 right-1 bg-danger text-white p-1 rounded-xs opacity-90 hover:opacity-100 transition-opacity"
+                    aria-label="Remove image"
                   >
-                    <FiX size={14} />
+                    <FiX size={12} />
                   </button>
                 </div>
               ))}
               
               {previews.length < 5 && (
-                <div className="aspect-square rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors gap-2">
-                  <button 
-                    type="button"
-                    onClick={() => cameraInputRef.current?.click()}
-                    className="text-primary-800 hover:text-primary-900 flex flex-col items-center p-2"
-                  >
-                    <FiCamera size={24} className="mb-1" />
-                    <span className="text-xs font-medium">Camera</span>
-                  </button>
-                  <div className="w-8 border-t border-gray-300"></div>
-                  <button 
-                    type="button"
-                    onClick={() => galleryInputRef.current?.click()}
-                    className="text-gray-600 hover:text-gray-800 flex flex-col items-center p-2"
-                  >
-                    <FiUpload size={20} className="mb-1" />
-                    <span className="text-xs font-medium">Gallery</span>
-                  </button>
+                <div className="aspect-square rounded-xs border-2 border-dashed border-line flex flex-col items-center justify-center bg-paper hover:bg-[#EFECE3] transition-colors p-2 text-center">
+                  <div className="flex flex-col items-center space-y-1">
+                    <button 
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="text-navy hover:text-seal flex items-center space-x-1 text-xs font-semibold py-1"
+                    >
+                      <FiCamera size={14} />
+                      <span>Camera</span>
+                    </button>
+                    <span className="text-[10px] text-[#888] font-mono">or</span>
+                    <button 
+                      type="button"
+                      onClick={() => galleryInputRef.current?.click()}
+                      className="text-navy hover:text-seal flex items-center space-x-1 text-xs font-semibold py-1"
+                    >
+                      <FiUpload size={14} />
+                      <span>Upload</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -178,30 +191,35 @@ const CitizenReport = () => {
               multiple
               onChange={(e) => handleFiles(e.target.files)}
             />
-            <p className="text-xs text-gray-500">Capture the full label, clearly showing text. Max 5 images.</p>
+            <p className="text-[11px] font-mono text-[#666]">
+              Ensure the principal display panel and declaration text are legible. Maximum 5 photographs.
+            </p>
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
+            <label className="block text-xs font-mono font-bold uppercase tracking-wider text-navy mb-1.5">
               Barcode / GTIN (Optional)
             </label>
             <input
               type="text"
               value={gtin}
               onChange={(e) => setGtin(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-primary-800 focus:border-transparent outline-none transition-all"
-              placeholder="e.g., 8901234567890"
+              className="w-full px-3 py-2 text-xs font-mono rounded-xs border border-line bg-paper/50 focus:bg-white focus:border-seal outline-none transition-colors"
+              placeholder="e.g. 8901234567890"
             />
+            <p className="text-[11px] text-[#666] mt-1">
+              If visible, enter the numeric barcode below the symbol to verify historical manufacturer compliance.
+            </p>
           </div>
 
-          <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-            <FiMapPin className="text-blue-600 mt-1 flex-shrink-0" size={20} />
+          <div className="bg-paper border border-line rounded-xs p-3 flex items-start space-x-3">
+            <FiMapPin className="text-seal mt-0.5 flex-shrink-0" size={16} />
             <div>
-              <h4 className="font-medium text-blue-900 text-sm">Location Data</h4>
-              <p className="text-blue-700 text-xs mt-1">
+              <h4 className="font-mono text-xs font-bold text-navy uppercase">Geographic Location</h4>
+              <p className="text-[#555] text-xs mt-0.5">
                 {location 
-                  ? "Your current location will be attached to help inspectors locate the product." 
-                  : "We couldn't get your location automatically. It helps if you enable location services."}
+                  ? `Lat: ${location.latitude.toFixed(4)}, Long: ${location.longitude.toFixed(4)} will be appended to report coordinates.` 
+                  : "Allowing location coordinates facilitates field inspection by the nearest district officer."}
               </p>
             </div>
           </div>
@@ -209,21 +227,21 @@ const CitizenReport = () => {
           <button
             type="submit"
             disabled={uploading || files.length === 0}
-            className={`w-full py-4 rounded-xl text-white font-bold text-lg shadow-soft flex justify-center items-center gap-2 transition-all ${
+            className={`w-full py-3 rounded-xs text-white font-semibold text-sm flex justify-center items-center space-x-2 transition-colors ${
               uploading || files.length === 0
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-primary-800 hover:bg-primary-900 hover:shadow-lg'
+                ? 'bg-[#A09C94] cursor-not-allowed'
+                : 'bg-seal hover:bg-seal-hover shadow-xs'
             }`}
           >
             {uploading ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Analyzing Report...
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="font-mono">Processing Statutory Evidence...</span>
               </>
             ) : (
               <>
-                <FiUpload />
-                Submit Report
+                <FiUpload className="h-4 w-4" />
+                <span>Submit Violation to Enforcement Queue</span>
               </>
             )}
           </button>
