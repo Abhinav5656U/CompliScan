@@ -157,58 +157,6 @@ body {
   background: rgba(59, 130, 246, 0.08) !important;
 }
 
-/* Authenticated routes use the readable light workspace theme. */
-.app-shell {
-  background: #f1f5f9;
-}
-
-.app-nav {
-  background: rgba(248, 250, 252, 0.94) !important;
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.12) !important;
-}
-
-.app-nav .text-white,
-.app-nav .hover\:text-white:hover {
-  color: #0f172a !important;
-}
-
-.app-nav .text-slate-300,
-.app-nav .text\-\[\#C5D0E0\] {
-  color: #475569 !important;
-}
-
-.app-nav [class*="bg-[#1D2E52]"] {
-  background: #dbeafe !important;
-}
-
-.app-surface {
-  color: #334155;
-}
-
-.app-surface .bg-white,
-.app-surface .bg-gray-50,
-.app-surface .bg-gray-50\/50,
-.app-surface .bg-gray-100,
-.app-surface [class*="bg-[#0b1120]"] {
-  background: #ffffff !important;
-}
-
-.app-surface .text-white,
-.app-surface .text-gray-900,
-.app-surface .text-gray-800,
-.app-surface .text-gray-700 {
-  color: #0f172a !important;
-}
-
-.app-surface .text-gray-600,
-.app-surface .text-gray-500,
-.app-surface .text-gray-400,
-.app-surface .text-gray-300,
-.app-surface .text-slate-400 {
-  color: #475569 !important;
-}
-
 .report-page {
   color: #334155;
 }

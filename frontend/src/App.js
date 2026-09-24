@@ -35,7 +35,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="app-shell min-h-screen bg-[#f1f5f9]">
+        <div className="app-shell min-h-screen bg-[#050B14]">
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Public routes */}
@@ -48,7 +48,7 @@ const App = () => {
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/report" element={
                 <div className="report-route">
-                  <Navbar />
+                  <Navbar showThemeToggle={false} />
                   <main><CitizenReport /></main>
                 </div>
               } />
