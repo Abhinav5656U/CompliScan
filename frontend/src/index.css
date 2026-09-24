@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  --ink: #1C1C1C;
-  --paper: #F7F5F0;
-  --navy: #14213D;
-  --navy-700: #1D2E52;
-  --seal: #A6790A;
-  --line: #D8D3C7;
-  --danger: #B3261E;
-  --success: #2E6B4F;
+  --ink: #f8fafc;
+  --paper: #0f172a;
+  --navy: #0b1120;
+  --navy-700: #172554;
+  --seal: #3b82f6;
+  --line: rgba(255, 255, 255, 0.1);
+  --danger: #ef4444;
+  --success: #60a5fa;
 }
 
 ::-webkit-scrollbar {
@@ -19,16 +19,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #EAE6DC;
+  background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #B3ADA0;
+  background: #334155;
   border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #8A8478;
+  background: #475569;
 }
 
 body {
@@ -36,8 +36,76 @@ body {
   font-family: 'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--paper);
+  background-color: #050b14;
   color: var(--ink);
+}
+
+@keyframes navPinIn {
+  from {
+    opacity: 0.7;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.nav-pin-in {
+  animation: navPinIn 0.28s ease-out both;
+}
+
+.landing-page[data-theme='light'] {
+  background: #f8fafc !important;
+  color: #334155 !important;
+}
+
+.landing-page[data-theme='light'] nav {
+  background: rgba(248, 250, 252, 0.84) !important;
+  border-color: #cbd5e1 !important;
+}
+
+.landing-page[data-theme='light'] .text-white {
+  color: #0f172a !important;
+}
+
+.landing-page[data-theme='light'] .text-gray-300,
+.landing-page[data-theme='light'] .text-gray-400,
+.landing-page[data-theme='light'] .text-gray-500,
+.landing-page[data-theme='light'] .text-slate-300,
+.landing-page[data-theme='light'] .text-slate-400 {
+  color: #475569 !important;
+}
+
+.landing-page[data-theme='light'] .text-blue-300,
+.landing-page[data-theme='light'] .text-blue-400 {
+  color: #1d4ed8 !important;
+}
+
+.landing-page[data-theme='light'] section[class*="bg-[#03070E]"],
+.landing-page[data-theme='light'] footer[class*="bg-[#02050A]"],
+.landing-page[data-theme='light'] [class*="bg-[#0B1324]"] {
+  background: #eaf0f8 !important;
+}
+
+.landing-page[data-theme='light'] [class*="border-white/10"],
+.landing-page[data-theme='light'] [class*="border-white/5"] {
+  border-color: #cbd5e1 !important;
+}
+
+.landing-page[data-theme='light'] [class*="bg-white/5"] {
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+.landing-page[data-theme='light'] .inspection-docket,
+.landing-page[data-theme='light'] .enforcement-notice {
+  background: #eef4fb !important;
+  border-color: #cbd5e1 !important;
+}
+
+.landing-page[data-theme='light'] .inspection-docket-canvas {
+  background: #e2eaf5 !important;
+  border-color: #bfcee2 !important;
 }
 
 /* Official Stamp Animation - Single deliberate motion moment */

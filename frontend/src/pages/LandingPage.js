@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   FiSearch, FiFileText, FiShield,
   FiArrowRight, FiCheck, FiAlertTriangle,
   FiExternalLink, FiBook, FiGithub, FiMail,
-  FiCpu, FiDatabase, FiFile
+  FiCpu, FiDatabase, FiFile, FiSun, FiMoon
 } from 'react-icons/fi';
 import { BiScan } from 'react-icons/bi';
 
@@ -86,26 +86,52 @@ const STEPS = [
 ];
 
 const LandingPage = () => {
+  const [navPinned, setNavPinned] = useState(false);
+  const [lightMode, setLightMode] = useState(false);
+
+  React.useEffect(() => {
+    const updateNavbar = () => setNavPinned(window.scrollY > 8);
+    updateNavbar();
+    window.addEventListener('scroll', updateNavbar, { passive: true });
+    return () => window.removeEventListener('scroll', updateNavbar);
+  }, []);
+
   return (
-    <div className="font-body min-h-screen bg-[#050B14] text-gray-300 selection:bg-blue-500/30 selection:text-white relative overflow-hidden">
+    <div data-theme={lightMode ? 'light' : 'dark'} className="landing-page font-body min-h-screen bg-[#050B14] text-gray-300 selection:bg-blue-500/30 selection:text-white relative">
       
       {/* Dynamic Background Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[-10%] w-[30%] h-[50%] bg-emerald-600/10 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-[40%] right-[-10%] w-[30%] h-[50%] bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
       
-      {/* ─── Top Navigation Banner ─── */}
-      <div className="relative z-10 w-full py-3 bg-white/5 backdrop-blur-md border-b border-white/10 flex justify-between items-center px-4 sm:px-8">
+      {/* ─── Sticky Glass Navigation ─── */}
+      <nav className={`${navPinned ? 'fixed top-0 left-0 right-0 nav-pin-in bg-[#0b1120]/80 backdrop-blur-xl border-b border-white/10 shadow-[0_10px_35px_rgba(2,6,23,0.35)]' : 'absolute top-0 left-0 right-0 bg-transparent'} z-50 w-full transition-all duration-300`}>
+        <div className="max-w-7xl mx-auto min-h-20 flex flex-wrap gap-4 justify-between items-center px-4 sm:px-8 py-4">
         
         {/* Top-Left Logo */}
         <div className="flex items-center space-x-3">
           <div className="h-8 w-8 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
-            <BiScan className="h-5 w-5" />
+            <FiSearch className="h-5 w-5" />
           </div>
           <span className="font-heading text-lg font-bold text-white tracking-wide">MeteroLens</span>
         </div>
 
+        <div className="hidden md:flex items-center gap-1">
+          <a href="#features" className="px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Capabilities</a>
+          <a href="#declarations" className="px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">Declarations</a>
+          <Link to="/how-it-works" className="px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-colors">How it Works</Link>
+        </div>
+
         {/* Top-Right Sign In */}
         <div className="flex-shrink-0 z-20">
+          <button
+            type="button"
+            onClick={() => setLightMode((current) => !current)}
+            className="mr-2 inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+            aria-label={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
+            title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
+          >
+            {lightMode ? <FiMoon className="h-4 w-4" /> : <FiSun className="h-4 w-4" />}
+          </button>
           <Link
             to="/login"
             className="inline-flex items-center space-x-1.5 text-xs font-semibold text-white bg-blue-600/80 hover:bg-blue-500 transition-colors px-3 py-1.5 rounded-lg border border-blue-500/30"
@@ -114,10 +140,11 @@ const LandingPage = () => {
             <span>Login / Sign-in</span>
           </Link>
         </div>
-      </div>
+        </div>
+      </nav>
 
       {/* ─── Hero Section ─── */}
-      <section className="relative z-10 pt-10 pb-24 lg:pt-16 lg:pb-36 border-b border-white/5">
+      <section className="relative z-10 pt-28 pb-24 lg:pt-32 lg:pb-36">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
@@ -129,7 +156,7 @@ const LandingPage = () => {
               </div>
 
               <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">
-                Digital Verification & Legal Metrology <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Enforcement</span>
+                Digital Verification & Legal Metrology <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">Enforcement</span>
               </h1>
 
               <p className="text-lg text-gray-400 leading-relaxed max-w-xl font-normal">
@@ -149,37 +176,19 @@ const LandingPage = () => {
                   to="/report"
                   className="inline-flex items-center justify-center space-x-2 px-8 py-4 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold border border-white/10 rounded-lg backdrop-blur-sm transition-all duration-300"
                 >
-                  <FiAlertTriangle className="h-4 w-4 text-emerald-400" />
+                  <FiAlertTriangle className="h-4 w-4 text-blue-400" />
                   <span>Submit Citizen Violation Report</span>
                 </Link>
               </div>
 
-              <div className="pt-8 w-full max-w-xl">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mb-4">
-                  National Enforcement Verification Parameters
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[
-                    { value: '8 / 8', label: 'Mandatory Declarations' },
-                    { value: 'Dual', label: 'OCR + Rule Engine' },
-                    { value: 'Sec 39', label: 'Form 1 Notice Ready' },
-                    { value: '< 3.2s', label: 'Field Audit Latency' }
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-4 backdrop-blur-sm flex flex-col items-center text-center justify-center">
-                      <p className="font-mono text-xl font-bold text-white mb-1">{stat.value}</p>
-                      <p className="text-[10px] text-gray-400 leading-tight">{stat.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
 
             {/* Right Column: Glassmorphism Docket */}
             <div className="relative w-full">
               {/* Decorative background glow behind the card */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-emerald-500/20 rounded-2xl blur-xl transform scale-95" />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-blue-950/30 rounded-2xl blur-xl transform scale-95" />
               
-              <div className="relative bg-[#0B1324]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+              <div className="inspection-docket relative bg-[#0B1324]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
                 <div className="bg-white/5 border-b border-white/10 px-5 py-4 flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-mono tracking-widest text-gray-400 block mb-1">INSPECTION DOCKET</span>
@@ -194,14 +203,14 @@ const LandingPage = () => {
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center space-x-3">
-                      <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                      <span className="w-2.5 h-2.5 bg-blue-500 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
                       <span className="text-sm font-bold text-white tracking-wide">Packaged Commodity: Fortified Wheat Flour</span>
                     </div>
                     <span className="text-[10px] font-mono text-gray-400 bg-white/5 px-2 py-1 rounded">BATCH: B-409/26</span>
                   </div>
 
-                  <div className="relative h-48 bg-[#111A2C] border border-white/5 rounded-xl overflow-hidden shadow-inner flex items-center justify-center p-4">
-                    <div className="absolute top-4 left-4 border border-emerald-500/50 bg-emerald-500/10 backdrop-blur-sm px-3 py-1.5 text-emerald-400 text-xs font-mono rounded">
+                  <div className="inspection-docket-canvas relative h-48 bg-[#111A2C] border border-white/5 rounded-xl overflow-hidden shadow-inner flex items-center justify-center p-4">
+                    <div className="absolute top-4 left-4 border border-blue-500/50 bg-blue-500/10 backdrop-blur-sm px-3 py-1.5 text-blue-300 text-xs font-mono rounded">
                       [x:42, y:18] MRP ₹ 245.00
                     </div>
                     <div className="absolute top-16 right-4 border border-blue-500/50 bg-blue-500/10 backdrop-blur-sm px-3 py-1.5 text-blue-400 text-xs font-mono rounded">
@@ -235,11 +244,30 @@ const LandingPage = () => {
             </div>
 
           </div>
+
+          <div className="verification-band mt-16 pt-10">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mb-4">
+            National Enforcement Verification Parameters
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { value: '8 / 8', label: 'Mandatory Declarations' },
+              { value: 'Dual', label: 'OCR + Rule Engine' },
+              { value: 'Sec 39', label: 'Form 1 Notice Ready' },
+              { value: '< 3.2s', label: 'Field Audit Latency' }
+            ].map((stat, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-4 backdrop-blur-sm flex flex-col items-center text-center justify-center">
+                <p className="font-mono text-xl font-bold text-white mb-1">{stat.value}</p>
+                <p className="text-[10px] text-gray-400 leading-tight">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
         </div>
       </section>
 
       {/* ─── Enforcement Capabilities ─── */}
-      <section id="features" className="py-24 relative z-10 border-b border-white/5">
+      <section id="features" className="py-24 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-semibold mb-3">
@@ -261,9 +289,9 @@ const LandingPage = () => {
                 </div>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-mono font-bold text-blue-300">{cap.id}</span>
-                  <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">VERIFIED</span>
+                  <span className="text-[9px] font-mono text-blue-300 bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20">VERIFIED</span>
                 </div>
-                <h4 className="font-heading text-xl font-bold text-white mb-2">{cap.title}</h4>
+                <h4 className="font-body text-xl font-medium text-white mb-2">{cap.title}</h4>
                 <p className="text-xs font-mono text-gray-500 mb-4">{cap.citation}</p>
                 <p className="text-sm text-gray-400 leading-relaxed">{cap.description}</p>
               </div>
@@ -273,11 +301,11 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Mandatory Statutory Declarations Register ─── */}
-      <section className="py-24 relative z-10 border-b border-white/5 bg-[#03070E]">
+      <section id="declarations" className="py-24 relative z-10 bg-[#03070E]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <p className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 font-semibold mb-2">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-semibold mb-2">
                 Legal Metrology (Packaged Commodities) Rules, 2011
               </p>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
@@ -289,18 +317,18 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm">
+          <div className="bg-white/5 rounded-2xl overflow-hidden backdrop-blur-sm">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead>
-                  <tr className="bg-white/5 text-gray-300 font-mono text-xs border-b border-white/10">
+                  <tr className="bg-white/5 text-gray-300 font-mono text-xs">
                     <th className="py-4 px-6 font-semibold w-40">STATUTORY RULE</th>
                     <th className="py-4 px-6 font-semibold w-72">MANDATORY DECLARATION</th>
                     <th className="py-4 px-6 font-semibold">STATUTORY SPECIFICATION</th>
                     <th className="py-4 px-6 font-semibold text-right">AUDIT STATUS</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody>
                   {MANDATORY_RULES.map((item, idx) => (
                     <tr key={idx} className="hover:bg-white/5 transition-colors text-gray-400 group">
                       <td className="py-4 px-6 font-mono text-blue-300 font-medium bg-white/5 group-hover:bg-transparent transition-colors">
@@ -313,7 +341,7 @@ const LandingPage = () => {
                         {item.requirement}
                       </td>
                       <td className="py-4 px-6 text-right">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-semibold bg-blue-500/10 text-blue-300 border border-blue-500/20 rounded-full">
                           <FiCheck className="h-3 w-3" />
                           ENFORCED
                         </span>
@@ -328,7 +356,7 @@ const LandingPage = () => {
       </section>
 
       {/* ─── Procedural Enforcement Workflow ─── */}
-      <section className="py-24 relative z-10 border-b border-white/5">
+      <section className="py-24 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <p className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-semibold mb-3">
@@ -349,7 +377,7 @@ const LandingPage = () => {
                   {s.stage}
                 </div>
                 <h3 className="font-heading text-xl font-bold text-white mb-2">{s.title}</h3>
-                <p className="text-xs font-mono text-emerald-400 mb-4 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">{s.subtitle}</p>
+                <p className="text-xs font-mono text-blue-300 mb-4 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">{s.subtitle}</p>
                 <p className="text-sm text-gray-400 leading-relaxed">{s.desc}</p>
               </div>
             ))}
@@ -357,38 +385,14 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ─── Statutory Mandate Notice ─── */}
-      <section className="py-16 relative z-10 border-b border-white/5 bg-[#02050A]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-blue-900/20 to-emerald-900/20 border border-white/10 rounded-2xl p-8 sm:p-10 flex flex-col md:flex-row items-center md:items-start gap-8 backdrop-blur-md">
-            <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 text-white shadow-xl">
-              <FiShield className="h-8 w-8" />
-            </div>
-            <div className="text-center md:text-left space-y-4">
-              <h3 className="font-heading text-2xl font-bold text-white">
-                Statutory Authority & Evidentiary Standard
-              </h3>
-              <p className="text-sm text-gray-400 leading-relaxed">
-                MeteroLens operates in conformity with the Legal Metrology Act, 2009 (Act No. 1 of 2010) and the Legal Metrology (Packaged Commodities) Rules, 2011. Evidence reports generated by this platform incorporate automated timestamping, SHA-256 packaging digest hashes, and section-wise rule citations suitable for preliminary inquiry and notice drafting under Section 18 and Section 39.
-              </p>
-              <div className="pt-2 flex flex-wrap justify-center md:justify-start gap-3 text-xs font-mono text-blue-300">
-                <span className="bg-blue-500/10 px-3 py-1 rounded border border-blue-500/20">Smart India Hackathon 2026</span>
-                <span className="bg-blue-500/10 px-3 py-1 rounded border border-blue-500/20">PS26034</span>
-                <span className="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded border border-emerald-500/20">Open Source</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ─── Official Digital Service Footer ─── */}
-      <footer id="footer" className="relative z-10 bg-[#02050A] text-gray-400 text-sm border-t border-white/5">
+      <footer id="footer" className="relative z-10 bg-[#02050A] text-gray-400 text-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pb-12 border-b border-white/10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 pb-12">
             <div className="md:col-span-2 space-y-6">
               <div className="flex items-center space-x-3">
                 <div className="h-8 w-8 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center justify-center text-blue-400">
-                  <BiScan className="h-5 w-5" />
+                  <FiSearch className="h-5 w-5" />
                 </div>
                 <span className="font-heading text-2xl font-bold text-white tracking-wide">MeteroLens</span>
               </div>
@@ -418,9 +422,9 @@ const LandingPage = () => {
                 Legal & References
               </p>
               <ul className="space-y-4 font-mono text-xs">
-                <li><a href="https://consumeraffairs.nic.in" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors flex items-center gap-2"><FiExternalLink className="h-3 w-3"/> Ministry of Consumer Affairs</a></li>
-                <li><a href="https://github.com/Abhinav5656U/MeteroLens#readme" target="_blank" rel="noopener noreferrer" className="hover:text-emerald-400 transition-colors flex items-center gap-2"><FiBook className="h-3 w-3"/> System Documentation</a></li>
-                <li><a href="mailto:team@meterolens.in" className="hover:text-emerald-400 transition-colors flex items-center gap-2"><FiMail className="h-3 w-3"/> Technical Support Desk</a></li>
+                <li><a href="https://consumeraffairs.nic.in" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors flex items-center gap-2"><FiExternalLink className="h-3 w-3"/> Ministry of Consumer Affairs</a></li>
+                <li><a href="https://github.com/Abhinav5656U/MeteroLens#readme" target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 transition-colors flex items-center gap-2"><FiBook className="h-3 w-3"/> System Documentation</a></li>
+                <li><a href="mailto:team@meterolens.in" className="hover:text-blue-400 transition-colors flex items-center gap-2"><FiMail className="h-3 w-3"/> Technical Support Desk</a></li>
               </ul>
             </div>
           </div>

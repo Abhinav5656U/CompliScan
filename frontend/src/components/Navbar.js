@@ -47,7 +47,7 @@ const Navbar = () => {
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="text-[#C5D0E0] hover:text-white p-1.5 rounded-sm hover:bg-[#1D2E52] mr-1"
+                className="md:hidden text-[#C5D0E0] hover:text-white p-1.5 rounded-sm hover:bg-[#1D2E52] mr-1"
                 aria-label="Toggle navigation menu"
               >
                 {mobileMenuOpen ? <FiX className="h-5 w-5" /> : <FiMenu className="h-5 w-5" />}
@@ -67,7 +67,25 @@ const Navbar = () => {
               </div>
             </div>
 
-
+            <nav className="hidden md:flex items-center gap-1">
+              {navLinks.filter(link => link.show).map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
+                      isActive(link.to)
+                        ? 'bg-blue-500/15 text-blue-300 border border-blue-500/30'
+                        : 'text-slate-300 hover:bg-white/5 hover:text-white border border-transparent'
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
 
             <div className="flex items-center space-x-2">
               {isAuthenticated && (
@@ -90,10 +108,10 @@ const Navbar = () => {
                   {dropdownOpen && (
                     <>
                       <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                      <div className="absolute right-0 mt-2 w-64 bg-[#FAF9F5] rounded-sm shadow-ledger py-2 z-20 border border-line">
-                        <div className="px-4 py-2.5 border-b border-line bg-white/50">
-                          <p className="text-xs font-bold font-heading text-ink">{user?.full_name || user?.username}</p>
-                          <p className="text-[11px] font-mono text-[#555] truncate mt-0.5">{user?.email}</p>
+                      <div className="absolute right-0 mt-2 w-64 bg-[#0f172a]/95 backdrop-blur-xl rounded-lg shadow-2xl py-2 z-20 border border-white/10">
+                        <div className="px-4 py-2.5 border-b border-white/10 bg-white/5">
+                          <p className="text-xs font-bold font-heading text-white">{user?.full_name || user?.username}</p>
+                          <p className="text-[11px] font-mono text-slate-400 truncate mt-0.5">{user?.email}</p>
                           <span className={`text-[10px] font-mono uppercase px-1.5 py-0.5 mt-1.5 inline-block ${getRoleBadge(user?.role)}`}>
                             Officer Role: {user?.role}
                           </span>
@@ -102,17 +120,17 @@ const Navbar = () => {
                           <Link
                             to="/upload"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center space-x-2 px-4 py-2 text-xs text-ink hover:bg-[#EFECE3] transition-colors"
+                            className="flex items-center space-x-2 px-4 py-2 text-xs text-slate-200 hover:bg-white/10 transition-colors"
                           >
-                            <FiSearch className="h-3.5 w-3.5 text-[#666]" />
+                            <FiSearch className="h-3.5 w-3.5 text-blue-400" />
                             <span>New Inspection Scan</span>
                           </Link>
                           <Link
                             to="/history"
                             onClick={() => setDropdownOpen(false)}
-                            className="flex items-center space-x-2 px-4 py-2 text-xs text-ink hover:bg-[#EFECE3] transition-colors"
+                            className="flex items-center space-x-2 px-4 py-2 text-xs text-slate-200 hover:bg-white/10 transition-colors"
                           >
-                            <FiClock className="h-3.5 w-3.5 text-[#666]" />
+                            <FiClock className="h-3.5 w-3.5 text-blue-400" />
                             <span>Inspection Ledger</span>
                           </Link>
                         </div>

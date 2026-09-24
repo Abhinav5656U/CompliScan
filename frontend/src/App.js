@@ -35,7 +35,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-[#050B14]">
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Public routes */}

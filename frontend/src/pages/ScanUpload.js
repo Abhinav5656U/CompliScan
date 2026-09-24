@@ -63,13 +63,13 @@ const BarcodeScanner = ({ onScan, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h3 className="font-bold text-gray-900 flex items-center space-x-2">
-            <FiCamera className="h-5 w-5 text-primary-800" />
+      <div className="bg-[#0f172a] rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-white/10">
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <h3 className="font-bold text-white flex items-center space-x-2">
+            <FiCamera className="h-5 w-5 text-blue-400" />
             <span>Scan Barcode / QR Code</span>
           </h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1" aria-label="Close scanner">
+          <button onClick={onClose} className="text-gray-400 hover:text-white p-1" aria-label="Close scanner">
             <FiX className="h-5 w-5" />
           </button>
         </div>
@@ -78,8 +78,8 @@ const BarcodeScanner = ({ onScan, onClose }) => {
           {cameraError ? (
             <div className="mt-3 rounded-xl bg-amber-50 border border-amber-200 p-4 text-center">
               <FiCamera className="h-6 w-6 text-amber-500 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-amber-800">Camera unavailable &#8212; upload an image instead</p>
-              <p className="text-xs text-amber-600 mt-1">You can still submit a product label photo from your gallery or device.</p>
+              <p className="text-sm font-semibold text-amber-300">Camera unavailable &#8212; upload an image instead</p>
+              <p className="text-xs text-amber-400 mt-1">You can still submit a product label photo from your gallery or device.</p>
               <button
                 onClick={onClose}
                 className="mt-3 inline-flex items-center space-x-2 px-4 py-2 bg-primary-800 hover:bg-primary-900 text-white text-sm font-semibold rounded-lg transition-colors"
@@ -89,7 +89,7 @@ const BarcodeScanner = ({ onScan, onClose }) => {
               </button>
             </div>
           ) : (
-            <p className="text-xs text-gray-500 text-center mt-3">Point your camera at a barcode or QR code on the product label.</p>
+              <p className="text-xs text-gray-400 text-center mt-3">Point your camera at a barcode or QR code on the product label.</p>
           )}
         </div>
       </div>
@@ -201,7 +201,7 @@ const ScanUpload = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 font-body">
+    <div className="max-w-5xl mx-auto px-4 py-8 lg:py-12 font-body text-slate-300">
       {showScanner && (
         <BarcodeScanner
           onScan={handleBarcodeScan}
@@ -209,25 +209,26 @@ const ScanUpload = () => {
         />
       )}
 
-      <div className="mb-8 border-b border-line pb-4">
-        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy">Field Packaging Audit Scan</h1>
-        <p className="text-xs text-[#555] mt-1">Ingest product packaging photographs for optical declaration extraction and statutory verification under the Legal Metrology (Packaged Commodities) Rules, 2011.</p>
+      <div className="mb-8 border-b border-white/10 pb-5">
+        <p className="text-[10px] font-mono uppercase tracking-widest text-blue-400 mb-2">Inspection intake protocol</p>
+        <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white">Field Packaging Audit Scan</h1>
+        <p className="text-xs text-slate-400 mt-2 max-w-3xl">Ingest product packaging photographs for optical declaration extraction and statutory verification under the Legal Metrology (Packaged Commodities) Rules, 2011.</p>
       </div>
 
-      <div className="bg-white border border-line shadow-ledger rounded-xs p-6 sm:p-8">
-        <div className="flex items-center justify-between border-b border-line pb-3 mb-6">
-          <h2 className="font-heading text-lg font-bold text-navy">Packaging Image Acquisition</h2>
-          <span className="text-[11px] font-mono text-[#777]">MANDATORY PRINCIPAL DISPLAY PANEL</span>
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-white/10 pb-4 mb-6">
+          <h2 className="font-heading text-lg font-bold text-white">Packaging Image Acquisition</h2>
+          <span className="text-[11px] font-mono text-slate-400">MANDATORY PRINCIPAL DISPLAY PANEL</span>
         </div>
 
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div
               onClick={() => cameraInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-gray-50 transition-colors"
+              className="border-2 border-dashed border-white/15 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400/70 hover:bg-blue-500/5 transition-colors"
             >
-              <FiCamera className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-md font-medium text-gray-900">Take Photo</p>
+              <FiCamera className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+              <p className="text-md font-medium text-white">Take Photo</p>
               <input
                 ref={cameraInputRef}
                 type="file"
@@ -239,10 +240,10 @@ const ScanUpload = () => {
             </div>
             <div
               onClick={() => galleryInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-gray-50 transition-colors"
+              className="border-2 border-dashed border-white/15 rounded-xl p-8 text-center cursor-pointer hover:border-blue-400/70 hover:bg-blue-500/5 transition-colors"
             >
-              <FiUpload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-md font-medium text-gray-900">Upload Files</p>
+              <FiUpload className="h-8 w-8 text-blue-400 mx-auto mb-2" />
+              <p className="text-md font-medium text-white">Upload Files</p>
               <input
                 ref={galleryInputRef}
                 type="file"
@@ -256,11 +257,11 @@ const ScanUpload = () => {
 
           {previews.length > 0 && (
             <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Selected Images ({previews.length})</h3>
+              <h3 className="text-sm font-medium text-slate-200 mb-3">Selected Images ({previews.length})</h3>
               <div className="flex space-x-4 overflow-x-auto pb-4 snap-x">
                 {previews.map((preview, index) => (
                   <div key={index} className="relative flex-none snap-start">
-                    <img src={preview} alt={`Preview ${index}`} className="w-32 h-32 object-cover rounded-xl border border-gray-200" />
+                    <img src={preview} alt={`Preview ${index}`} className="w-32 h-32 object-cover rounded-xl border border-white/10" />
                     <button
                       onClick={() => removeFile(index)}
                       aria-label="Remove image"
@@ -276,14 +277,14 @@ const ScanUpload = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">GTIN / Barcode</label>
+              <label className="block text-sm font-medium text-slate-200 mb-2">GTIN / Barcode</label>
               <div className="flex space-x-2">
                 <input
                   type="text"
                   value={gtin}
                   onChange={(e) => setGtin(e.target.value)}
                   placeholder="e.g. 8901234567890"
-                  className="flex-1 rounded-lg border-gray-300 border p-3 focus:ring-primary-500 focus:border-primary-500"
+                  className="flex-1 rounded-lg bg-[#0b1120] border-white/15 text-white placeholder:text-slate-500 border p-3 focus:ring-blue-500 focus:border-blue-500"
                 />
                 <button
                   type="button"
@@ -298,14 +299,14 @@ const ScanUpload = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-slate-200 mb-2">
                 <FiMapPin className="inline h-3.5 w-3.5 mr-1" />
                 State / UT (Optional)
               </label>
               <select
                 value={state}
                 onChange={(e) => setState(e.target.value)}
-                className="w-full rounded-lg border-gray-300 border p-3 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                className="w-full rounded-lg border-white/15 border p-3 focus:ring-blue-500 focus:border-blue-500 bg-[#0b1120] text-white"
               >
                 <option value="">Select state...</option>
                 {INDIA_STATES.map((s) => (
@@ -315,13 +316,13 @@ const ScanUpload = () => {
             </div>
           </div>
 
-          <div className="bg-paper border border-line rounded-xs p-4 mb-6">
+          <div className="bg-[#0b1120]/70 border border-white/10 rounded-xl p-4 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-navy">Audit Verification Pipeline</h3>
-              <span className="text-[10px] font-mono text-seal bg-[#FAF1DD] px-1.5 py-0.5 border border-seal/30">STATUTORY MODE</span>
+              <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-white">Audit Verification Pipeline</h3>
+              <span className="text-[10px] font-mono text-blue-300 bg-blue-500/10 px-1.5 py-0.5 border border-blue-500/30">STATUTORY MODE</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className={`flex cursor-pointer items-start p-3 border rounded-xs transition-colors ${scanMode === 'fast' ? 'bg-white border-seal shadow-xs' : 'bg-white/60 border-line hover:bg-white'}`}>
+              <label className={`flex cursor-pointer items-start p-3 border rounded-lg transition-colors ${scanMode === 'fast' ? 'bg-blue-500/10 border-blue-400 shadow-xs' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
                 <div className="flex items-center h-4 mt-0.5">
                   <input
                     type="radio"
@@ -333,11 +334,11 @@ const ScanUpload = () => {
                   />
                 </div>
                 <div className="ml-2.5">
-                  <span className={`block text-xs font-bold font-heading ${scanMode === 'fast' ? 'text-navy' : 'text-ink'}`}>Fast Mode (~15s)</span>
-                  <span className="block text-[11px] text-[#666] mt-0.5">PaddleOCR + Groq. Prioritizes field triage speed.</span>
+                  <span className={`block text-xs font-bold font-heading ${scanMode === 'fast' ? 'text-blue-300' : 'text-white'}`}>Fast Mode (~15s)</span>
+                  <span className="block text-[11px] text-slate-400 mt-0.5">PaddleOCR + Groq. Prioritizes field triage speed.</span>
                 </div>
               </label>
-              <label className={`flex cursor-pointer items-start p-3 border rounded-xs transition-colors ${scanMode === 'deep' ? 'bg-white border-seal shadow-xs' : 'bg-white/60 border-line hover:bg-white'}`}>
+              <label className={`flex cursor-pointer items-start p-3 border rounded-lg transition-colors ${scanMode === 'deep' ? 'bg-blue-500/10 border-blue-400 shadow-xs' : 'bg-white/5 border-white/10 hover:bg-white/10'}`}>
                 <div className="flex items-center h-4 mt-0.5">
                   <input
                     type="radio"
@@ -349,8 +350,8 @@ const ScanUpload = () => {
                   />
                 </div>
                 <div className="ml-2.5">
-                  <span className={`block text-xs font-bold font-heading ${scanMode === 'deep' ? 'text-navy' : 'text-ink'}`}>Deep Mode (~90s)</span>
-                  <span className="block text-[11px] text-[#666] mt-0.5">Gemini Vision 2.5 Flash. Prioritizes legal citation depth.</span>
+                  <span className={`block text-xs font-bold font-heading ${scanMode === 'deep' ? 'text-blue-300' : 'text-white'}`}>Deep Mode (~90s)</span>
+                  <span className="block text-[11px] text-slate-400 mt-0.5">Gemini Vision 2.5 Flash. Prioritizes legal citation depth.</span>
                 </div>
               </label>
             </div>
