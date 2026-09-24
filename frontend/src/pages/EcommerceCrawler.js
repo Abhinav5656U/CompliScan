@@ -55,7 +55,7 @@ const EcommerceCrawler = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            E-Commerce AI Crawler
+            E-Commerce AI Scanner
           </h1>
           <p className="mt-4 text-xl text-gray-500">
             Compare a physical product label against its Amazon/Flipkart listing for Rule 6/18 Compliance.

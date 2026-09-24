@@ -182,10 +182,7 @@ const Dashboard = () => {
       <div className="mb-8 border-b border-line pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="text-[11px] font-mono uppercase tracking-wider text-seal font-semibold mb-1">
-              Statutory Supervisory Register &middot; Legal Metrology Enforcement
-            </div>
-            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy">Enforcement Analytics Dashboard</h1>
+            <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy">Dashboard</h1>
             <p className="text-xs text-[#555] mt-1">Real-time surveillance of packaged commodity compliance, violation metrics, and citizen risk queues.</p>
           </div>
           <Link
@@ -193,7 +190,7 @@ const Dashboard = () => {
             className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-navy hover:bg-navy-700 text-white rounded-xs text-xs font-semibold transition-colors border border-[#374B73]"
           >
             <FiMessageCircle className="h-4 w-4 text-seal" />
-            <span>Statutory Assistant</span>
+            <span>Assistant</span>
           </Link>
         </div>
       </div>

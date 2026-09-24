@@ -170,7 +170,7 @@ const IndiaMap = () => {
                 </div>
               </div>
 
-              <div style={{ height: '600px', width: '100%', zIndex: 1 }}>
+              <div style={{ height: '600px', width: '100%', position: 'relative', zIndex: 1 }}>
                 <MapContainer 
                   center={[20.5937, 78.9629]} 
                   zoom={5} 

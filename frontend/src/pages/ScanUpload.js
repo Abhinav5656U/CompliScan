@@ -210,9 +210,6 @@ const ScanUpload = () => {
       )}
 
       <div className="mb-8 border-b border-line pb-4">
-        <div className="text-[11px] font-mono uppercase tracking-wider text-seal font-semibold mb-1">
-          Form FL-02 &middot; Field Examination Docket Ingestion
-        </div>
         <h1 className="font-heading text-2xl sm:text-3xl font-bold text-navy">Field Packaging Audit Scan</h1>
         <p className="text-xs text-[#555] mt-1">Ingest product packaging photographs for optical declaration extraction and statutory verification under the Legal Metrology (Packaged Commodities) Rules, 2011.</p>
       </div>
