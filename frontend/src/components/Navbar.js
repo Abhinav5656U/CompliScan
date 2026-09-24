@@ -5,7 +5,6 @@ import {
   FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock,
   FiMapPin, FiMessageCircle, FiShoppingCart, FiShield
 } from 'react-icons/fi';
-import { BiScan } from 'react-icons/bi';
 
 const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
@@ -54,7 +53,7 @@ const Navbar = () => {
               </button>
               <div className="flex items-center space-x-2.5 focus:outline-none">
                 <div className="h-8 w-8 bg-[#1D2E52] border border-[#374B73] rounded-sm flex items-center justify-center text-[#3B82F6] shadow-xs">
-                  <BiScan className="h-5 w-5" />
+                  <FiSearch className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-white text-base font-bold font-heading tracking-wide leading-tight flex items-center space-x-1.5">
@@ -188,7 +187,7 @@ const Navbar = () => {
               <div className="px-5 pt-6 pb-4 border-b border-[#1E2E4E]">
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-[#1D2E52] border border-[#374B73] rounded-sm flex items-center justify-center text-[#3B82F6] shadow-xs">
-                    <BiScan className="h-5 w-5" />
+                    <FiSearch className="h-5 w-5" />
                   </div>
                   <span className="text-white text-lg font-bold font-heading tracking-wide">MeteroLens</span>
                 </div>

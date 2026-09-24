@@ -144,7 +144,7 @@ const Dashboard = () => {
 
   if (hasNoScans) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="app-surface max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
@@ -178,7 +178,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 font-body">
+    <div className="app-surface max-w-7xl mx-auto px-4 py-8 font-body">
       <div className="mb-8 border-b border-line pb-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>

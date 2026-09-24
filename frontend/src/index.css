@@ -108,6 +108,55 @@ body {
   border-color: #bfcee2 !important;
 }
 
+/* Shared glass treatment for authenticated workspaces. */
+.app-surface {
+  color: #cbd5e1;
+}
+
+.app-surface .bg-white,
+.app-surface .bg-gray-50,
+.app-surface .bg-gray-50\/50,
+.app-surface .bg-gray-100 {
+  background: rgba(15, 23, 42, 0.78) !important;
+}
+
+.app-surface .border-gray-200,
+.app-surface .border-gray-300,
+.app-surface .border-gray-100,
+.app-surface .border-line {
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.app-surface .text-gray-900,
+.app-surface .text-gray-800,
+.app-surface .text-gray-700,
+.app-surface .text-gray-600,
+.app-surface .text-gray-500 {
+  color: #cbd5e1 !important;
+}
+
+.app-surface .text-gray-400,
+.app-surface .text-gray-300 {
+  color: #94a3b8 !important;
+}
+
+.app-surface input,
+.app-surface select,
+.app-surface textarea {
+  background-color: #0b1120 !important;
+  border-color: rgba(148, 163, 184, 0.25) !important;
+  color: #f8fafc !important;
+}
+
+.app-surface thead,
+.app-surface .divide-y > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(148, 163, 184, 0.16) !important;
+}
+
+.app-surface tr:hover {
+  background: rgba(59, 130, 246, 0.08) !important;
+}
+
 /* Official Stamp Animation - Single deliberate motion moment */
 @keyframes stampVerdict {
   0% {
