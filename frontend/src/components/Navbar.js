@@ -3,14 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock,
-  FiMapPin, FiMessageCircle, FiShoppingCart, FiShield, FiSun, FiMoon
+  FiMapPin, FiMessageCircle, FiShoppingCart, FiShield
 } from 'react-icons/fi';
 
-const Navbar = ({ showThemeToggle = true }) => {
+const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [lightMode, setLightMode] = useState(() => localStorage.getItem('compliscan-theme') === 'light');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -19,20 +18,6 @@ const Navbar = ({ showThemeToggle = true }) => {
     navigate('/login');
     setDropdownOpen(false);
   };
-
-  const toggleTheme = () => {
-    setLightMode((current) => {
-      const nextMode = !current;
-      document.body.classList.toggle('light-app', nextMode);
-      localStorage.setItem('compliscan-theme', nextMode ? 'light' : 'dark');
-      return nextMode;
-    });
-  };
-
-  React.useEffect(() => {
-    document.body.classList.toggle('light-app', lightMode);
-    return () => document.body.classList.remove('light-app');
-  }, [lightMode]);
 
   const navLinks = [
     { to: '/upload', label: 'Inspect Product', icon: FiSearch, show: isAuthenticated },
@@ -102,17 +87,6 @@ const Navbar = ({ showThemeToggle = true }) => {
             </nav>
 
             <div className="flex items-center space-x-2">
-              {showThemeToggle && (
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-                  aria-label={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
-                  title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
-                >
-                  {lightMode ? <FiMoon className="h-4 w-4" /> : <FiSun className="h-4 w-4" />}
-                </button>
-              )}
               {isAuthenticated && (
                 <div className="relative">
                   <button
