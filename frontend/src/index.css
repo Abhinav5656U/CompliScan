@@ -157,6 +157,123 @@ body {
   background: rgba(59, 130, 246, 0.08) !important;
 }
 
+.report-page {
+  color: #334155;
+}
+
+.report-page .bg-white,
+.report-page .bg-paper,
+.report-page [class*="bg-paper"] {
+  background: #ffffff !important;
+}
+
+.report-page .text-navy,
+.report-page .text-ink {
+  color: #0f172a !important;
+}
+
+.report-page .text-\[\#555\],
+.report-page .text-\[\#666\],
+.report-page .text-\[\#888\] {
+  color: #475569 !important;
+}
+
+.report-page .border-line {
+  border-color: #cbd5e1 !important;
+}
+
+.report-page input {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.report-route {
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.report-route .app-nav {
+  background: rgba(248, 250, 252, 0.92) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.12) !important;
+}
+
+.report-route .app-nav .text-white,
+.report-route .app-nav .hover\:text-white:hover {
+  color: #0f172a !important;
+}
+
+.report-route .app-nav .text-slate-300,
+.report-route .app-nav .text\-\[\#C5D0E0\] {
+  color: #475569 !important;
+}
+
+.report-route .app-nav [class*="bg-[#1D2E52]"] {
+  background: #dbeafe !important;
+}
+
+.light-app .app-shell {
+  background: #f1f5f9 !important;
+}
+
+.light-app .app-nav {
+  background: rgba(248, 250, 252, 0.9) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 8px 24px rgba(30, 64, 175, 0.12) !important;
+}
+
+.light-app .app-nav .text-white,
+.light-app .app-nav .hover\:text-white:hover {
+  color: #0f172a !important;
+}
+
+.light-app .app-nav .text-slate-300,
+.light-app .app-nav .text\-\[\#C5D0E0\] {
+  color: #475569 !important;
+}
+
+.light-app .app-nav .bg-navy,
+.light-app .app-nav [class*="bg-[#1D2E52]"] {
+  background: #dbeafe !important;
+}
+
+.light-app .app-surface {
+  color: #334155;
+}
+
+.light-app .app-surface .bg-white,
+.light-app .app-surface .bg-gray-50,
+.light-app .app-surface .bg-gray-50\/50,
+.light-app .app-surface .bg-gray-100,
+.light-app .app-surface [class*="bg-[#0b1120]"] {
+  background: #ffffff !important;
+}
+
+.light-app .app-surface .text-white,
+.light-app .app-surface .text-gray-900,
+.light-app .app-surface .text-gray-800,
+.light-app .app-surface .text-gray-700 {
+  color: #0f172a !important;
+}
+
+.light-app .app-surface .text-gray-600,
+.light-app .app-surface .text-gray-500,
+.light-app .app-surface .text-gray-400,
+.light-app .app-surface .text-gray-300,
+.light-app .app-surface .text-slate-400 {
+  color: #475569 !important;
+}
+
+.light-app .app-surface .border-gray-200,
+.light-app .app-surface .border-gray-300,
+.light-app .app-surface .border-gray-100,
+.light-app .app-surface .border-line,
+.light-app .app-surface .border-white\/10 {
+  border-color: #cbd5e1 !important;
+}
+
 /* Official Stamp Animation - Single deliberate motion moment */
 @keyframes stampVerdict {
   0% {
