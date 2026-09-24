@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  FiSearch, FiUpload, FiFileText, FiShield,
-  FiArrowRight, FiCheck, FiX, FiAlertTriangle,
+  FiSearch, FiFileText, FiShield,
+  FiArrowRight, FiCheck, FiAlertTriangle,
   FiExternalLink, FiBook, FiGithub, FiMail,
-  FiAperture, FiBox, FiCpu, FiDatabase, FiLayers, FiFile
+  FiCpu, FiDatabase, FiFile
 } from 'react-icons/fi';
 import { BiScan } from 'react-icons/bi';
 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FiUpload, FiX, FiLink, FiCamera, FiMapPin } from 'react-icons/fi';
+import { FiUpload, FiX, FiCamera, FiMapPin } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import api from '../utils/api';
 
