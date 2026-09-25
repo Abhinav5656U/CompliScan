@@ -70,7 +70,7 @@ def delete_scan(scan_id):
         if not scan:
             return jsonify({"error": "Scan not found"}), 404
 
-        if scan.user_id != user_id and user.role != "admin":
+        if scan.user_id != user_id:
             return jsonify({"error": "Access denied. You can only delete your own scans."}), 403
 
         db.session.delete(scan)

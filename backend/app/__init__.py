@@ -101,6 +101,9 @@ def create_app(config_name=None):
     app.register_blueprint(notice_bp, url_prefix="/api/notice")
     app.register_blueprint(report_bp, url_prefix="/api/report")
     app.register_blueprint(ecommerce_bp)
+    
+    from app.routes.authenticity import authenticity_bp
+    app.register_blueprint(authenticity_bp, url_prefix="/api/authenticity")
 
     try:
         from app.routes.chatbot import chatbot_bp

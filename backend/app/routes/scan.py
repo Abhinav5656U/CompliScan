@@ -148,8 +148,7 @@ def get_scan(scan_id):
         if not scan:
             return jsonify({"error": "Scan not found"}), 404
 
-        if user.role not in ("admin", "officer") and scan.user_id != user_id:
-            return jsonify({"error": "Access denied"}), 403
+        # Removed role check so any citizen can view the scan for transparency
 
         return jsonify({"scan": scan.to_dict()}), 200
 
@@ -170,8 +169,7 @@ def get_report(scan_id):
         if not scan:
             return jsonify({"error": "Scan not found"}), 404
 
-        if user.role not in ("admin", "officer") and scan.user_id != user_id:
-            return jsonify({"error": "Access denied"}), 403
+        # Removed role check so any citizen can view the scan report
 
         report_path = generate_pdf_report(scan)
         if not report_path or not os.path.exists(report_path):

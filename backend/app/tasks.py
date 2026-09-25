@@ -32,7 +32,9 @@ def process_scan_task(scan_id, image_paths, listing_url):
             
         pipeline_data = process_image_pipeline(image_paths, scan_mode=scan.scan_mode)
         extracted_fields = {}
-        compliance_result = validate_compliance(pipeline_data, extracted_fields)
+        user_allergies = scan.user.allergies if scan.user else None
+        user_diet = scan.user.diet_preferences if scan.user else None
+        compliance_result = validate_compliance(pipeline_data, extracted_fields, user_allergies, user_diet)
         ocr_text = pipeline_data.get("full_text", "")
         mismatch_result = cross_check(listing_url, extracted_fields) if listing_url else None
         

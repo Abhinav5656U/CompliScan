@@ -53,7 +53,7 @@ def load_rules():
     with open(RULES_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def validate_compliance(pipeline_data, extracted_fields=None):
+def validate_compliance(pipeline_data, extracted_fields=None, user_allergies=None, user_diet=None):
     """
     Evaluates extracted facts against versioned rules.
     pipeline_data is the dict from process_image_pipeline.
@@ -341,6 +341,38 @@ def validate_compliance(pipeline_data, extracted_fields=None):
         if llm_data.get("unit_sale_price"): extracted_fields["unit_sale_price"] = llm_data.get("unit_sale_price")
         if llm_data.get("batch_number"): extracted_fields["batch_number"] = llm_data.get("batch_number")
         if llm_data.get("address"): extracted_fields["address"] = llm_data.get("address")
+        
+        ingredients = llm_data.get("ingredients")
+        nutrition = llm_data.get("nutritional_info_per_100g")
+        marketing_claims = llm_data.get("marketing_claims")
+        
+        if marketing_claims:
+            extracted_fields["marketing_claims"] = marketing_claims
+            
+        if ingredients or nutrition:
+            from app.services.health_analyzer_service import analyze_health_and_nutrition, detect_greenwashing
+            
+            health_result = analyze_health_and_nutrition(ingredients, nutrition, user_allergies, user_diet)
+            checks.append({
+                "rule_name": health_result["rule_name"],
+                "status": health_result["status"],
+                "message": health_result["message"],
+                "citation": "Health & Nutrition Standard",
+                "severity": health_result["severity"]
+            })
+            if "health_score" in health_result:
+                extracted_fields["health_score"] = health_result["health_score"]
+                
+            if marketing_claims and len(marketing_claims) > 0:
+                greenwashing_result = detect_greenwashing(marketing_claims, ingredients, nutrition)
+                checks.append({
+                    "rule_name": greenwashing_result["rule_name"],
+                    "status": greenwashing_result["status"],
+                    "message": greenwashing_result["message"],
+                    "citation": greenwashing_result["citation"],
+                    "severity": greenwashing_result["severity"]
+                })
+                extracted_fields["greenwashing_status"] = greenwashing_result["status"]
         
     # USP Verification
     from app.services.usp_service import verify_usp

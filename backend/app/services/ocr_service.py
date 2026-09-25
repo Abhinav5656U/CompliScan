@@ -92,6 +92,10 @@ CRITICAL INSTRUCTIONS FOR structured fields:
 - For 'manufacturing_date': Any date format is fine (e.g., "MFG: 05/2026", "Best Before: 12 months from packaging")
 - For 'batch_number': Any batch/lot identifier (e.g., "Batch No: A123", "L/N: 456"). Do NOT pull random connective words like "and".
 - For 'unit_sale_price': Per-unit price if mentioned
+- For 'ingredients': List of all ingredients mentioned on the packaging.
+- For 'nutritional_info_per_100g': Key-value pairs of nutritional information per 100g (e.g. {"Energy": "400 kcal", "Sugar": "15g", "Sodium": "500mg"}). If per 100g is not available, use per serving, but indicate it.
+- For 'allergens': List of allergens mentioned (e.g., "Contains milk", "May contain nuts").
+- For 'marketing_claims': List of front-of-pack or back-of-pack marketing claims (e.g., "100% Natural", "No Added Sugar", "Low Fat", "Immunity Booster").
 
 Provide a 'confidence_score' from 0 to 100 representing how confident you are in the extracted values.
 
@@ -106,6 +110,10 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
   "net_quantity": "string or null",
   "manufacturing_date": "string or null",
   "batch_number": "string or null",
+  "ingredients": ["string", "string"] or [],
+  "nutritional_info_per_100g": {"string": "string"} or {},
+  "allergens": ["string", "string"] or [],
+  "marketing_claims": ["string", "string"] or [],
   "confidence_score": integer
 }
 """
@@ -210,6 +218,10 @@ Return ONLY valid JSON matching this schema exactly, without any markdown format
   "net_quantity": "string or null",
   "manufacturing_date": "string or null",
   "batch_number": "string or null",
+  "ingredients": ["string"],
+  "nutritional_info_per_100g": {{"string": "string"}},
+  "allergens": ["string"],
+  "marketing_claims": ["string"],
   "confidence_score": 100
 }}
 """
@@ -222,7 +234,7 @@ Return ONLY valid JSON matching this schema exactly, without any markdown format
                 messages=[
                     {"role": "system", "content": prompt}
                 ],
-                model="llama3-70b-8192",
+                model="llama-3.3-70b-versatile",
                 temperature=0,
                 max_tokens=800,
                 response_format={"type": "json_object"},

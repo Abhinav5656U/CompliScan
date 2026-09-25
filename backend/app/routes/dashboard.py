@@ -13,8 +13,7 @@ def require_officer_or_admin():
     user = User.query.get(user_id)
     if not user:
         return None, (jsonify({"error": "User not found"}), 404)
-    if user.role not in ("admin", "officer"):
-        return None, (jsonify({"error": "Access denied. Admin or officer role required."}), 403)
+    # Removed role check to make dashboards available to all users.
     return user, None
 
 

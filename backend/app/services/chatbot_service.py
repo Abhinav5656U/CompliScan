@@ -7,6 +7,31 @@ import os
 import json
 from datetime import datetime, timezone
 import google.generativeai as genai
+from duckduckgo_search import DDGS
+
+def web_search(query: str) -> str:
+    """
+    Search the web for up-to-date information.
+    
+    Args:
+        query: The search query to look up (e.g., 'healthy alternatives to Coca Cola', 'FSSAI packaging rules 2024').
+    """
+    try:
+        with DDGS() as ddgs:
+            results = list(ddgs.text(query, max_results=3))
+            
+        if not results:
+            return "No results found."
+            
+        formatted = []
+        for r in results:
+            title = r.get('title', '')
+            body = r.get('body', '')
+            formatted.append(f"- {title}: {body}")
+        return "\n".join(formatted)
+    except Exception as e:
+        return f"Error performing web search: {str(e)}"
+
 
 
 class ChatbotService:
@@ -35,7 +60,10 @@ class ChatbotService:
             # Try 2.5-flash first (standard in our codebase), fallback to 2.0 or 1.5
             for model_name in ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash']:
                 try:
-                    self.model = genai.GenerativeModel(model_name)
+                    self.model = genai.GenerativeModel(
+                        model_name=model_name,
+                        tools=[web_search]
+                    )
                     break
                 except Exception:
                     continue
@@ -58,6 +86,8 @@ Your role:
 - Explain Legal Metrology compliance results in simple terms
 - Answer questions about product labels and regulations
 - Help users file complaints when violations are found
+- Suggest healthy product alternatives when asked
+- Use the web_search tool to fetch real-time information when needed (e.g. for healthy alternatives, factual claims, or FSSAI updates)
 - Be friendly, concise, and accurate
 
 Rules:
@@ -65,7 +95,7 @@ Rules:
 - Use simple language (avoid legal jargon)
 - Be empathetic if user found non-compliant products
 - If asked about filing complaint, ask for: shop name, address, phone number
-- Don't make up information - if unsure, say "I'm not certain about that"
+- Don't make up information - if unsure, use the web_search tool to find out.
 
 Current conversation context: The user may have just scanned a product label.""",
 
@@ -142,7 +172,10 @@ Current conversation context: The user may have just scanned a product label."""
             messages.append(f"User: {user_message}")
 
             full_prompt = "\n".join(messages)
-            response = model.generate_content(full_prompt)
+            
+            # Start a chat session with automatic function calling enabled
+            chat = model.start_chat(enable_automatic_function_calling=True)
+            response = chat.send_message(full_prompt)
 
             intent = self._detect_intent(user_message, language)
 

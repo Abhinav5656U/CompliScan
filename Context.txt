@@ -1,7 +1,5 @@
-# Problem Statement: SIH26034
+# Problem Statement: SIH26199
 **Title:** Software System to check compliance of Packaged Commodities under Legal Metrology (Packaged Commodities) Rules, 2011
-**Sponsoring Ministry:** Ministry of Consumer Affairs, Food & Public Distribution
-**Objective:** To develop a system that checks the compliance of packaged commodities with legal metrology rules by scanning products, images, and labels.
 
 # Meet MeteroLens: The Complete AI Metrology Solution
 
@@ -47,7 +45,7 @@ Here are the primary capabilities that make MeteroLens stand out:
 - Dashboard Analytics: Recharts (for trend graphs)
 - Map Visualization: react-leaflet (for geographic plotting of scans)
 - Web Scanner: html5-qrcode (for browser-based QR/Barcode scanning)
-- 3D Interactive Canvas: React Three Fiber (@react-three/fiber, three.js)
+- 3D Interactive Canvas: React Three Fiber (@react-three/fiber, three.js)   
 
 2. **Backend Framework & Authentication**
 - Core Framework: Flask (v3.0.3, Python) with modular Flask Blueprints

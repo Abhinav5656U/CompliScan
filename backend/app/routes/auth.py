@@ -325,3 +325,83 @@ def janparichay_callback():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": f"SSO failed: {str(e)}"}), 500
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+@auth_bp.route("/google", methods=["POST"])
+def google_auth():
+    try:
+        data = request.get_json()
+        token = data.get("credential")
+        
+        if not token:
+            return jsonify({"error": "No credential provided"}), 400
+            
+        import requests as httpx_requests
+        user_info_resp = httpx_requests.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        
+        if not user_info_resp.ok:
+            return jsonify({"error": "Invalid Google token"}), 401
+            
+        idinfo = user_info_resp.json()
+        
+        email = idinfo['email']
+        name = idinfo.get('name', '')
+        
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Auto-register new user
+            user = User(
+                username=email.split("@")[0] + str(random.randint(100, 999)),
+                email=email,
+                role="viewer",
+                full_name=name
+            )
+            user.set_password(os.urandom(24).hex())
+            db.session.add(user)
+            db.session.commit()
+            
+        access_token = create_access_token(identity=str(user.id))
+        try:
+            csrf_token = get_csrf_token(access_token)
+        except Exception:
+            csrf_token = None
+        
+        response = jsonify({
+            "message": "Google Login successful",
+            "user": user.to_dict(),
+            "csrf_token": csrf_token,
+            "access_token": access_token
+        })
+        
+        set_access_cookies(response, access_token)
+        return response, 200
+        
+    except ValueError as e:
+        return jsonify({"error": f"Invalid token: {str(e)}"}), 401
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"Google auth failed: {str(e)}"}), 500
+
+@auth_bp.route("/profile", methods=["PUT"])
+@jwt_required()
+def update_profile():
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(int(user_id))
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        data = request.get_json()
+        if "allergies" in data:
+            user.allergies = data["allergies"]
+        if "diet_preferences" in data:
+            user.diet_preferences = data["diet_preferences"]
+        db.session.commit()
+        return jsonify({"message": "Profile updated successfully", "user": user.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to update profile"}), 500

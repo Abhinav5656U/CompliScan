@@ -57,6 +57,20 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
+  const googleLogin = async (credential) => {
+    const response = await api.post('/auth/google', { credential });
+    const { user: userData, csrf_token, access_token } = response.data;
+    localStorage.setItem('user', JSON.stringify(userData));
+    if (csrf_token) {
+      localStorage.setItem('csrf_token', csrf_token);
+    }
+    if (access_token) {
+      localStorage.setItem('access_token', access_token);
+    }
+    setUser(userData);
+    return userData;
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -74,6 +88,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     ssoLogin,
+    googleLogin,
     register,
     logout,
     isAuthenticated: !!user,

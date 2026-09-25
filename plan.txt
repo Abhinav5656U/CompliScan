@@ -1,0 +1,72 @@
+# NutriSafe Gateway (MeteroLens 2.0) - Development Plan & Roadmap
+
+## Phase 1: Core Consumer Health & Toxicity Engine
+1. **Food Ingredients & Nutrition Cross-Checking** (Implemented)
+   - **Plan**: Update the AI prompt (Gemini 2.5) to parse ingredient lists and nutritional tables.
+   - **Implementation**: 
+     - **File**: `backend/app/services/ocr_service.py`
+     - **Action**: Update the Gemini extraction prompt to extract JSON fields for `ingredients`, `nutritional_info_per_100g`, and `allergens`.
+     - **File**: `backend/app/services/llm_judge_service.py`
+     - **Action**: Add logic to compare the extracted ingredients against known FSSAI guidelines to flag harmful additives and excessive sodium/sugar.
+
+2. **False Claims & Greenwashing Detection**(Implemented)
+   - **Plan**: Compare front-of-pack marketing claims against the actual back-of-pack ingredients.
+   - **Implementation**: 
+     - **File**: `backend/app/services/ocr_service.py`
+     - **Action**: Extract `marketing_claims` (e.g., "100% Natural", "No Added Sugar").
+     - **File**: `backend/app/services/llm_judge_service.py`
+     - **Action**: Introduce a conflict-detection prompt to verify if `marketing_claims` contradict the `ingredients`. Store a "Greenwashing Status" in the `compliance_result`.
+
+## Phase 2: Personalization & User Profiles
+3. **Multi-User Personalized Health Profiles**
+   - **Plan**: Allow users to set dietary preferences (Vegan, Keto, Diabetic) and allergies (Peanuts, Gluten, Lactose).
+   - **Implementation**: 
+     - **File**: `backend/app/models.py`
+     - **Action**: Add `allergies = db.Column(db.JSON, nullable=True)` and `diet_preferences = db.Column(db.JSON, nullable=True)` to the `User` class.
+     - **File**: `backend/app/tasks.py`
+     - **Action**: In `process_scan_task`, fetch the user's allergies and pass them to `llm_judge_service.py` to dynamically warn the user if a scanned product violates their specific profile.
+
+## Phase 3: Advanced Scanning & Security
+4. **AI-Based Product Authenticity & Counterfeit Risk Assessment**
+   - **Plan**: Implement a multi-layered risk assessment pipeline (rather than a simple binary counterfeit check) that evaluates structural, visual, and data consistencies across the product package to generate a final Authenticity Risk Score.
+   - **Implementation Strategy**:
+     - **Architecture**: Do not dump everything into `validation_service.py`. Create a dedicated modular folder `backend/app/services/authenticity/` with orchestrator `authenticity_service.py`.
+     - **Layer 1 - Image Quality**: OpenCV checks for blur, perspective, and occlusions to ensure valid assessments.
+     - **Layer 2 - Label Compliance (OCR)**: Extend OCR pipeline to extract category-specific warnings (e.g. Schedule H for medicines, Country of Origin for cosmetics).
+     - **Layer 3 - Barcode & QR Intelligence**: Use `pyzbar` to decode and cross-check identifiers against printed OCR data (e.g., OCR Batch vs QR Batch mismatch).
+     - **Layer 4 - Batch/MFG/EXP Validation**: Deterministic checks for logic (EXP > MFG), missing batch info, or inconsistent dates across the package.
+     - **Layer 5 - Visual Similarity**: OpenCV feature matching or perceptual hashing to compare the scanned package layout/logos against reference databases.
+     - **Layer 6 - Tampering Detection**: OpenCV to detect stickers placed over text, misaligned labels, or altered expiry areas.
+     - **Layer 7 - Cross-Modal Consistency & Scoring**: LLM evaluates all evidence produced by the deterministic systems to calculate a weighted Authenticity Risk Score (Low, Medium, High, Critical) and provides specific evidence flags rather than a definitive "Counterfeit" label.
+   - **Frontend Integration**: Display the detailed risk score, the evidence pipeline (pass/fail per layer), and provide officer actions (Reinspect, Queue, Generate Report) instead of a simple binary flag.
+
+## Phase 4: Grievance Redressal & Automation
+5. **Automated FSSAI Complaint Routing** (Implemented)
+   - **Plan**: Upgrade the grievance email generation.
+   - **Implementation**: 
+     - **File**: `backend/app/routes/chatbot.py` & `backend/app/services/email_service.py`
+     - **Action**: When a severe violation is found, use `report_service.py` (which already exists) to generate a legally formatted PDF report. Update `email_service.py` to send this report directly to the relevant FSSAI nodal officer instead of just returning text to the user.
+
+6. **Agentic Chatbot for Smart Alternatives**
+   - **Plan**: Evolve the chatbot from a simple Q&A bot to an intelligent agent with tools.
+   - **Implementation**: 
+     - **File**: `backend/app/services/chatbot_service.py`
+     - **Action**: Convert the standard Gemini prompt into an Agentic loop (using native tool calling). 
+     - **Action**: Add a Python tool that uses DuckDuckGo Search API to scrape the web for healthier product alternatives when the user asks "What is a healthy alternative to this?"
+
+---
+
+## 💡 Bonus Ideas & Recommendations for SIH26199 (Open Innovation)
+Since SIH26199 is an open innovation category, judges look for massive scalability, out-of-the-box tech, and broad societal impact.
+
+1. **Quick-Commerce Cart Integration (The "Pre-Checkout" Guard)**
+   - Allow users to paste a link from their Zepto, Blinkit, or Instamart cart into your app.
+   - Your backend scrapes the cart and provides a "Basket Health Score", alerting them if they are about to buy too much processed food before they even checkout.
+
+2. **AR Supermarket Scanner (The "Wow" Factor)** (Grey area)
+   - Build a feature where the user holds up their phone camera to a supermarket shelf.
+   - Using WebXR or a simple bounding box overlay, paint green boxes around healthy products and red boxes around highly processed ones in real-time.
+
+3. **Government Threat Intelligence Map**
+   - Keep your admin dashboard, but rebrand it as a "Government Early Warning System".
+   - If 50 citizens in Mumbai scan a counterfeit batch of a popular medicine, the dashboard lights up red, allowing authorities to conduct a targeted raid.

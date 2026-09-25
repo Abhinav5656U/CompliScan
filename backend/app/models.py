@@ -13,6 +13,8 @@ class User(db.Model):
     role = db.Column(db.String(20), nullable=False, default="viewer")
     full_name = db.Column(db.String(150), nullable=True)
     badge_number = db.Column(db.String(50), nullable=True)
+    allergies = db.Column(db.JSON, nullable=True)
+    diet_preferences = db.Column(db.JSON, nullable=True)
     created_at = db.Column(
         db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
@@ -37,6 +39,8 @@ class User(db.Model):
             "role": self.role,
             "full_name": self.full_name,
             "badge_number": self.badge_number,
+            "allergies": self.allergies,
+            "diet_preferences": self.diet_preferences,
             "created_at": self.created_at.isoformat(),
         }
 
@@ -181,3 +185,43 @@ class ImprovementNotice(db.Model):
             "created_at": self.created_at.isoformat(),
         }
 
+class AuthenticityScan(db.Model):
+    __tablename__ = "authenticity_scans"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    image_path = db.Column(db.String(500), nullable=False)
+    
+    product_name = db.Column(db.String(200), nullable=True)
+    barcode = db.Column(db.String(100), nullable=True)
+    qr_data = db.Column(db.Text, nullable=True)
+    
+    layer_results = db.Column(db.JSON, nullable=True)
+    
+    risk_score = db.Column(db.Integer, nullable=True)
+    risk_level = db.Column(db.String(20), nullable=True)
+    
+    created_at = db.Column(
+        db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+
+    user = db.relationship("User", backref="authenticity_scans")
+
+    def to_dict(self):
+        img_url = None
+        if self.image_path and self.image_path.startswith("http"):
+            img_url = self.image_path
+
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "image_path": self.image_path,
+            "image_url": img_url,
+            "product_name": self.product_name,
+            "barcode": self.barcode,
+            "qr_data": self.qr_data,
+            "layer_results": self.layer_results,
+            "risk_score": self.risk_score,
+            "risk_level": self.risk_level,
+            "created_at": self.created_at.isoformat(),
+        }

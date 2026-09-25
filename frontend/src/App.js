@@ -25,6 +25,9 @@ const IndiaMap = lazy(() => import('./pages/IndiaMap'));
 const CitizenReport = lazy(() => import('./pages/CitizenReport'));
 const Chatbot = lazy(() => import('./pages/Chatbot'));
 const EcommerceCrawler = lazy(() => import('./pages/EcommerceCrawler'));
+const Authenticity = lazy(() => import('./pages/Authenticity'));
+const ProfileSettings = lazy(() => import('./pages/ProfileSettings'));
+
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -125,7 +128,25 @@ const App = () => {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/authenticity"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><Authenticity /></main>
+                  </ProtectedRoute>
+                }
+              />
 
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Navbar />
+                    <main><ProfileSettings /></main>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Suspense>

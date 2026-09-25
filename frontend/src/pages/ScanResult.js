@@ -610,12 +610,20 @@ const ScanResult = ({ scanIdProp }) => {
                 <div className="pt-2 border-t border-gray-100">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Extracted Fields</p>
                   <div className="space-y-1.5">
-                    {Object.entries(scan.extracted_fields).map(([key, value]) => (
-                      <div key={key} className="flex justify-between text-sm">
-                        <span className="text-gray-500 capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-gray-900 font-medium">{value || '\u2014'}</span>
-                      </div>
-                    ))}
+                    {Object.entries(scan.extracted_fields).map(([key, value]) => {
+                      let displayValue = value;
+                      if (Array.isArray(value)) {
+                        displayValue = value.join(', ');
+                      } else if (typeof value === 'object' && value !== null) {
+                        displayValue = Object.entries(value).map(([k,v]) => `${k}: ${v}`).join(' | ');
+                      }
+                      return (
+                        <div key={key} className="flex justify-between text-sm py-1 border-b border-gray-50 last:border-0">
+                          <span className="text-gray-500 capitalize w-1/3 shrink-0">{key.replace(/_/g, ' ')}</span>
+                          <span className="text-gray-900 font-medium text-right break-words">{displayValue || '\u2014'}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

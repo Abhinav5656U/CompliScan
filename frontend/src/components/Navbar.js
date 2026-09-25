@@ -22,8 +22,9 @@ const Navbar = () => {
 
   const navLinks = [
     { to: '/upload', label: 'Inspect Product', icon: FiSearch, show: isAuthenticated },
-    { to: '/dashboard', label: 'Dashboard', icon: FiGrid, show: isAuthenticated && ['admin', 'officer'].includes(user?.role) },
-    { to: '/map', label: 'Map', icon: FiMapPin, show: isAuthenticated && ['admin', 'officer'].includes(user?.role) },
+    { to: '/authenticity', label: 'Counterfeit Check', icon: FiShield, show: isAuthenticated },
+    { to: '/dashboard', label: 'Dashboard', icon: FiGrid, show: isAuthenticated },
+    { to: '/map', label: 'Map', icon: FiMapPin, show: isAuthenticated },
     { to: '/history', label: 'History', icon: FiClock, show: isAuthenticated },
     { to: '/ecommerce-crawler', label: 'E-Commerce Scanner', icon: FiShoppingCart, show: isAuthenticated },
     { to: '/chatbot', label: 'Assistant', icon: FiMessageCircle, show: isAuthenticated },
@@ -117,6 +118,14 @@ const Navbar = () => {
                           </span>
                         </div>
                         <div className="py-1">
+                          <Link
+                            to="/profile"
+                            onClick={() => setDropdownOpen(false)}
+                            className="flex items-center space-x-2 px-4 py-2 text-xs text-slate-200 hover:bg-white/10 transition-colors"
+                          >
+                            <FiUser className="h-3.5 w-3.5 text-blue-400" />
+                            <span>Profile Settings</span>
+                          </Link>
                           <Link
                             to="/upload"
                             onClick={() => setDropdownOpen(false)}
