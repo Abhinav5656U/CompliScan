@@ -38,7 +38,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-[#050B14]">
+        <div className="app-shell min-h-screen bg-[#050B14]">
           <Suspense fallback={<LoadingFallback />}>
             <Routes>
               {/* Public routes */}
@@ -50,10 +50,10 @@ const App = () => {
               <Route path="/verify-otp" element={<VerifyOtp />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/report" element={
-                <>
-                  <Navbar />
+                <div className="report-route">
+                  <Navbar showThemeToggle={false} />
                   <main><CitizenReport /></main>
-                </>
+                </div>
               } />
 
               {/* Protected app routes */}

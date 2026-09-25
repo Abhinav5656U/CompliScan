@@ -334,7 +334,7 @@ const ScanResult = ({ scanIdProp }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="app-surface min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center space-y-6 max-w-md w-full px-4 text-center">
           <div className="relative">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-100 border-t-indigo-600 shadow-sm"></div>
@@ -402,7 +402,7 @@ const ScanResult = ({ scanIdProp }) => {
   const VerdictIcon = verdict.icon;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="app-surface min-h-screen bg-gray-50">
       {/* Top Verdict Banner */}
       <div className={`${verdict.bg} border-b ${verdict.border} verdict-enter`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

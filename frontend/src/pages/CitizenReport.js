@@ -93,7 +93,7 @@ const CitizenReport = () => {
 
   if (success) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <div className="report-page max-w-2xl mx-auto px-4 py-16 text-center">
         <div className="inline-flex items-center justify-center h-16 w-16 bg-success-50 text-success border border-success/30 rounded-xs mb-6">
           <FiCheckCircle className="h-8 w-8" />
         </div>
@@ -114,7 +114,7 @@ const CitizenReport = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10 font-body">
+    <div className="report-page max-w-2xl mx-auto px-4 py-10 font-body text-slate-700">
       <div className="mb-8 border-b border-line pb-4">
         <div className="flex items-center space-x-2 text-[11px] font-mono uppercase tracking-wider text-seal font-semibold mb-1">
           <span>Form PR-01</span>

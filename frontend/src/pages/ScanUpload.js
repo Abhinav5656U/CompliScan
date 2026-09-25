@@ -201,7 +201,7 @@ const ScanUpload = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 lg:py-12 font-body text-slate-300">
+    <div className="app-surface max-w-5xl mx-auto px-4 py-8 lg:py-12 font-body text-slate-300">
       {showScanner && (
         <BarcodeScanner
           onScan={handleBarcodeScan}

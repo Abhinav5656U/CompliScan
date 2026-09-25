@@ -3,14 +3,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
   FiUser, FiLogOut, FiMenu, FiX, FiGrid, FiSearch, FiClock,
-  FiMapPin, FiMessageCircle, FiShoppingCart, FiShield
+  FiMapPin, FiMessageCircle, FiShoppingCart, FiShield, FiSun, FiMoon
 } from 'react-icons/fi';
-import { BiScan } from 'react-icons/bi';
 
-const Navbar = () => {
+const Navbar = ({ showThemeToggle = true }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [lightMode, setLightMode] = useState(() => localStorage.getItem('compliscan-theme') === 'light');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -19,6 +19,20 @@ const Navbar = () => {
     navigate('/login');
     setDropdownOpen(false);
   };
+
+  const toggleTheme = () => {
+    setLightMode((current) => {
+      const nextMode = !current;
+      document.body.classList.toggle('light-app', nextMode);
+      localStorage.setItem('compliscan-theme', nextMode ? 'light' : 'dark');
+      return nextMode;
+    });
+  };
+
+  React.useEffect(() => {
+    document.body.classList.toggle('light-app', lightMode);
+    return () => document.body.classList.remove('light-app');
+  }, [lightMode]);
 
   const navLinks = [
     { to: '/upload', label: 'Inspect Product', icon: FiSearch, show: isAuthenticated },
@@ -42,7 +56,7 @@ const Navbar = () => {
     <header className="no-print sticky top-0 z-[9999]">
 
       {/* Main Official Nav */}
-      <nav className="bg-navy border-b border-[#24355A] shadow-sm">
+      <nav className="app-nav bg-navy border-b border-[#24355A] shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-14">
             <div className="flex items-center space-x-3">
@@ -55,7 +69,7 @@ const Navbar = () => {
               </button>
               <div className="flex items-center space-x-2.5 focus:outline-none">
                 <div className="h-8 w-8 bg-[#1D2E52] border border-[#374B73] rounded-sm flex items-center justify-center text-[#3B82F6] shadow-xs">
-                  <BiScan className="h-5 w-5" />
+                  <FiSearch className="h-5 w-5" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-white text-base font-bold font-heading tracking-wide leading-tight flex items-center space-x-1.5">
@@ -89,6 +103,17 @@ const Navbar = () => {
             </nav>
 
             <div className="flex items-center space-x-2">
+              {showThemeToggle && (
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+                  aria-label={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
+                  title={lightMode ? 'Switch to dark mode' : 'Switch to light mode'}
+                >
+                  {lightMode ? <FiMoon className="h-4 w-4" /> : <FiSun className="h-4 w-4" />}
+                </button>
+              )}
               {isAuthenticated && (
                 <div className="relative">
                   <button
@@ -197,7 +222,7 @@ const Navbar = () => {
               <div className="px-5 pt-6 pb-4 border-b border-[#1E2E4E]">
                 <div className="flex items-center space-x-3">
                   <div className="h-8 w-8 bg-[#1D2E52] border border-[#374B73] rounded-sm flex items-center justify-center text-[#3B82F6] shadow-xs">
-                    <BiScan className="h-5 w-5" />
+                    <FiSearch className="h-5 w-5" />
                   </div>
                   <span className="text-white text-lg font-bold font-heading tracking-wide">MeteroLens</span>
                 </div>

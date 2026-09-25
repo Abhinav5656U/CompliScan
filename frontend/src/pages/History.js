@@ -78,7 +78,7 @@ const History = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="app-surface max-w-5xl mx-auto px-4 py-8">
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-gray-900">Scan History</h1>
