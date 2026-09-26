@@ -1,3 +1,5 @@
+import os
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 import re
 import cv2
 import numpy as np
@@ -127,7 +129,7 @@ Return ONLY valid JSON matching this schema, without any markdown formatting:
                 generation_config=genai.types.GenerationConfig(
                     response_mime_type="application/json"
                 ),
-                request_options={"timeout": 60}
+                request_options={"timeout": 300}
             )
         except Exception as e:
             raise e
@@ -232,9 +234,9 @@ Return ONLY valid JSON matching this schema exactly, without any markdown format
             client = Groq(api_key=groq_api_key)
             chat_completion = client.chat.completions.create(
                 messages=[
-                    {"role": "system", "content": prompt}
+                    {"role": "user", "content": prompt}
                 ],
-                model="llama-3.3-70b-versatile",
+                model="qwen/qwen3.8-27b",
                 temperature=0,
                 max_tokens=800,
                 response_format={"type": "json_object"},
@@ -258,7 +260,7 @@ Return ONLY valid JSON matching this schema exactly, without any markdown format
             generation_config=genai.types.GenerationConfig(
                 response_mime_type="application/json"
             ),
-            request_options={"timeout": 60}
+            request_options={"timeout": 300}
         )
         text = response.text
         if not text:

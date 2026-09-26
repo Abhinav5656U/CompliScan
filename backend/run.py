@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 # Load the .env file from the parent directory
 load_dotenv(dotenv_path="../.env")

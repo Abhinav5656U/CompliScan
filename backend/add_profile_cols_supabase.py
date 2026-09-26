@@ -7,17 +7,17 @@ from sqlalchemy import text
 app = create_app()
 with app.app_context():
     try:
-        db.session.execute(text("ALTER TABLE users ADD COLUMN allergies JSON;"))
+        db.session.execute(text("ALTER TABLE users ADD COLUMN age INTEGER;"))
         db.session.commit()
-        print("Column 'allergies' added successfully.")
+        print("Column 'age' added successfully.")
     except Exception as e:
-        print(f"Error adding 'allergies': {e}")
+        print(f"Error adding 'age': {e}")
         db.session.rollback()
         
     try:
-        db.session.execute(text("ALTER TABLE users ADD COLUMN diet_preferences JSON;"))
+        db.session.execute(text("ALTER TABLE users ADD COLUMN gender VARCHAR(20);"))
         db.session.commit()
-        print("Column 'diet_preferences' added successfully.")
+        print("Column 'gender' added successfully.")
     except Exception as e:
-        print(f"Error adding 'diet_preferences': {e}")
+        print(f"Error adding 'gender': {e}")
         db.session.rollback()

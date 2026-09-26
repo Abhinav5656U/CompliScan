@@ -49,7 +49,7 @@ def analyze_health_and_nutrition(ingredients, nutrition, user_allergies=None, us
         client = Groq(api_key=api_key)
         chat_completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt}],
-            model="llama3-70b-8192",
+            model="qwen/qwen3.8-27b",
             temperature=0,
             max_tokens=300,
             response_format={"type": "json_object"},
@@ -114,7 +114,7 @@ def detect_greenwashing(marketing_claims, ingredients, nutrition):
         client = Groq(api_key=api_key)
         chat_completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt}],
-            model="llama3-70b-8192",
+            model="qwen/qwen3.8-27b",
             temperature=0,
             max_tokens=300,
             response_format={"type": "json_object"},
@@ -140,5 +140,6 @@ def detect_greenwashing(marketing_claims, ingredients, nutrition):
             "rule_name": "Deceptive Marketing (Greenwashing)",
             "status": "human_review_required",
             "message": "Failed to analyze greenwashing data.",
+            "citation": "Consumer Protection Act / FSSAI Claims",
             "severity": "warning"
         }

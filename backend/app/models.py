@@ -15,6 +15,8 @@ class User(db.Model):
     badge_number = db.Column(db.String(50), nullable=True)
     allergies = db.Column(db.JSON, nullable=True)
     diet_preferences = db.Column(db.JSON, nullable=True)
+    age = db.Column(db.Integer, nullable=True)
+    gender = db.Column(db.String(20), nullable=True)
     created_at = db.Column(
         db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
@@ -41,6 +43,8 @@ class User(db.Model):
             "badge_number": self.badge_number,
             "allergies": self.allergies,
             "diet_preferences": self.diet_preferences,
+            "age": self.age,
+            "gender": self.gender,
             "created_at": self.created_at.isoformat(),
         }
 

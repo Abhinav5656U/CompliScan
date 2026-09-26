@@ -27,18 +27,9 @@ def extract_digital_listing_data(url: str):
             script.extract()
             
         text_content = soup.get_text(separator=' ', strip=True)
-        # Truncate text if it's insanely large to fit within model context comfortably
-        text_content = text_content[:200000] 
-        
-        api_key = os.environ.get("GEMINI_API_KEY")
-        if not api_key:
-            print("[ScraperService] Error: GEMINI_API_KEY not found.")
-            return None
-            
-        genai.configure(api_key=api_key)
-        
-        # Use gemini-2.5-flash as per the codebase standard
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        import os
+        from groq import Groq
+        import google.generativeai as genai
         
         prompt = f"""
         You are an expert Legal Metrology compliance AI agent.
@@ -56,28 +47,52 @@ def extract_digital_listing_data(url: str):
         - mfg_date: (string) Date of manufacture/packing
         
         Raw Scraped Text:
-        {text_content}
+        {text_content[:200000]} 
         """
         
-        print("[ScraperService] Sending scraped text to Gemini...")
-        generation_config = genai.GenerationConfig(response_mime_type="application/json")
-        result = model.generate_content(prompt, generation_config=generation_config)
-        
-        if not result.text:
-            print("[ScraperService] Gemini returned empty text.")
-            return None
-            
-        text = result.text.strip()
-        if text.startswith("```json"):
-            text = text[7:]
-        if text.startswith("```"):
-            text = text[3:]
-        if text.endswith("```"):
-            text = text[:-3]
-            
-        parsed_data = json.loads(text.strip())
-        print(f"[ScraperService] Successfully extracted: {parsed_data}")
-        return parsed_data
+        gemini_api_key = os.environ.get("GEMINI_API_KEY")
+        if gemini_api_key:
+            try:
+                print("[ScraperService] Sending scraped text to Gemini...")
+                genai.configure(api_key=gemini_api_key)
+                model = genai.GenerativeModel("gemini-2.5-flash")
+                generation_config = genai.GenerationConfig(response_mime_type="application/json")
+                result = model.generate_content(prompt, generation_config=generation_config, request_options={"timeout": 30})
+                if result.text:
+                    text = result.text.strip()
+                    if text.startswith("```json"): text = text[7:]
+                    if text.startswith("```"): text = text[3:]
+                    if text.endswith("```"): text = text[:-3]
+                    parsed_data = json.loads(text.strip())
+                    print(f"[ScraperService] Successfully extracted via Gemini: {parsed_data}")
+                    return parsed_data
+            except Exception as e:
+                print(f"[ScraperService] Gemini failed ({e}), falling back to Groq...")
+                
+        groq_api_key = os.environ.get("GROQ_API_KEY")
+        if groq_api_key:
+            try:
+                print("[ScraperService] Sending scraped text to Groq...")
+                client = Groq(api_key=groq_api_key)
+                # Groq has a smaller context limit, truncate further if necessary
+                truncated_prompt = prompt.replace(text_content[:200000], text_content[:20000])
+                chat_completion = client.chat.completions.create(
+                    messages=[{"role": "user", "content": truncated_prompt}],
+                    model="qwen/qwen3.8-27b",
+                    temperature=0,
+                    max_tokens=800,
+                    response_format={"type": "json_object"},
+                    timeout=30
+                )
+                response_text = chat_completion.choices[0].message.content.strip()
+                parsed_data = json.loads(response_text)
+                print(f"[ScraperService] Successfully extracted via Groq: {parsed_data}")
+                return parsed_data
+            except Exception as e:
+                print(f"[ScraperService] Groq failed ({e})")
+                
+        print("[ScraperService] All extractors failed.")
+        return None
         
     except Exception as e:
         print(f"[ScraperService] Scraper Error: {e}")

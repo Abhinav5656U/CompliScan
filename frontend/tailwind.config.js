@@ -6,39 +6,16 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['"Source Serif 4"', 'Georgia', 'serif'],
-        body: ['"Public Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        sans: ['"Public Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'Menlo', 'Consolas', 'monospace'],
+        heading: ['"Outfit"', 'sans-serif'],
+        body: ['"Inter"', 'sans-serif'],
+        sans: ['"Inter"', 'sans-serif'],
+        mono: ['"Fira Code"', 'monospace'],
       },
       colors: {
         ink: '#f8fafc',
         paper: '#0f172a',
         line: '#263550',
-        green: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
-        emerald: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
+
         navy: {
           DEFAULT: '#0b1120',
           hover: '#172554',

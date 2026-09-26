@@ -400,6 +400,12 @@ def update_profile():
             user.allergies = data["allergies"]
         if "diet_preferences" in data:
             user.diet_preferences = data["diet_preferences"]
+        if "full_name" in data:
+            user.full_name = data["full_name"]
+        if "age" in data:
+            user.age = data.get("age")
+        if "gender" in data:
+            user.gender = data.get("gender")
         db.session.commit()
         return jsonify({"message": "Profile updated successfully", "user": user.to_dict()}), 200
     except Exception as e:

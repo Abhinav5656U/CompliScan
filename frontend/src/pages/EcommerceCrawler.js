@@ -27,7 +27,7 @@ const EcommerceCrawler = () => {
       // Allow longer timeout for this API as it runs Gemini multiple times + scraping
       const response = await axios.post('http://127.0.0.1:5000/api/ecommerce/analyze', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 60000 
+        timeout: 300000 
       });
       setResult(response.data);
       if (response.data.diff_report?.overall_status === 'COMPLIANT') {

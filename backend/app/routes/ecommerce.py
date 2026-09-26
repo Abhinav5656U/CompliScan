@@ -33,9 +33,12 @@ def analyze_ecommerce_listing():
         image_file.save(temp_image_path)
         
         # 1. Get Physical Data
-        physical_data = extract_structured_data_gemini_vision([temp_image_path])
+        from app.services.ocr_service import process_image_pipeline
+        pipeline_result = process_image_pipeline([temp_image_path], scan_mode="deep")
+        physical_data = pipeline_result.get("llm_extracted_data") if pipeline_result else None
+        
         if not physical_data:
-            return jsonify({'error': 'Failed to extract physical data from image.'}), 500
+            return jsonify({'error': 'Failed to extract physical data from image. Please ensure image is clear.'}), 500
             
         # 2. Get Digital Data
         digital_data = extract_digital_listing_data(url)

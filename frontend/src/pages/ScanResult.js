@@ -386,8 +386,13 @@ const ScanResult = ({ scanIdProp }) => {
       label: 'Human Review Required',
       subtitle: 'Needs officer verification',
     },
+    error: {
+      tone: 'fail', icon: FiAlertOctagon,
+      label: 'Scan Error',
+      subtitle: 'An error occurred during analysis',
+    },
   };
-  const verdictBase = verdictConfig[overallStatus] || verdictConfig.compliant;
+  const verdictBase = verdictConfig[overallStatus] || verdictConfig.error;
   const toneColors = STATUS_COLORS[verdictBase.tone] || STATUS_COLORS.default;
   const verdict = {
     bg: toneColors.bg,

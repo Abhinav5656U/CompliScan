@@ -16,6 +16,8 @@ def calculate_risk(layer_results):
     barcode_res = layer_results.get("layer_3_barcode", {})
     if barcode_res.get("status") == "fail":
         score += 30
+    elif barcode_res.get("status") == "missing":
+        score += 10
     elif barcode_res.get("status") == "mismatch":
         score += 25
         
@@ -56,18 +58,24 @@ def evaluate_semantic_consistency(ocr_data, barcode_data):
         return {"status": "pass", "details": "No LLM key for consistency check."}
 
     prompt = f"""
-    You are an AI Authenticity Risk Assessor.
-    Compare the data printed on the package (OCR) with the decoded barcode/QR data.
+    You are an AI Authenticity Risk Assessor detecting counterfeit products.
+    Analyze the OCR text extracted from the packaging and the decoded barcode/QR data.
     
     OCR Data: {ocr_data}
     Barcode Data: {barcode_data}
     
-    Determine if there is a mismatch indicating forgery.
+    Look for the following counterfeit indicators:
+    1. Cross-Modal Mismatch: Does the barcode/QR data contradict the product name/brand in the OCR? (e.g. Barcode goes to a random website, or OCR says 'Lays' but barcode says something else).
+    2. Brand & Spelling Forgery: Are there deliberate misspellings of major brands? (e.g. 'PipsiCo' instead of 'PepsiCo', 'Abibas' instead of 'Adidas', or minor typos in standard packaging terms).
+    3. Missing Credentials: Is the manufacturer address highly suspicious or completely missing for a major brand?
+    
+    If you find clear evidence of forgery or mismatch, return "status": "fail".
+    If it looks legitimate, return "status": "pass".
     
     Return ONLY JSON:
     {{
         "status": "pass" | "fail",
-        "evidence": "string explaining the mismatch if any"
+        "evidence": "string explaining the forgery evidence (or 'Consistent' if none)"
     }}
     """
     
@@ -75,7 +83,7 @@ def evaluate_semantic_consistency(ocr_data, barcode_data):
         client = Groq(api_key=api_key)
         chat_completion = client.chat.completions.create(
             messages=[{"role": "system", "content": prompt}],
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             temperature=0,
             max_tokens=300,
             response_format={"type": "json_object"},
@@ -103,7 +111,7 @@ def analyze_product_authenticity(image_path):
     # 3. Barcode / QR
     barcode_result = decode_barcode(image_path)
     if not barcode_result:
-        layer_results["layer_3_barcode"] = {"status": "fail", "details": "No barcode detected or decoding failed."}
+        layer_results["layer_3_barcode"] = {"status": "missing", "details": "No barcode detected on this angle."}
     else:
         layer_results["layer_3_barcode"] = {"status": "pass", "details": f"Decoded {len(barcode_result)} barcodes.", "data": barcode_result}
     
