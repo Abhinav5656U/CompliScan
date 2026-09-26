@@ -46,11 +46,7 @@ const Navbar = ({ showThemeToggle = true }) => {
 
   const isActive = (path) => location.pathname === path;
 
-  const getRoleBadge = (role) => {
-    if (role === 'admin') return 'bg-navy text-seal border border-seal/50 shadow-sm';
-    if (role === 'officer') return 'bg-navy text-success border border-success/50 shadow-sm';
-    return 'bg-navy text-line border border-line/50 shadow-sm';
-  };
+
 
   return (
     <header className="no-print sticky top-0 z-[9999]">
