@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Upload, AlertTriangle, CheckCircle, Search, FileText, ChevronRight, RefreshCw, Layers, Scan as ScanIcon, Info } from 'lucide-react';
+import { Camera, Upload, AlertTriangle, CheckCircle, ChevronRight, RefreshCw, Layers, Scan as ScanIcon, Info } from 'lucide-react';
 import api from '../utils/api';
 
 const Authenticity = () => {

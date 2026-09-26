@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { toast } from 'react-toastify';
@@ -8,7 +8,7 @@ const ALLERGY_OPTIONS = ['Peanuts', 'Gluten', 'Lactose', 'Soy', 'Tree Nuts', 'Sh
 const DIET_OPTIONS = ['Vegan', 'Vegetarian', 'Keto', 'Paleo', 'Diabetic', 'Halal'];
 
 const ProfileSettings = () => {
-  const { user, login } = useAuth(); // login function updates user in context
+  const { user } = useAuth(); // login function updates user in context
   const [allergies, setAllergies] = useState([]);
   const [diet, setDiet] = useState([]);
   const [fullName, setFullName] = useState('');

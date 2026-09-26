@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiUser, FiMail, FiLock, FiAlertCircle, FiHash, FiCheckCircle } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import { useGoogleLogin } from '@react-oauth/google';
 import { toast } from 'react-toastify';
 
