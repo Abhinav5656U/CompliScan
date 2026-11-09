@@ -7,7 +7,10 @@ import os
 import json
 from datetime import datetime, timezone
 import google.generativeai as genai
-from duckduckgo_search import DDGS
+try:
+    from duckduckgo_search import DDGS
+except ImportError:
+    DDGS = None
 
 def web_search(query: str) -> str:
     """
@@ -16,6 +19,8 @@ def web_search(query: str) -> str:
     Args:
         query: The search query to look up (e.g., 'healthy alternatives to Coca Cola', 'FSSAI packaging rules 2024').
     """
+    if DDGS is None:
+        return "Web search is currently unavailable."
     try:
         with DDGS() as ddgs:
             results = list(ddgs.text(query, max_results=3))

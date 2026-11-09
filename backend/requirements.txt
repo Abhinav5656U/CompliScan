@@ -29,3 +29,5 @@ requests
 onnxruntime
 pyzbar
 psycopg[binary]
+duckduckgo_search
+
