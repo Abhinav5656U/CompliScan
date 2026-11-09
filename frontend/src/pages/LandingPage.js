@@ -24,7 +24,7 @@ const CAPABILITIES = [
     id: 'CAP-01',
     icon: <BiScan className="h-6 w-6" />,
     title: 'Dual-Layer Optical Label Extraction',
-    citation: 'Section 15, Legal Metrology Act 2009',
+    citation: 'Section 23, Food Safety & Standards Act 2006',
     description: 'Bilingual OCR parses Hindi and English packaging text, isolates mandatory declaration zones, and extracts numerical dimensions with bounding coordinates.',
   },
   {
@@ -75,7 +75,7 @@ const STEPS = [
     stage: '02',
     title: 'Automated Verification',
     subtitle: 'OCR + statutory validation',
-    desc: 'System parses text bounding coordinates, validates metric declarations against Legal Metrology tolerances, and checks GTIN authenticity.',
+    desc: 'System parses text bounding coordinates, validates metric declarations against Food Safety & Standards tolerances, and checks GTIN authenticity.',
   },
   {
     stage: '03',
@@ -152,11 +152,11 @@ const LandingPage = () => {
             <div className="flex flex-col items-start space-y-4">
               <div className="inline-flex items-center space-x-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full text-[11px] font-mono text-blue-300 uppercase tracking-wider backdrop-blur-sm">
                 <FiShield className="h-3 w-3" />
-                <span>Legal Metrology (Packaged Commodities) Rules, 2011</span>
+                <span>Food Safety & Standards Regulations</span>
               </div>
 
               <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight tracking-tight">
-                Digital Verification & Legal Metrology <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">Enforcement</span>
+                Digital Verification & Food Safety & Standards <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-blue-500">Enforcement</span>
               </h1>
 
               <p className="text-lg text-gray-400 leading-relaxed max-w-xl font-normal">
@@ -306,7 +306,7 @@ const LandingPage = () => {
           <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-widest text-blue-400 font-semibold mb-2">
-                Legal Metrology (Packaged Commodities) Rules, 2011
+                Food Safety & Standards Regulations
               </p>
               <h2 className="font-heading text-3xl sm:text-4xl font-bold text-white">
                 Mandatory Declarations Register
@@ -397,7 +397,7 @@ const LandingPage = () => {
                 <span className="font-heading text-2xl font-bold text-white tracking-wide">MeteroLens</span>
               </div>
               <p className="text-sm text-gray-500 leading-relaxed max-w-md">
-                An authoritative digital compliance and enforcement platform for Indian Legal Metrology regulations. Developed for Smart India Hackathon 2026.
+                An authoritative digital compliance and enforcement platform for Indian Food Safety & Standards regulations. Developed for Smart India Hackathon 2026.
               </p>
               <a href="https://github.com/Abhinav5656U/MeteroLens" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-mono text-gray-400 hover:text-white transition-colors bg-white/5 px-4 py-2 rounded-lg border border-white/10">
                 <FiGithub className="h-4 w-4" />
@@ -430,8 +430,8 @@ const LandingPage = () => {
           </div>
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-gray-600 gap-4 text-center sm:text-left">
-            <p>MeteroLens &middot; Legal Metrology Digital Enforcement Framework</p>
-            <p>Smart India Hackathon 2026 &middot; PS26034 &middot; Gov of India</p>
+            <p>MeteroLens &middot; Food Safety & Standards Digital Enforcement Framework</p>
+            <p>Smart India Hackathon 2026 &middot; SIH26199 &middot; Gov of India</p>
           </div>
         </div>
       </footer>

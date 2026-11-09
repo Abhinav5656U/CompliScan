@@ -30,6 +30,7 @@ def upload_scan():
 
         files = request.files.getlist("images")
         scan_mode = request.form.get("scan_mode", "deep")
+        product_category = request.form.get("product_category", "normal")
         listing_url = request.form.get("listing_url")
         gtin = request.form.get("gtin")
         state = request.form.get("state")
@@ -69,7 +70,7 @@ def upload_scan():
             grouped_indices = [[i] for i in range(len(image_paths))]
 
         import hashlib
-        from app.tasks import process_scan_task
+        from app.tasks import dispatch_scan_task
         
         created_scans = []
         
@@ -95,11 +96,12 @@ def upload_scan():
                 longitude=lng,
                 overall_status="processing",
                 image_hash=image_hash,
+                product_category=product_category,
             )
             db.session.add(scan)
             db.session.commit()
 
-            process_scan_task.delay(scan.id, group_paths, listing_url if len(grouped_indices) == 1 else None)
+            dispatch_scan_task(scan.id, group_paths, listing_url if len(grouped_indices) == 1 else None)
             created_scans.append(scan.to_dict())
 
         return jsonify({
@@ -232,6 +234,7 @@ def public_upload_scan():
             return jsonify({"error": "No image files provided"}), 400
 
         files = request.files.getlist("images")
+        product_category = request.form.get("product_category", "normal")
         gtin = request.form.get("gtin")
         latitude_str = request.form.get("latitude")
         longitude_str = request.form.get("longitude")
@@ -309,12 +312,13 @@ def public_upload_scan():
             longitude=longitude,
             overall_status="processing",
             image_hash=image_hash,
+            product_category=product_category,
         )
         db.session.add(scan)
         db.session.commit()
 
-        from app.tasks import process_scan_task
-        process_scan_task.delay(scan.id, image_paths, None)
+        from app.tasks import dispatch_scan_task
+        dispatch_scan_task(scan.id, image_paths, None)
 
         return jsonify({
             "message": "Scan uploaded successfully. Thank you for your report.",

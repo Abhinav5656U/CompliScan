@@ -49,11 +49,24 @@ STRUCTURED_FIELD_FALLBACK_REGEX = {
 }
 
 
-def load_rules():
-    with open(RULES_FILE, "r", encoding="utf-8") as f:
+def load_rules(product_category="normal"):
+    rule_files = {
+        "normal": "rules_2026_amend_3.json",
+        "food": "rules_fssai_food.json",
+        "cosmetic": "rules_cdsco_cosmetics.json",
+        "medicine": "rules_pharma.json"
+    }
+    filename = rule_files.get(product_category, "rules_2026_amend_3.json")
+    file_path = os.path.join(os.path.dirname(__file__), "..", "rules", filename)
+    
+    # Fallback to normal rules if specific file not found (e.g. not created yet)
+    if not os.path.exists(file_path):
+        file_path = os.path.join(os.path.dirname(__file__), "..", "rules", "rules_2026_amend_3.json")
+
+    with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def validate_compliance(pipeline_data, extracted_fields=None, user_allergies=None, user_diet=None):
+def validate_compliance(pipeline_data, extracted_fields=None, user_allergies=None, user_diet=None, product_category="normal"):
     """
     Evaluates extracted facts against versioned rules.
     pipeline_data is the dict from process_image_pipeline.
@@ -75,7 +88,7 @@ def validate_compliance(pipeline_data, extracted_fields=None, user_allergies=Non
             ],
         }
 
-    rules_def = load_rules()
+    rules_def = load_rules(product_category)
     checks = []
     
     extracted_data = pipeline_data.get("extracted_data", [])

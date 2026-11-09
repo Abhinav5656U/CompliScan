@@ -97,11 +97,26 @@ def generate_pdf_report(scan):
             spaceAfter=4,
         )
 
-        elements.append(Paragraph("MeteroLens", title_style))
-        elements.append(Paragraph("Legal Metrology Compliance Report", subtitle_style))
+        category = getattr(scan, "product_category", "normal")
+        
+        if category == "food":
+            report_title = "FSSAI Food Safety & Labeling Report"
+            theme_color = "#27ae60"
+        elif category == "medicine":
+            report_title = "CDSCO Pharmaceutical Compliance Report"
+            theme_color = "#8e44ad"
+        elif category == "cosmetic":
+            report_title = "CDSCO Cosmetics Compliance Report"
+            theme_color = "#e67e22"
+        else:
+            report_title = "Legal Metrology Compliance Report"
+            theme_color = "#3498db"
+            
+        elements.append(Paragraph("MeteroLens Gateway", title_style))
+        elements.append(Paragraph(report_title, subtitle_style))
         elements.append(HRFlowable(
             width="100%", thickness=2,
-            color=colors.HexColor("#3498db"),
+            color=colors.HexColor(theme_color),
             spaceAfter=12,
         ))
 

@@ -7,6 +7,7 @@ const CitizenReport = () => {
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [gtin, setGtin] = useState('');
+  const [productCategory, setProductCategory] = useState('normal');
   const [location, setLocation] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -70,6 +71,7 @@ const CitizenReport = () => {
     });
     
     if (gtin) formData.append('gtin', gtin);
+    formData.append('product_category', productCategory);
     
     if (location) {
       formData.append('latitude', location.latitude);
@@ -101,7 +103,7 @@ const CitizenReport = () => {
           Statutory Violation Report Lodged
         </h1>
         <p className="text-[#555] text-sm leading-relaxed max-w-lg mx-auto mb-8 font-sans">
-          Your packaging report has been cataloged in the enforcement queue. Verified discrepancies are forwarded to the jurisdictional Legal Metrology controller for physical verification under Section 15.
+          Your packaging report has been cataloged in the enforcement queue. Verified discrepancies are forwarded to the jurisdictional Food Safety & Standards controller for physical verification under Section 15.
         </p>
         <button
           onClick={() => { setSuccess(false); setFiles([]); setPreviews([]); setGtin(''); }}
@@ -210,6 +212,22 @@ const CitizenReport = () => {
             <p className="text-[11px] text-[#666] mt-1">
               If visible, enter the numeric barcode below the symbol to verify historical manufacturer compliance.
             </p>
+          </div>
+
+          <div>
+             <label className="block text-xs font-mono font-bold uppercase tracking-wider text-navy mb-1.5">
+               Product Category
+             </label>
+             <select
+                value={productCategory}
+                onChange={(e) => setProductCategory(e.target.value)}
+                className="w-full px-3 py-2 text-xs font-mono rounded-xs border border-line bg-paper/50 focus:bg-white focus:border-seal outline-none transition-colors"
+              >
+                <option value="normal">Normal Packaged Goods (Legal Metrology)</option>
+                <option value="food">Food & Beverages (FSSAI)</option>
+                <option value="cosmetic">Cosmetics (CDSCO)</option>
+                <option value="medicine">Pharmaceuticals (CDSCO)</option>
+              </select>
           </div>
 
           <div className="bg-paper border border-line rounded-xs p-3 flex items-start space-x-3">

@@ -88,6 +88,7 @@ class Scan(db.Model):
     mismatch_result = db.Column(db.JSON, nullable=True)
     image_hash = db.Column(db.String(64), nullable=True)
     scan_mode = db.Column(db.String(20), nullable=False, default="deep", server_default="deep")
+    product_category = db.Column(db.String(50), nullable=False, default="normal", server_default="normal")
     created_at = db.Column(
         db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
     )
@@ -108,6 +109,7 @@ class Scan(db.Model):
             "image_path": self.image_path,
             "image_url": img_url,
             "images": images_data,
+            "product_category": self.product_category,
             "ocr_text": self.ocr_text,
             "extracted_fields": self.extracted_fields,
             "compliance_result": self.compliance_result,

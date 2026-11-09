@@ -30,7 +30,7 @@
 
 ## 📖 Overview
 
-**MeteroLens** is a comprehensive, hybrid AI-powered platform designed to digitize and automate the work of Legal Metrology Officers. Built for the **Ministry of Consumer Affairs, Food & Public Distribution** (SIH 2026 - PS26034), it seamlessly checks the compliance of packaged commodities against legal metrology rules using state-of-the-art Computer Vision and Large Language Models.
+**MeteroLens** is a comprehensive, hybrid AI-powered platform designed to digitize and automate the work of Legal Metrology Officers. Built for the **Ministry of Consumer Affairs, Food & Public Distribution** (SIH 2026 - PS26199), it seamlessly checks the compliance of packaged commodities against legal metrology rules using state-of-the-art Computer Vision and Large Language Models.
 
 By combining deterministic rule engines with semantic AI validation, MeteroLens removes human subjectivity, automates compliance reporting, and secures evidence cryptographically.
 

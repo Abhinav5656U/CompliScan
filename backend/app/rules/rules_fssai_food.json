@@ -1,0 +1,56 @@
+{
+  "version": "fssai_2020",
+  "effective_date": "2020-01-01",
+  "rules": [
+    {
+      "id": "veg_non_veg",
+      "name": "Veg / Non-Veg Declaration",
+      "citation": "FSSAI Labelling Regulations",
+      "field": "any",
+      "type": "llm_evaluation",
+      "prompt": "Determine if the text indicates a '100% vegetarian' or 'Non-vegetarian' logo/declaration. If found, respond PASS. If completely missing, respond FAIL.",
+      "error_msg": "Veg/Non-Veg declaration not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "nutritional_info",
+      "name": "Nutritional Information",
+      "citation": "FSSAI Labelling Regulations",
+      "field": "any",
+      "type": "llm_evaluation",
+      "prompt": "Look for nutritional information (Energy, Protein, Carbohydrate, Sugars, Fat). If a nutrition table or list is present, respond PASS. Otherwise, respond FAIL.",
+      "error_msg": "Nutritional information declaration not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "fssai_license",
+      "name": "FSSAI License Number",
+      "citation": "FSSAI Labelling Regulations",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?:FSSAI|fssai|Lic\\. No\\.).*\\d{14}",
+      "error_msg": "14-digit FSSAI License Number not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "mrp_declaration",
+      "name": "MRP (Maximum Retail Price)",
+      "citation": "Legal Metrology Rules",
+      "field": "any",
+      "type": "structured_field",
+      "field_key": "mrp",
+      "error_msg": "MRP must be present.",
+      "severity": "critical"
+    },
+    {
+      "id": "net_quantity",
+      "name": "Net Quantity",
+      "citation": "Legal Metrology Rules",
+      "field": "any",
+      "type": "structured_field",
+      "field_key": "net_quantity",
+      "error_msg": "Net quantity not found.",
+      "severity": "critical"
+    }
+  ]
+}

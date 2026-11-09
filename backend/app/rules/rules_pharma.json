@@ -1,0 +1,36 @@
+{
+  "version": "cdsco_pharma",
+  "effective_date": "2023-08-01",
+  "rules": [
+    {
+      "id": "schedule_warning",
+      "name": "Schedule Warning / Red Line",
+      "citation": "Drugs Rules, 1945",
+      "field": "any",
+      "type": "llm_evaluation",
+      "prompt": "Determine if this is a prescription drug (e.g. Schedule H, H1, or X). Look for 'SCHEDULE H PRESCRIPTION DRUG', 'Rx', or a red vertical line warning. If this is present, respond PASS. If it is clearly a prescription drug but missing the warning, respond FAIL.",
+      "error_msg": "Required Schedule Prescription warning missing.",
+      "severity": "critical"
+    },
+    {
+      "id": "batch_number",
+      "name": "Batch/Lot Number",
+      "citation": "Drugs Rules, 1945",
+      "field": "any",
+      "type": "structured_field",
+      "field_key": "batch_number",
+      "error_msg": "Batch number not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "expiry_date",
+      "name": "Expiry Date",
+      "citation": "Drugs Rules, 1945",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?:Exp\\.?|Expiry)[^a-zA-Z0-9]*\\d{2,4}",
+      "error_msg": "Expiry date declaration not found.",
+      "severity": "critical"
+    }
+  ]
+}

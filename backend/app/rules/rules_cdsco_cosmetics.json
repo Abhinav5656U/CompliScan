@@ -1,0 +1,46 @@
+{
+  "version": "cdsco_cosmetics_2020",
+  "effective_date": "2020-12-15",
+  "rules": [
+    {
+      "id": "mfg_license",
+      "name": "Manufacturing License Number",
+      "citation": "Cosmetics Rules, 2020",
+      "field": "any",
+      "type": "regex",
+      "pattern": "(?:Mfg\\.?\\s*Lic\\.?\\s*No\\.?|M\\.\\s*L\\.)[A-Za-z0-9\\-/\\s]+",
+      "error_msg": "Manufacturing License Number not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "batch_number",
+      "name": "Batch/Lot Number",
+      "citation": "Cosmetics Rules, 2020",
+      "field": "any",
+      "type": "structured_field",
+      "field_key": "batch_number",
+      "error_msg": "Batch or Lot number not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "cosmetic_ingredients",
+      "name": "List of Ingredients",
+      "citation": "Cosmetics Rules, 2020",
+      "field": "any",
+      "type": "llm_evaluation",
+      "prompt": "Look for a list of ingredients. If ingredients are explicitly declared, respond PASS. If missing, respond FAIL.",
+      "error_msg": "Ingredient list declaration not found.",
+      "severity": "critical"
+    },
+    {
+      "id": "harmful_ingredients",
+      "name": "BIS Restricted Substances Check",
+      "citation": "Cosmetics Rules, 2020",
+      "field": "any",
+      "type": "llm_evaluation",
+      "prompt": "Analyze the ingredient list for substances restricted by the Bureau of Indian Standards (e.g., heavy metals like lead/arsenic, or excessive parabens). If NO explicitly harmful or restricted cosmetic ingredients are found, respond PASS. If found, respond FAIL and list the harmful substance.",
+      "error_msg": "Contains restricted or harmful cosmetic ingredients.",
+      "severity": "warning"
+    }
+  ]
+}

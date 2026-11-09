@@ -103,6 +103,7 @@ const ScanUpload = () => {
   const [gtin, setGtin] = useState('');
   const [state, setState] = useState('');
   const [scanMode, setScanMode] = useState('deep');
+  const [productCategory, setProductCategory] = useState('normal');
   const [uploading, setUploading] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const cameraInputRef = useRef(null);
@@ -175,6 +176,7 @@ const ScanUpload = () => {
       if (gtin) formData.append('gtin', gtin);
       if (state) formData.append('state', state);
       formData.append('scan_mode', scanMode);
+      formData.append('product_category', productCategory);
       if (lat !== null) formData.append('latitude', lat);
       if (lng !== null) formData.append('longitude', lng);
 
@@ -212,7 +214,7 @@ const ScanUpload = () => {
       <div className="mb-8 border-b border-white/10 pb-5">
         <p className="text-[10px] font-mono uppercase tracking-widest text-blue-400 mb-2">Inspection intake protocol</p>
         <h1 className="font-heading text-2xl sm:text-3xl font-bold text-white">Field Packaging Audit Scan</h1>
-        <p className="text-xs text-slate-400 mt-2 max-w-3xl">Ingest product packaging photographs for optical declaration extraction and statutory verification under the Legal Metrology (Packaged Commodities) Rules, 2011.</p>
+        <p className="text-xs text-slate-400 mt-2 max-w-3xl">Ingest product packaging photographs for optical declaration extraction and statutory verification under the Food Safety & Standards Regulations.</p>
       </div>
 
       <div className="bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-6 sm:p-8">
@@ -314,6 +316,20 @@ const ScanUpload = () => {
                 ))}
               </select>
             </div>
+          </div>
+
+          <div className="mb-2">
+             <label className="block text-sm font-medium text-slate-200 mb-2">Product Category</label>
+             <select
+                value={productCategory}
+                onChange={(e) => setProductCategory(e.target.value)}
+                className="w-full rounded-lg border-white/15 border p-3 focus:ring-blue-500 focus:border-blue-500 bg-[#0b1120] text-white"
+              >
+                <option value="normal">Normal Packaged Goods (Legal Metrology)</option>
+                <option value="food">Food & Beverages (FSSAI)</option>
+                <option value="cosmetic">Cosmetics (CDSCO)</option>
+                <option value="medicine">Pharmaceuticals (CDSCO)</option>
+              </select>
           </div>
 
           <div className="bg-[#0b1120]/70 border border-white/10 rounded-xl p-4 mb-6">

@@ -1,19 +1,15 @@
 # Problem Statement: SIH26199
-**Title:** Software System to check compliance of Packaged Commodities under Legal Metrology (Packaged Commodities) Rules, 2011
-
-# Meet MeteroLens: The Complete AI Metrology Solution
-
-We have built **MeteroLens**, acomprehensive, hybrid AI-powered platform designed to completely digitize and automate the work of Legal Metrology Officers. 
+**Title:** Software System to check compliance of Packaged Commodities under Legal Metrology (Packaged Commodities) Rules 2011 , food & cosmetic safety and standards act 2006 and counterfiet medicines
 
 Here are the primary capabilities that make MeteroLens stand out:
 
-1. **(USP) Intelligent Data Extraction with Smart Fallbacks:** Our system doesn't rely on just one engine. It uses **Gemini 2.5 Flash** for multimodal OCR and structured JSON field extraction, but seamlessly falls back to **PaddleOCR (Multilingual)** if needed, ensuring we never miss a detail on messy or curved packaging.
+1. **(USP) Intelligent Data Extraction with Smart Fallbacks:** Our system doesn't rely on just one engine. It uses **Gemini 2.5 Flash** for multimodal OCR and structured JSON field extraction as the deep mode for complete detailed capture (if gemini fails it fallbacks to fast mode local models), but has a fast mode which uses **PaddleOCR (Multilingual)** & **YOLOv8 model** if needed, ensuring we never miss a detail on messy or curved packaging.
 
 2. **(USP) Custom Model Training & Object Detection:** We didn't just use out-of-the-box APIs. We trained a custom **YOLOv8** object detection model combined with OpenCV to accurately detect bounding boxes of mandatory declarations, completely automating the visual inspection process.
 
 3. **(USP) Physical Dimension Calibration:** We completely remove human subjectivity when measuring if a font size is legal (Rule 7).Our YOLOv8 model combined with OpenCV helps calculate the exact font size.
 
-4. **(USP) Hybrid Compliance Rule Engine:** We use a two-pronged approach to check compliance: a blazing-fast Deterministic Engine (Regex and geometry checks) for strict rules, paired with a Semantic LLM Judge (Groq LLaMA 3) to evaluate ambiguous claims and ingredients.
+4. **(USP) Hybrid Compliance Rule Engine:** We use a two-pronged approach to check compliance: a blazing-fast Deterministic Engine (Regex and geometry checks) for strict rules, paired with a Semantic LLM Judge (Groq LLaMA 3) to evaluate ambiguous claims and ingredients, There are 4 versions of rules engine for normal commodities , food products, cosmetic products and counterfeit medicines.
 
 5. **(USP) Automated Improvement Notice Generator (Jan Vishwas Act):** When a manufacturer makes a minor labeling mistake for the first time, our system checks their history and automatically drafts a legally formatted PDF "Improvement Notice," giving them a 30-day grace period to fix it—fully automating the government's new workflow!
 
@@ -23,17 +19,17 @@ Here are the primary capabilities that make MeteroLens stand out:
 
 8. **(USP) Automatic Unit Sale Price (USP) Calculator:** No more mental math for inspectors. The system extracts the MRP and Net Quantity, calculates the exact price per gram/ml, and verifies that the label follows the strict LMPC rounding rules.
 
-//9. **(USP) State Portal API Integrator (Vaidhmapan Sync):** We've eliminated double data entry. As soon as an officer finishes a digital inspection on MeteroLens, the compliance reports, fines, and GPS data are instantly synced into official state databases like Vaidhmapan in real-time.
+9. **(USP) E-commerce SKU Crawler (Rule 18):** Non-compliance isn't just physical anymore. An officer can scan a physical product's barcode, and our system will automatically crawl its online listing (like Amazon or Flipkart) to ensure the digital label perfectly matches the physical rules.
 
-10. **(USP) E-commerce SKU Crawler (Rule 18):** Non-compliance isn't just physical anymore. An officer can scan a physical product's barcode, and our system will automatically crawl its online listing (like Amazon or Flipkart) to ensure the digital label perfectly matches the physical rules.
+10. **(USP) Bulk Multi-Scan & Panoramic Stitching:** Instead of taking a single photo, officers can rapid-fire scan multiple sides of a package or even a whole batch of different products. The AI intelligently stitches the angles together into a single panoramic view and processes everything simultaneously.
 
-11. **(USP) Bulk Multi-Scan & Panoramic Stitching:** Instead of taking a single photo, officers can rapid-fire scan multiple sides of a package or even a whole batch of different products. The AI intelligently stitches the angles together into a single panoramic view and processes everything simultaneously.
+11. **(USP) GTIN/Barcode Risk Scoring & Dashboard Analytics:** A historical analytics engine tracks compliance failures by product GTIN and automatically assigns a Risk Tier (High/Medium/Low). This is displayed on a React-based web dashboard featuring trend graphs and geographic mapping of offenses.
 
-12. **(USP) GTIN/Barcode Risk Scoring & Dashboard Analytics:** A historical analytics engine tracks compliance failures by product GTIN and automatically assigns a Risk Tier (High/Medium/Low). This is displayed on a React-based web dashboard featuring trend graphs and geographic mapping of offenses.
+12. **(USP) Citizen Crowdsourcing with GPS Tracking:** A dedicated public reporting portal allows everyday consumers to upload non-compliant products. The system automatically tags their GPS coordinates and flags the issue directly into the inspector's prioritized "Risk Queue".
 
-13. **Citizen Crowdsourcing with GPS Tracking:** A dedicated public reporting portal allows everyday consumers to upload non-compliant products. The system automatically tags their GPS coordinates and flags the issue directly into the inspector's prioritized "Risk Queue".
+13. **(USP) Interactive Multilingual AI Assistant:** An embedded conversational AI that can explain complex legal rule violations to citizens, draft formal complaint emails, and route them directly to the correct State Controller.
 
-14. **Interactive Multilingual AI Assistant:** An embedded conversational AI that can explain complex legal rule violations to citizens, draft formal complaint emails, and route them directly to the correct State Controller.
+[Basically people can file complaints against non compliant products using this app. The system will automatically tags their GPS coordinates and flags the issue if there is any government official using platform near the area the non-compliant report comes from the issue or non-complaint product shows up on that officers dashboard if no officer is there our system can automate a complaint mail directly to the officials and National consumer care website.]
 
 ---
 
@@ -72,12 +68,3 @@ Here are the primary capabilities that make MeteroLens stand out:
 6. **Reporting & Evidence Non-Repudiation**
 - PDF Generation: ReportLab (Python) for automated compliance certificates.
 - Evidence Integrity: SHA-256 Cryptographic Hashing.
-
----
-
-# Recent Updates (Previous Day's Work)
-
-- **AI & Scanning Pipeline:** Implemented a robust dual-mode scanning pipeline and significantly improved the LLM prompts for better accuracy.
-- **Frontend Enhancements:** Added semantic search functionality to the history page and fixed navbar routing issues.
-- **Map & Geolocation:** Implemented red dots on the map for clear visualization, and added a reliable desktop geolocation fallback mechanism.
-- **Backend Stability:** Fixed database connection timeouts and added mobile URL logging for better debugging.
